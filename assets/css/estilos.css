@@ -1,0 +1,1713 @@
+@import url('fuentes.css');
+
+body {
+	font-family: 'Verdana';
+	font-size: 11px;
+	width: 100%;
+}
+
+header{
+	width: 1500px;
+	height: auto;
+	margin: auto;
+	overflow: hidden;
+}
+
+footer{
+	margin-top: 540px;
+}
+
+#listaMaquinas_paginate{
+	margin-right: 470px;
+}
+
+#listaMaquinas_filter{
+	margin-right: 461px;
+}
+
+#lista_partes_maquina_paginate{
+	margin-right: 650px;
+}
+
+#lista_partes_maquina_filter{
+	margin-right: 660px;
+}
+
+#listaTipoCambio_paginate{
+	margin-right: 100px;
+}
+
+#listaTipoCambio_filter{
+	margin-right: 109px;
+}
+
+#listaCategoriaProductos_paginate{
+	margin-right: 650px;
+}
+
+#listaCategoriaProductos_filter{
+	margin-right: 660px;
+}
+
+#listaTiposProductos_paginate{
+	margin-right: 650px;
+}
+
+#listaTiposProductos_filter{
+	margin-right: 660px;
+}
+
+#listar_ubicacion_producto_paginate{
+	margin-right: 650px;
+}
+
+#listar_ubicacion_producto_filter{
+	margin-right: 660px;
+}
+
+#imprimir_traslado{
+	padding-bottom:6px;
+	padding-top:5px;
+	margin-bottom: 4px;
+	background-color: #F01E1E;
+	border-radius:6px;
+	width: 150px;
+	visibility: visible;
+	height: 20px;
+	color: white;
+	border: 1px solid #FFF;
+	border-radius: 15px 0px 15px 0px;
+	border: 6px solid #FFF;
+	cursor: pointer;
+}
+
+#icon_print{
+	padding-left: 7px;
+	padding-right: 8px;
+}
+
+#text_print{
+    font-size: 11px;
+    font-family: tahoma;
+    font-style: normal;
+    text-decoration: none;
+    margin-right: 5px;
+    padding-left: 15px;
+}
+
+#header{
+	margin: auto;
+	padding: 60px;
+	width: 500px;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.wrapper{
+	float: left;
+    font-size: 14px;
+    color: #222;
+    
+    background: white;
+    position: absolute;
+}
+
+#zonaresultados li{
+    list-style: none;
+    height: 17px;
+    font-family: tahoma;
+    padding-top: 4px;
+    padding-left: 2px;
+    cursor: pointer;
+}
+
+#options_productos .newct {
+	width: 170px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #000;
+}
+
+#options_productos .newct a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options_productos .newtp {
+	width: 150px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+}
+
+#options_productos .newtp a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .newtp {
+	width: 150px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+}
+
+#options .newtp a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options_productos .newtp_ubicacion {
+	width: 160px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+}
+
+#options_productos .newtp_ubicacion a {
+	text-decoration: none;
+	color: #000;
+}
+
+.enlace_sugerencia_over{
+    background-color: #3b5998;
+    color: white;
+    border-radius: 3px;
+}
+  
+.zonaconborde{
+    margin-left: 179px;
+    width: 240px;
+    background-color: white;
+    text-align: left;
+    border: 1px solid #CCCCCC;
+    padding: 5px 5px 0px 3px;
+    margin-top: -8px;
+    padding-bottom: 5px;
+    position: absolute;
+}
+
+.autocompletar{
+	/*border-radius: 5px;*/
+	padding: 7px 2px;
+	width: 300px;
+	margin-bottom: 20px;
+}
+/*
+.submit_report_product_excel{
+	background: url('../img/excel.png') no-repeat;
+}
+*/
+.contenedor p{
+	position: relative;
+    /*margin: 5px 0px 5px 130px;*/
+    text-align: left;
+    color: #000;
+    /*background-color: steelblue;*/
+}
+
+.contenedor p a{
+	color: #fff;
+	text-decoration: none;				
+}
+
+ul, ol
+{
+	list-style: none;
+}
+
+.nav li a{
+	background-color: #015198;
+	color: #FFF;
+	text-decoration: none;
+	padding: 10px 15px;
+	display: block; 
+}
+
+.nav li a:hover{
+	background-color: #434343;
+}
+
+.nav > li{
+	float: left;
+}
+
+.nav li ul {
+	display: none;
+	position: absolute;
+	min-width: 140px;
+}
+
+.nav li:hover > ul{
+	display: block;
+}
+
+
+#reg_prod{
+	margin: auto;
+	background: #e8e8e8;
+	width: 800px;
+	height: 200px;
+	padding: 20px 45px;
+	border-style: solid;
+	border-color: #005197;
+	border-width: 3px;
+}
+
+#logo{
+	background-color: #000;/**/
+	width: 432px;
+	height: 72px;
+	float: left;
+	margin-top: 10px;
+	margin-left: 0px;/*Mover el logo*/
+	position: relative;
+}
+
+#userlogin{
+	width: 300px;
+	height: 60px;
+	float: right;
+	margin-top: 25px;
+	margin-right: 65px;
+	overflow: hidden; /*Esta línea oculta los datos de cambiar contraseña y cerrar sesión*/
+}
+
+#userlogin .image {
+	float: left;/*Envia lo oculto a la derecha de la imagen*/
+	margin-right: 5px;
+}
+
+#userlogin .username{
+	/* float: right; */
+	margin-top: 21px;
+	width: auto;
+	border: 1px solid #CCC;
+	overflow: hidden;
+	border-radius: 4px;
+	-moz-border-radius:4px; /* Firefox */ 
+	-webkit-border-radius:4px; /* Safari y Chrome */
+	color: #898989;
+	text-align: top;
+}
+
+#userlogin #optionsuser{
+	cursor: pointer;
+}
+
+#userlogin span{
+	padding-left: 10px;
+}
+
+#userlogin nav {
+	clear: both;
+	position: fixed;
+	border: 1px solid #CCC;
+	overflow: hidden;
+	border-radius: 4px;
+	-moz-border-radius:4px; /* Firefox */ 
+	-webkit-border-radius:4px; /* Safari y Chrome */ 
+	padding: 5px;
+	background-color: #EEEEEE;
+	display: none;
+}
+
+nav a {
+	text-decoration: none;
+	color: #000000;
+	clear: both;
+	float: left;
+	margin-bottom: 5px;
+}
+
+.tableChart {
+	float: left;
+}
+
+#menucomercial{
+	height: auto;
+	padding: 10px 0px;
+	float: left;
+	clear: both;
+	text-align: left;
+	margin-left: 65px;
+	margin-top: 0px;
+}
+
+#contenedor {
+	width: 1380px;
+	height: auto;
+	margin: auto;
+	overflow: hidden;
+	padding: 10px;
+}
+
+#contenedor #tituloCont {
+	font-family: 'Tahoma';
+	font-size: 20px;
+	padding-bottom: 5px;
+	margin-bottom: 20px;
+	border-bottom: 1px solid #000;
+	color: #041D35;
+}
+
+#contenedor #tituloCont_gerencia {
+	font-family: 'BebasNeueRegular,Ubuntu-C,MS-Gothic';
+	font-size: 24px;
+	padding-top: 10px;
+	margin-bottom: 10px;
+	border-top: 1px solid #000;
+	color: #041D35;
+}
+
+#contenedor #mensage{
+	font-family: 'BebasNeueRegular,Ubuntu-C,MS-Gothic';
+	font-size: 15px;
+	margin-bottom: 10px;
+}
+
+#contenedor #first_bottom{
+	font-family: 'BebasNeueRegular,Ubuntu-C,MS-Gothic';
+}
+
+#contenendor  #formFiltro {
+	font-family: 'Tahoma';
+	font-size: 14px;
+}
+
+#formFiltro .tituloFiltro {
+	font-family: 'Tahoma';
+	font-size: 15px;
+	color: #000;
+}
+
+#formFiltro #datoscompro {
+	font-family: 'verdana';
+	font-size: 11px;
+	/*color: #898989;*/
+	color: #000;
+	/*border:solid;*/
+	border-width:1px;
+	width:400px;
+	padding:10px 4px 8px 0px;
+	/*margin-top: 10px;*/
+	float: left;
+	height: 190px;
+}
+
+#formFiltro #reportemaquinapdf{
+	float: left;
+	width: 1365px;
+	margin-top: 0;
+	padding-left: 15px;
+	background: whitesmoke;
+	padding-top: 5px;
+}
+
+#formFiltro #reporteproductospdf{
+	float: left;
+	width: 1365px;
+	margin-top: 0;
+	background: whitesmoke;
+	padding-left: 15px;
+	padding-top: 5px;
+}
+
+#formFiltro #reporteproveedorpdf{
+	width: 1365px;
+	background: whitesmoke;
+	padding-left: 15px;
+	padding-top: 5px;
+	margin-top: 0px;
+}
+
+#formFiltro #reporteingresospdf{
+	width: 510px;
+	background: whitesmoke;
+	padding-left: 15px;
+	padding-top: 5px;
+	margin-top: 0px;
+	float: left;
+	height: 305px;
+}
+
+#formFiltro #reporteingresospdf_otros{
+	width: 510px;
+	background: whitesmoke;
+	padding-left: 15px;
+	padding-top: 5px;
+	margin-top: 0px;
+	float: left;
+	height: 325px;
+}
+
+#formFiltro #reportesalidapdf{
+	width: 510px;
+	background: whitesmoke;
+	padding-left: 15px;
+	padding-top: 5px;
+	margin-top: 0px;
+	float: left;
+	height: 440px;
+}
+
+#formFiltro #reporte_filtro_producto{
+	margin-top: 0px;
+	float: left;
+	padding-top: 5px;
+	padding-left: 45px;
+	background: whitesmoke;
+	width: 580px;
+	height: 140px;
+	border-bottom: 0px;
+	margin-bottom: 0px;
+}
+
+
+#formFiltro #reporte_filtro_producto_otros{
+	margin-top: 0px;
+	float: left;
+	padding-top: 5px;
+	padding-left: 45px;
+	background: whitesmoke;
+	width: 590px;
+	height: 325px;
+	border-bottom: 0px;
+	margin-bottom: 0px;
+	border-bottom: 1px solid #000;
+}
+
+#formFiltro #reporte_filtro_asistente{
+	margin-top: 0px;
+	float: left;
+	padding-top: 5px;
+	padding-left: 45px;
+	background: whitesmoke;
+	width: 580px;
+	height: 440px;
+	margin-bottom: 0px;
+}
+
+#formFiltro #reporte_filtro_agente{
+	margin-top: 0px;
+	float: left;
+	padding-top: 5px;
+	padding-left: 45px;
+	background: whitesmoke;
+	width: 580px;
+	height: 150px;
+}
+
+#formFiltro #reporte_kardex_producto{
+	margin-top: 0px;
+	float: left;
+	padding-top: 5px;
+	padding-left: 15px;
+	background: whitesmoke;
+	width: 1365px;
+	height: auto;
+}
+
+#formFiltro table tr td .submit_report_maq{
+	background-color: #005197;
+	padding-bottom:3px; 
+	padding-top:3px; 
+	margin-bottom: 4px; 
+	border-radius:6px; 
+	width: 150px;
+	margin-right: 46px;
+	float: right;
+}
+
+#formFiltro table tr td .submit_report_prov{
+	background-color: #005197;
+	padding-bottom:3px; 
+	padding-top:3px; 
+	margin-bottom: 4px; 
+	border-radius:6px; 
+	width: 150px;
+	margin-right: 82px;
+	float: right;
+}
+
+#formFiltro table tr td .submit_report_ing_ag{
+	background-color: #005197;
+	padding-bottom:3px; 
+	padding-top:3px; 
+	margin-bottom: 4px; 
+	border-radius:6px; 
+	width: 150px;
+	margin-right: 327px;
+	float: right;
+}
+
+#formFiltro table tr td .submit_report_sal_asis{
+	background-color: #005197;
+	padding-bottom:3px; 
+	padding-top:3px; 
+	margin-bottom: 4px; 
+	border-radius:6px; 
+	width: 150px;
+	margin-right: 9px;
+	float: right;
+}
+
+#formFiltro table tr td .submit_report_salida{
+	background-color: #005197;
+	padding-bottom:3px; 
+	padding-top:3px; 
+	margin-bottom: 4px; 
+	border-radius:6px; 
+	width: 150px;
+	margin-left: 78px;
+}
+
+#formFiltro table tr td .submit_report_ingr_prod{
+	background-color: #005197;
+	padding-bottom:3px; 
+	padding-top:3px; 
+	margin-bottom: 4px; 
+	border-radius:6px; 
+	width: 150px;
+	margin-right: 41px;
+	float: right;
+}
+
+#formFiltro #datoscompro_otros {
+	font-family: 'verdana';
+	font-size: 11px;
+	color: #898989;
+	/*border:solid;*/
+	border-width:1px;
+	width:360px;
+	padding:5px 4px 13px 0px;
+	/*margin-top: 10px;*/
+	float: left;
+	height: 169px;
+}
+
+#formFiltro #datosaduana {
+	/*border:solid;*/
+	border-width:1px;
+	padding:5px 4px 8px 0px;
+	height: 90px;
+}
+
+#formFiltro #agregarcarrito{
+	background: whitesmoke;
+	padding-left: 15px;
+	padding-top: 5px;
+	border-bottom-style: solid;
+	margin-bottom: 10px;
+	float: left;
+	margin-top: 0;
+}
+
+#formFiltro #agregarcarrito_otros{
+	background: whitesmoke;
+	border-bottom-style: solid;
+	margin-bottom: 10px;
+	float: left;
+	margin-top: 0; 
+	padding-top: 5px;
+	padding-left: 15px;
+	padding-bottom: 15px;
+	width: 756px;
+	padding-right: 230px;
+}
+
+#formFiltro #finalizar_registro_ingreso{
+	border-bottom-style: solid;
+	margin-bottom: 10px;
+	float: left;
+	margin-top: 0;
+	padding-top: 5px;
+	padding-left: 15px;
+	background: whitesmoke;
+}
+
+#formFiltro #reporte_maquina_admin{
+	border-bottom: 0px;
+	margin-bottom: 0px;
+}
+
+#formFiltro #reporte_usuario_admin{
+	border-bottom: 0px;
+	margin-bottom: 0px;
+	padding-bottom: 0px;
+}
+
+#formFiltro #reporte_producto_admin{
+	border-bottom: 0px;
+	margin-bottom: 0px;
+}
+
+#formFiltro #reporte_producto_admin{
+	overflow: visible;
+}
+
+#formFiltro #finalizar_salida_producto{
+	border-bottom-style: solid; 
+	margin-bottom: 10px; 
+	float: left; 
+	margin-top: 0;
+	background: whitesmoke;
+	padding-left: 15px;
+	padding-top: 5px;
+	width: 1365px;
+}
+
+#datosalida{
+	min-height: 160px;
+    width: 1365px;
+    background: whitesmoke;
+    padding-left: 15px;
+    padding-top: 5px;
+    border-bottom: 1px solid #000;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+#cantidad_devolucion{
+	display: none;
+}
+
+#formFiltro #finalizar_registro_otros{
+	border-bottom-style: solid;
+	margin-bottom: 10px;
+	float: left;
+	margin-top: 0;
+	padding-top: 5px;
+	padding-left: 15px;
+	background: whitesmoke;
+	padding-bottom: 15px;
+}
+
+#formFiltro #porcAgente{
+	border-bottom-style: none;
+	/*float:right;*/
+	width: auto; 
+	/*margin-right: 72px;*/
+	height: 203px; 
+	padding-bottom: 0;
+	margin-bottom: 0; 
+	margin-top: 0px;
+	background: whitesmoke;
+	padding-top: 5px;
+	/*padding-left: 15px;*/
+	border-bottom-style: solid;
+}
+
+#formFiltro #datosprod {
+	font-family: 'verdana';
+	font-size: 11px;
+	/*color: #898989;*/
+	color: #000;
+	/*border:solid;*/
+	border-width:1px;
+	width:927px;
+	padding:10px 4px 8px 0px;
+	/*margin-top: 10px;*/
+	float: right;
+	/*margin-right: 424px;*/
+	height: 190px;
+}
+
+#formFiltro #datosprod_otros {
+	font-family: 'verdana';
+	font-size: 11px;
+	color: #898989;
+	border-width:1px;
+	width:545px;
+	padding:10px 4px 8px 0px;
+	float: right;
+	height: 169px;
+}
+
+#formFiltro input[type=text] {
+	margin-bottom: 5px;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	width: 180px;
+	border: 1px solid #CCCCCC;
+	float: left;
+}
+
+#formFiltro  input[type='file'] {
+	margin-bottom: 5px;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	float: left;
+}
+
+#formFiltro input[type=password] {
+	margin-bottom: 5px;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	width: 180px;
+	border: 1px solid #CCCCCC;
+	float: left;
+}
+
+#formFiltro textarea {
+	margin-bottom: 5px;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	border: 1px solid #CCCCCC;
+	margin-left: 0px;
+}
+
+#formFiltro select {
+	margin-bottom: 5px;
+	margin-left: 5px;/*Esta línea no estaba en el Diseño*/
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	width: auto;
+	border: 1px solid #CCCCCC;
+	margin-right : 5px;
+	/*margin: 0px; Josep: Comento esta línea*/
+}
+
+#formFiltro input[type=submit],input[type=button],input[type=reset], button {
+	width: auto;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 4px 15px;
+	background-color: #F5A700;
+	border: 0;
+	color: white;
+	border-radius: 6px;
+}
+
+#formFiltro form {
+	padding-bottom: 10px;
+	margin-bottom: 20px;
+	margin-top: 10px;
+	border-bottom: 1px solid #000;
+	overflow: hidden;
+	font-size: 11px;
+	color: #000;
+}
+
+#formFiltro #detailSegui {
+	padding-bottom: 10px;
+	margin-bottom: 20px;
+	margin-top: 10px;
+	border-bottom: 1px solid #000;
+	overflow: hidden;
+}
+
+#formFiltro #options {
+	overflow: hidden;
+	margin-bottom: 20px;
+}
+
+#formFiltro #options_productos {
+	overflow: hidden;
+	margin-bottom: 20px;
+	float: left;
+	width: 1380px;
+}
+
+#options_productos .newprospect {
+	width: 150px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #000;
+}
+
+#options_productos .newprospect a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#formFiltro #options_tipo_cambio {
+	overflow: hidden;
+	margin-bottom: 20px;
+	float: left;
+	width: 1380px;
+}
+
+#options_tipo_cambio .newprospect {
+	width: 180px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #000;
+}
+
+#options_tipo_cambio .newprospect a {
+	text-decoration: none;
+	color: #898989;
+}
+
+.cambiarcontrasena{
+	cursor: pointer;
+}
+
+#options_productos .downpdf {
+	width: 110px;
+	height: 20px;
+	background: url('../img/down.png') no-repeat;
+	padding: 4px 0px 0px 28px;
+	overflow: hidden;
+	float: right;
+	cursor: pointer;
+	color: #898989;
+	/*margin-right: 200px;*/
+	position: static;
+}
+
+#options_productos .gestionreporte {
+	width: 200px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+}
+
+#options_productos .gestionreporte a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#options .newprospect {
+	width: 150px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	/*color: #898989;*/
+	color: #000;
+}
+
+#options .newprospect a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .gestionreporte {
+	width: 200px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+}
+
+#options .gestionreporte a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#options .gestionreportemaquina {
+	width: 200px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-left: 7px;
+}
+
+#options .gestionreportemaquina a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#options .gestionreporteproveedor {
+	width: 200px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-left: 7px;
+}
+
+#options .gestionreporteproveedor a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#options .newotros {
+	width: 40px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-left: 10px;
+}
+
+#options .newotros a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .facturas_opcion_masiva {
+	width: 260px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-left: 25px;
+}
+
+#options .facturas_opcion_masiva a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .reportIn {
+	width: 180px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-left: 20px;
+}
+
+#options .reportIn a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#options .reportOut {
+	width: 180px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-left: 20px;
+}
+
+#options .reportOut a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#options .newconsult {
+	width: 200px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-left: 10px;
+}
+
+#options .newconsult a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .newconsultotros {
+	width: 220px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-left: 10px;
+}
+
+#options .newconsultotros a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#options .newreporteotros {
+	width: 200px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-left: 10px;
+}
+
+#options .newreporteotros a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#options .volver{
+	float: left;
+	margin-top: 3px;
+	margin-left: 578px;
+}
+
+#options .newagente {
+	width: 240px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+}
+
+#options .newagente a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .newmoneda {
+	width: 160px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-right: 15px;
+}
+
+#options .newmoneda a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#options .newuserplanta {
+	width: 220px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-right: 15px;
+}
+
+#options .newuserplanta a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#options .newarea {
+	width: 210px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-right: 15px;
+}
+
+#options .newarea a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .newsalida {
+	width: 185px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	/*margin-right: 15px;*/
+}
+
+#options .newsalida a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .newtipocompro {
+	width: 200px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-right: 5px;
+}
+
+#options .newtipocompro a {
+	text-decoration: none;
+	color: #898989;
+}
+
+#wizard {
+	width: 980px;
+	font-size: 11px;
+}
+
+.tituloTable td {
+	background-color: #005197;
+	padding: 3px;
+	text-align: center;
+	border: 1px solid #FFF;
+	color: white;
+}
+
+.contentTable td{
+	text-align: center;
+	padding: 2px;
+	color: #898989;
+}
+
+#modalerror {
+	font-size: 12px;
+	font-family: 'Verdana';
+	color: #222222;
+}
+
+#options .newn_parte_maq {
+	width: 150px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #070707;
+	/*margin-left: 10px;*/
+}
+
+#options .newn_parte_maq a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .newmarcmaq {
+	width: 130px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	/*color: #898989;*/
+	color: #000;
+	margin-left: 10px;
+}
+
+#options .newmarcmaq a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .newmodmaq {
+	width: 130px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	/*margin-left: 15px;*/
+}
+
+#options .newmodmaq a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .downpdf {
+	width: 110px;
+	height: 20px;
+	background: url('../img/down.png') no-repeat;
+	padding: 4px 0px 0px 28px;
+	overflow: hidden;
+	float: right;
+	cursor: pointer;
+	color: #898989;
+	margin-right: 200px;
+	position: static;
+}
+
+#options .downpdf_proveedor {
+	width: 110px;
+	height: 20px;
+	background: url('../img/down.png') no-repeat;
+	padding: 4px 0px 0px 28px;
+	overflow: hidden;
+	float: right;
+	cursor: pointer;
+	color: #898989;
+	margin-right: 185px;
+	position: static;
+}
+
+#options .downpdfMaquina {
+	width: 110px;
+	height: 20px;
+	background: url('../img/down.png') no-repeat;
+	padding: 4px 0px 0px 28px;
+	overflow: hidden;
+	float: right;
+	cursor: pointer;
+	color: #898989;
+	margin-right: 200px;
+	position: static;
+	margin-right: 115px;
+}
+
+.ui-dialog-titlebar-close{
+   display: none;
+}
+
+#newtipocambio #tipo_cambio{
+	text-decoration: underline;
+	color:blue;
+	/*background-color:gold;*/
+	padding: 4px 8px;
+	border-radius:8px;
+}
+
+#tabla_principal #recall_password{
+	cursor: pointer;
+}
+
+
+#container_tabs {
+    margin: 0 auto;
+    width: 100%;  /* Ancho del contenedor */
+}
+
+#container_tabs input {
+	height: 2.5em;
+	visibility: hidden;
+}
+
+#container_tabs label {
+	background: #CACACA;  /* Fondo de las pestañas */
+	border-radius: .25em .25em 0 0;
+	color: #888;  /* Color del texto de las pestañas */
+	cursor: pointer;
+	display: block;
+	float: left;
+	font-size: 1em;  /* Tamaño del texto de las pestañas */
+	height: 2.5em;
+	line-height: 2.5em;
+	margin-right: .25em;
+	padding: 0 1.5em;
+	text-align: center;
+}
+
+#container_tabs input:hover + label {
+	background: #ddd;  /* Fondo de las pestañas al pasar el cursor por encima */
+	color: #666;  /* Color del texto de las pestañas al pasar el cursor por encima */
+}
+
+#container_tabs input:checked + label {
+	background: #f1f1f1;  /* Fondo de las pestañas al presionar */
+	color: #444; /* Color de las pestañas al presionar */
+	position: relative;
+	z-index: 6;
+	font-weight: bold;
+	/*
+	-webkit-transition: .1s;
+	-moz-transition: .1s;
+	-o-transition: .1s;
+	-ms-transition: .1s;
+	*/
+}
+
+#content {
+	background: whitesmoke;  /* Fondo del contenido */
+	border-radius: 0 .25em .25em .25em;
+	min-height: 17em;  /* Alto del contenido */
+	position: static;
+	width: 100%;
+	z-index: 5;
+}
+
+#content div {
+	opacity: 0;
+	padding: 1.5em;
+	position: absolute;
+	/* z-index: -100; */
+	/*
+	transition: all linear 0.1s;
+	*/
+}
+
+#content-1 p {
+	clear: both;
+	margin-bottom: 1em;
+}
+#content-1 p.left img {
+	float: left;
+	margin-right: 1em;
+}
+#content-1 p.last {
+	margin-bottom: 0;
+}
+
+#content-2 p {
+	float: left;
+	width: 48.5%;
+}
+#content-2 p.column-right {
+	margin-left: 3%;
+}
+#content-2 p img {
+	display: block;
+	margin: 0 auto 1em auto;
+}
+
+#container_tabs input#tab-1:checked ~ #content #content-1,
+#container_tabs input#tab-2:checked ~ #content #content-2,
+#container_tabs input#tab-3:checked ~ #content #content-3,
+#container_tabs input#tab-4:checked ~ #content #content-4 {
+    opacity: 1;
+    z-index: 100;
+}
+
+#icon_notification{
+	color: #F5F3E5;
+	width: 35px;
+	text-align: center;
+	padding-bottom: 10px;
+	background-color: #922C22;
+	padding-top: 10px;
+	border-radius: 20px;
+	cursor: pointer;
+}
+
+#view_invoice{
+	width: 620px;
+	height: auto;
+	display: block;
+	position: absolute;
+	background-color: #E5E5E5;
+	margin-top: 75px;
+	margin-left: 770px;
+}
+
+.title-formulate-selected{
+	font-size: 13px;
+	font-family: 'Tahoma';
+	height: 35px;
+	color: #000;
+	text-align: center;
+}
+
+.tituloTable-fact-import td {
+	background-color: dimgrey;
+	padding: 3px;
+	text-align: center;
+	border: 1px solid #000;
+	color: white;
+	height: 15px;
+}
+
+.contentTable-fact-import td{
+	text-align: center;
+	padding: 2px;
+	color: #000;
+	border: 1px solid #000;
+	height: 20px;
+}
+
+
+
+/*Menu CCS para menu comercial*/
+
+#cssmenu{
+	border:none;
+	height: 30px;
+	list-style: none;
+	margin:0;
+	padding: 0;
+}
+
+#css ul{
+	background: #333333;
+	height: 30px;
+	list-style: none;
+	margin:0;
+	padding: 0;
+}
+
+#css li{
+	float: left;
+	padding: 0px;
+}
+
+#cssmenu li a {
+  background: #333333 url('images/seperator.png') bottom right no-repeat;
+  display: block;
+  font-weight: normal;
+  line-height: 30px;
+  margin: 0px;
+  padding: 0px 15px;
+  text-align: center;
+  text-decoration: none;
+}
+#cssmenu > ul > li > a {
+  color: #ffffff;
+}
+#cssmenu ul ul a {
+  color: #cccccc;
+}
+#cssmenu li > a:hover,
+#cssmenu ul li:hover > a {
+  background: #333333 url('images/hover.png') bottom center no-repeat;
+  color: #ffffff;
+  text-decoration: none;
+}
+#cssmenu li ul {
+  background: #333333;
+  display: none;
+  height: auto;
+  padding: 0px;
+  margin: 0px;
+  border: 0px;
+  position: fixed;
+  width: auto;
+  z-index: 200;
+}
+#cssmenu li:hover ul {
+  display: block;
+}
+#cssmenu li li {
+  background: url('images/sub_sep.png') bottom left no-repeat;
+  display: block;
+  float: none;
+  margin: 0px;
+  padding: 0px;
+  width: auto;
+}
+#cssmenu li:hover li a {
+  background: none;
+}
+#cssmenu li ul a {
+  display: block;
+  height: 30px;
+  margin: 0px;
+  padding: 0px 10px 0px 10px;
+  text-align: left;
+}
+#cssmenu li ul a:hover,
+#cssmenu li ul li:hover > a {
+  background: #999999 url('images/hover_sub.png') center left no-repeat;
+  border: 0px;
+  color: #ffffff;
+  text-decoration: none;
+}
+#cssmenu p {
+  clear: left;
+}
+
+
+
+
+/*
+ * Clearfix: contain floats
+ *
+ * For modern browsers
+ * 1. The space content is one way to avoid an Opera bug when the
+ *    `contenteditable` attribute is included anywhere else in the document.
+ *    Otherwise it causes space to appear at the top and bottom of elements
+ *    that receive the `clearfix` class.
+ * 2. The use of `table` rather than `block` is only necessary if using
+ *    `:before` to contain the top-margins of child elements.
+ */
+
+.clearfix:before,
+.clearfix:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+/*
+ * For IE 6/7 only
+ * Include this rule to trigger hasLayout and contain floats.
+ */
+
+.clearfix {
+    *zoom: 1;
+}
+
+.cls{clear:both;}
+.izq{float:left;}
+.der{float:right;}
+
+.modal{
+    height: 320px;
+    padding: 10px;
+    width: 280px;
+}
+.modal label{
+	width:100px;
+	display: block;
+    float: left;
+}
+.modal label{
+	width:100px;
+	display: block;
+    float: left;
+	margin-top:8px;
+	
+}
+.modal input, .modal select{
+	width:150px;
+	margin-top:5px;
+	margin-bottom:5px;
+	}
+	
+.modal .hide_elem{
+	display:none;
+/*	visibility:hidden;*/
+}
+/* ==========================================================================
+   EXAMPLE Media Queries for Responsive Design.
+   These examples override the primary ('mobile first') styles.
+   Modify as content requires.
+   ========================================================================== */
+
+@media only screen and (min-width: 35em) {
+    /* Style adjustments for viewports that meet the condition */
+}
+
+@media print,
+       (-o-min-device-pixel-ratio: 5/4),
+       (-webkit-min-device-pixel-ratio: 1.25),
+       (min-resolution: 120dpi) {
+    /* Style adjustments for high resolution devices */
+}
+/* ==========================================================================
+   Print styles.
+   Inlined to avoid required HTTP connection: h5bp.com/r
+   ========================================================================== */
+
+@media print {
+    * {
+        background: transparent !important;
+        color: #000 !important; /* Black prints faster: h5bp.com/s */
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+
+    abbr[title]:after {
+        content: " (" attr(title) ")";
+    }
+
+    /*
+     * Don't show links for images, or javascript/internal links
+     */
+
+    .ir a:after,
+    a[href^="javascript:"]:after,
+    a[href^="#"]:after {
+        content: "";
+    }
+
+    pre,
+    blockquote {
+        border: 1px solid #999;
+        page-break-inside: avoid;
+    }
+
+    thead {
+        display: table-header-group; /* h5bp.com/t */
+    }
+
+    tr,
+    img {
+        page-break-inside: avoid;
+    }
+
+    img {
+        max-width: 100% !important;
+    }
+
+    @page {
+        margin: 0.5cm;
+    }
+
+    p,
+    h2,
+    h3 {
+        orphans: 3;
+        widows: 3;
+    }
+
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+}

@@ -1,0 +1,774 @@
+body {
+	font-family: 'Verdana';
+	font-size: 11px;
+}
+
+header {
+	width: 1000px;
+	height: auto;
+	margin: auto;
+	overflow: hidden;
+}
+
+progress {
+	width: 220px;
+}
+
+#logo {
+	width: 200px;
+	height: 45px;
+	background-color: #000;
+	float: left;
+	margin-bottom: 5px;
+}
+
+#userlogin {
+	width: auto;
+	height: 45px;
+	float: right;
+	margin-bottom: 5px;
+	overflow: hidden;
+}
+
+#userlogin .image {
+	float: left;
+	margin-right: 5px;
+}
+
+#userlogin .username {
+	float: right;
+	margin-top: 12.5px;
+	width: auto;
+	border: 1px solid #CCC;
+	overflow: hidden;
+	border-radius: 4px;
+	-moz-border-radius:4px; /* Firefox */ 
+	-webkit-border-radius:4px; /* Safari y Chrome */ 
+}
+
+#modalerror {
+	font-size: 12px;
+	font-family: 'Tahoma';
+	color: red;
+}
+
+#userlogin #optionsuser {
+	cursor:	pointer;
+}
+
+#userlogin span {
+	padding-left: 5px;
+}
+
+#userlogin nav {
+	clear: both;
+	position: fixed;
+	border: 1px solid #CCC;
+	overflow: hidden;
+	border-radius: 4px;
+	-moz-border-radius:4px; /* Firefox */ 
+	-webkit-border-radius:4px; /* Safari y Chrome */ 
+	padding: 5px;
+	background-color: #EEEEEE;
+	display: none;
+}
+
+nav a {
+	text-decoration: none;
+	color: #000000;
+	clear: both;
+	float: left;
+	margin-bottom: 5px;
+}
+
+#menuLeft {
+	width: auto;
+	height: auto;
+	padding: 10px;
+	float: left;
+	overflow: hidden;
+}
+
+#menuLeft a {
+	text-decoration: none;
+	color: #000000;
+}
+
+#avances {
+	width: 430px;
+	height: auto;
+	padding: 10px;
+	float: right;
+	clear: both;
+	text-align: left;
+	border: 1px solid #000000;
+	background-color: #F3F3F3;
+}
+
+#avances span {
+	font-size: 12px;
+}
+
+#menucomercial {
+	height: auto;
+	padding: 10px 0px;
+	float: left;
+	clear: both;
+	text-align: left;
+}
+
+#contenedor {
+	width: 980px;
+	height: auto;
+	margin: auto;
+	overflow: hidden;
+	padding: 10px;
+}
+
+#contenedor #tituloCont {
+	font-family: 'Tahoma';
+	font-size: 20px;
+	padding-bottom: 10px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #000;
+}
+
+#tituloCont .menuListaPros {
+	float: right;
+	background: url('../img/lista.png') no-repeat;
+	padding: 3px 0px 0px 20px;
+	font-size: 12px;
+}
+
+#tituloCont .menuListaPros a {
+	text-decoration: none;
+	color: #000;
+}
+
+#contenendor  #formFiltro {
+	font-family: 'Tahoma';
+	font-size: 14px;
+}
+
+#formFiltro .tituloFiltro {
+	font-family: 'Tahoma';
+	font-size: 15px;
+}
+
+#formFiltro input[type=text] {
+	margin-bottom: 5px;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	width: 180px;
+	border: 1px solid #CCCCCC;
+	float: left;
+}
+
+#formFiltro  input[type='file'] {
+	margin-bottom: 5px;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	float: left;
+}
+
+#formFiltro input[type=password] {
+	margin-bottom: 5px;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	width: 180px;
+	border: 1px solid #CCCCCC;
+	float: left;
+}
+
+#formFiltro textarea {
+	margin-bottom: 5px;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	border: 1px solid #CCCCCC;
+	margin-left: 0px;
+}
+
+#formFiltro select {
+	margin-bottom: 5px;
+	margin-left: 0px;/*Esta línea no estaba en el Diseño*/
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	width: auto;
+	border: 1px solid #CCCCCC;
+	/*margin: 0px; Josep: Comento esta línea*/
+}
+
+#formFiltro input[type=submit], button {
+	width: auto;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px 15px;
+}
+
+#formFiltro form {
+	padding-bottom: 10px;
+	margin-bottom: 20px;
+	margin-top: 10px;
+	border-bottom: 1px solid #000;
+	overflow: hidden;
+	font-size: 11px;
+}
+
+#formFiltro #detailSegui {
+	padding-bottom: 10px;
+	margin-bottom: 20px;
+	margin-top: 10px;
+	border-bottom: 1px solid #000;
+	overflow: hidden;
+}
+
+#detailSegui span {
+	font-size: 14px;
+}
+
+#detailSegui table {
+	margin-top: 10px;
+	font-size: 12px;
+	font-family: tahoma;
+}
+
+#formFiltro #options {
+	overflow: hidden;
+	margin-bottom: 10px;
+}
+
+#options .newprospect {
+	width: 100px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+}
+
+#options .newprospect a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .newsegui a {
+	text-decoration: none;
+	color: #000;
+}
+#options .newsegui {
+	width: 120px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+}
+
+#options .downexcel {
+	width: 100px;
+	height: 20px;
+	background: url('../img/down.png') no-repeat;
+	padding: 4px 0px 0px 28px;
+	overflow: hidden;
+	float: right;
+	cursor: pointer;
+}
+
+#options .periodo {
+	width: 900px;
+	height: 20px;
+	overflow: hidden;
+	float: right;
+	clear: both;
+	text-align: right;
+}
+
+.tituloTable td {
+	background-color: #CCCCCC;
+	padding: 3px;
+	text-align: center;
+	border: 1px solid #999;
+}
+
+.contentTable td{
+	text-align: center;
+	padding: 2px;
+}
+
+#wizard {
+	width: 980px;
+	font-size: 11px;
+}
+
+#tabsEditar {
+	font-size: 11px;
+}
+
+#boxMasterLeft {
+	width: 479px;
+	height: auto;
+	float: left;
+	padding-right: 10px;
+}
+
+#boxMasterLeft .titleRanking {
+	font-size: 12px;
+	width: auto;
+	margin-bottom: 10px;
+	float: left;
+}
+
+#boxMasterRight {
+	width: 474px;
+	height: auto;
+	float: left;
+	padding-left: 10px;
+}
+
+#boxMasterRight .titleRanking {
+	font-size: 12px;
+	width: auto;
+	margin-bottom: 10px;
+	float: left;
+}
+
+#boxLeft {
+	width: 479px;
+	height: auto;
+	float: left;
+	padding-right: 10px;
+	border-right: 1px solid #000;
+}
+
+#boxRight {
+	width: 474px;
+	height: auto;
+	float: right;
+	padding-left: 10px;
+}
+
+#tituloBox {
+	font-family: 'Tahoma';
+	font-size: 18px;
+	padding-bottom: 10px;
+	margin-bottom: 10px;
+}
+
+#avanceBox {
+	width: 440px;
+	height: auto;
+	padding: 10px;
+	float: left;
+	clear: both;
+	text-align: left;
+	border: 1px solid #000000;
+	background-color: #F3F3F3;
+	margin-bottom: 10px;
+}
+
+#boxLeft .titleRanking {
+	font-size: 12px;
+	width: 350px;
+	margin-bottom: 10px;
+	float: left;
+}
+
+#boxRight .titleRanking {
+	font-size: 12px;
+	width: 350px;
+	margin-bottom: 10px;
+	float: left;
+}
+
+.tableChart {
+	float: left;
+}
+
+#piechart {
+	width: 210px;
+	height: 165px;
+	float:right;
+	background-color:green;
+	position: relative;
+}
+
+#piechart2 {
+	width: 210px;
+	height: 165px;
+	float:right;
+	background-color:green;
+	position: relative;
+}
+
+#options .tituloOptions {
+	font-size: 17px;
+	width: auto;
+	float: left;
+}
+
+/* ESTILOS EXTRA */
+/*
+ * Remove text-shadow in selection highlight: h5bp.com/i
+ * These selection rule sets have to be separate.
+ * Customize the background color to match your design.
+ */
+
+::-moz-selection {
+    background: #b3d4fc;
+    text-shadow: none;
+}
+
+::selection {
+    background: #b3d4fc;
+    text-shadow: none;
+}
+
+/*
+ * A better looking default horizontal rule
+ */
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ccc;
+    margin: 1em 0;
+    padding: 0;
+}
+
+/*
+ * Remove the gap between images and the bottom of their containers: h5bp.com/i/440
+ */
+
+img {
+    vertical-align: middle;
+}
+
+/*
+ * Remove default fieldset styles.
+ */
+
+fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/*
+ * Allow only vertical resizing of textareas.
+ */
+
+textarea {
+    resize: vertical;
+}
+
+/* ==========================================================================
+   Chrome Frame prompt
+   ========================================================================== */
+
+.chromeframe {
+    margin: 0.2em 0;
+    background: #ccc;
+    color: #000;
+    padding: 0.2em 0;
+}
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==========================================================================
+   Helper classes
+   ========================================================================== */
+
+/*
+ * Image replacement
+ */
+
+.ir {
+    background-color: transparent;
+    border: 0;
+    overflow: hidden;
+    /* IE 6/7 fallback */
+    *text-indent: -9999px;
+}
+
+.ir:before {
+    content: "";
+    display: block;
+    width: 0;
+    height: 150%;
+}
+
+/*
+ * Hide from both screenreaders and browsers: h5bp.com/u
+ */
+
+.hidden {
+    display: none !important;
+    visibility: hidden;
+}
+
+/*
+ * Hide only visually, but have it available for screenreaders: h5bp.com/v
+ */
+
+.visuallyhidden {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
+/*
+ * Extends the .visuallyhidden class to allow the element to be focusable
+ * when navigated to via the keyboard: h5bp.com/p
+ */
+
+.visuallyhidden.focusable:active,
+.visuallyhidden.focusable:focus {
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    width: auto;
+}
+
+/*
+ * Hide visually and from screenreaders, but maintain layout
+ */
+
+.invisible {
+    visibility: hidden;
+}
+
+/*
+ * Clearfix: contain floats
+ *
+ * For modern browsers
+ * 1. The space content is one way to avoid an Opera bug when the
+ *    `contenteditable` attribute is included anywhere else in the document.
+ *    Otherwise it causes space to appear at the top and bottom of elements
+ *    that receive the `clearfix` class.
+ * 2. The use of `table` rather than `block` is only necessary if using
+ *    `:before` to contain the top-margins of child elements.
+ */
+
+.clearfix:before,
+.clearfix:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+/*
+ * For IE 6/7 only
+ * Include this rule to trigger hasLayout and contain floats.
+ */
+
+.clearfix {
+    *zoom: 1;
+}
+
+/* ==========================================================================
+   EXAMPLE Media Queries for Responsive Design.
+   These examples override the primary ('mobile first') styles.
+   Modify as content requires.
+   ========================================================================== */
+
+@media only screen and (min-width: 35em) {
+    /* Style adjustments for viewports that meet the condition */
+}
+
+@media print,
+       (-o-min-device-pixel-ratio: 5/4),
+       (-webkit-min-device-pixel-ratio: 1.25),
+       (min-resolution: 120dpi) {
+    /* Style adjustments for high resolution devices */
+}
+
+/* ==========================================================================
+   Print styles.
+   Inlined to avoid required HTTP connection: h5bp.com/r
+   ========================================================================== */
+
+@media print {
+    * {
+        background: transparent !important;
+        color: #000 !important; /* Black prints faster: h5bp.com/s */
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+
+    abbr[title]:after {
+        content: " (" attr(title) ")";
+    }
+
+    /*
+     * Don't show links for images, or javascript/internal links
+     */
+
+    .ir a:after,
+    a[href^="javascript:"]:after,
+    a[href^="#"]:after {
+        content: "";
+    }
+
+    pre,
+    blockquote {
+        border: 1px solid #999;
+        page-break-inside: avoid;
+    }
+
+    thead {
+        display: table-header-group; /* h5bp.com/t */
+    }
+
+    tr,
+    img {
+        page-break-inside: avoid;
+    }
+
+    img {
+        max-width: 100% !important;
+    }
+
+    @page {
+        margin: 0.5cm;
+    }
+
+    p,
+    h2,
+    h3 {
+        orphans: 3;
+        widows: 3;
+    }
+
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+}
+
+/* MENU CSS PARA MENU COMERCIAL */
+#cssmenu {
+  border: none;
+  border: 0px;
+  margin: 0px;
+  padding: 0px;
+  width: auto;
+}
+#cssmenu ul {
+  background: #333333;
+  height: 30px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#cssmenu li {
+  float: left;
+  padding: 0px;
+}
+#cssmenu li a {
+  background: #333333 url('images/seperator.png') bottom right no-repeat;
+  display: block;
+  font-weight: normal;
+  line-height: 30px;
+  margin: 0px;
+  padding: 0px 15px;
+  text-align: center;
+  text-decoration: none;
+}
+#cssmenu > ul > li > a {
+  color: #ffffff;
+}
+#cssmenu ul ul a {
+  color: #cccccc;
+}
+#cssmenu li > a:hover,
+#cssmenu ul li:hover > a {
+  background: #333333 url('images/hover.png') bottom center no-repeat;
+  color: #ffffff;
+  text-decoration: none;
+}
+#cssmenu li ul {
+  background: #333333;
+  display: none;
+  height: auto;
+  padding: 0px;
+  margin: 0px;
+  border: 0px;
+  position: absolute;
+  width: auto;
+  z-index: 200;
+}
+#cssmenu li:hover ul {
+  display: block;
+}
+#cssmenu li li {
+  background: url('images/sub_sep.png') bottom left no-repeat;
+  display: block;
+  float: none;
+  margin: 0px;
+  padding: 0px;
+  width: auto;
+}
+#cssmenu li:hover li a {
+  background: none;
+}
+#cssmenu li ul a {
+  display: block;
+  height: 30px;
+  margin: 0px;
+  padding: 0px 10px 0px 10px;
+  text-align: left;
+}
+#cssmenu li ul a:hover,
+#cssmenu li ul li:hover > a {
+  background: #999999 url('images/hover_sub.png') center left no-repeat;
+  border: 0px;
+  color: #ffffff;
+  text-decoration: none;
+}
+#cssmenu p {
+  clear: left;
+}

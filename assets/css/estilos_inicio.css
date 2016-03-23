@@ -1,0 +1,149 @@
+#tabla_principal {
+	border: 10px solid #898989;
+}
+
+.tabla_titulo {
+	background-color: #005197;
+}
+
+#contenedor #tituloCont {
+	font-family: 'Tahoma';
+	font-size: 20px;
+	padding-bottom: 13px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #000;
+	color: #041D35;
+}
+
+#formFiltro input[type=text] {
+	margin-bottom: 5px;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	width: 180px;
+	border: 1px solid #CCCCCC;
+	float: left;
+}
+
+#formFiltro input[type=password] {
+	margin-bottom: 5px;
+	font-family: 'Tahoma';
+	font-size: 11px;
+	padding: 3px;
+	width: 180px;
+	border: 1px solid #CCCCCC;
+	float: left;
+}
+
+#formFiltro form{
+	margin-top: 10px;
+	border-bottom: 1px solid #000;
+	overflow: hidden;
+	font-size: 11px;
+	color: #898989;
+}
+
+.cont_pestana {
+	background-color: #005197;
+	float: right;
+	height: 50px;
+	position: relative;
+	width: 15px;
+}
+
+#contenendor  #formFiltro {
+	font-family: 'Tahoma';
+	font-size: 14px;
+}
+
+.bg_pestana {
+	width: 39px;
+	height: 65px;
+	background: url('../img/pestana.png') no-repeat;
+	position: absolute;
+	right: 0px;
+}
+
+.titulo {
+	font-size: 20px;
+	font-weight: bold;
+	line-height: 26px;
+	color: #F5A700;
+}
+
+#logo_login{
+	background-color: #000;/**/
+	height: 72px;
+	float: right;
+	margin-top: 165px;
+	margin-left: 594px;/*Mover el logo*/
+	position: absolute;
+}
+
+.titulo_blanco {
+	font-size: 20px;
+	font-weight: bold;
+	line-height: 26px;
+	color: #FEFAFB;
+}
+
+.boton, .boton_small, .boton_agregar, .boton_disabled {
+	background: none;
+	border: none;
+	background-image: url("../img/bg_boton_med.png");
+	background-position: top left;
+	font-size: 16px;
+	color: #FFFFFF;
+	height: 35px;
+	width: 140px;
+	cursor: pointer;
+}
+
+td, a, div, input, textarea, select, ul, li {	
+	font-family: Verdana, Geneva, sans-serif;
+}
+
+td, div, a {
+	font-size: 12px;
+	line-height: 16px;
+	color: #000000;
+}
+
+.input, .input_readonly, .select, .textarea {
+	font-size: 14px;
+	color: #646759;
+	line-height: 22px;
+	height: 22px;
+	text-align: left;
+	outline: none;
+	background-image: url(../img/fondo_input.jpg);
+	background-repeat: repeat-x;
+	border: #005197 1px solid;
+	padding: 5px 3px 3px 5px;
+}
+
+.input, .input_readonly, .select, .textarea {
+	width: 240px;
+}
+
+.input:focus, .select:focus, .textarea:focus {
+	color: #36392B;
+	border: #052248 1px solid;
+	box-shadow: 0 0 1px #052248 inset, 0 0 5px #0E3463;
+	-moz-box-shadow: 0 0 1px #052248 inset, 0 0 5px #0E3463;
+	-webkit-box-shadow: 0 0 1px #052248 inset, 0 0 5px #0E3463;
+}
+
+.input_readonly {
+	background: none;
+	background-color: #D8DDE0;
+}
+
+.boton:hover, .boton_small:hover, .boton_agregar:hover {
+	background-position: top right;
+}
+
+#tabla_principal #recall_password{
+	cursor: pointer;
+	padding-top: 10px;
+}

@@ -1,0 +1,14 @@
+@font-face{
+font-family:'BebasNeueRegular';
+src:url('../fuentes/bebas-neue-regular/BebasNeue.otf')
+}
+
+@font-face{
+font-family:'Ubuntu-C';
+src:url('../fuentes/bebas-neue-regular/Ubuntu-C.ttf')
+}
+
+@font-face{
+font-family:'MS-Gothic';
+src:url('../fuentes/MS Gothic/MS-Gothic.ttf')
+}
