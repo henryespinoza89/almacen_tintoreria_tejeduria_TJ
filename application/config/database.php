@@ -48,10 +48,10 @@
 $active_group = 'default';
 $active_record = TRUE;
 
-$db['default']['hostname'] = 'localhost';
+$db['default']['hostname'] = '192.168.1.5';
 $db['default']['username'] = 'postgres';
 $db['default']['password'] = '120492';
-$db['default']['database'] = 'almacen_rep_sum_tintoreria';
+$db['default']['database'] = 'almacen_tintoreria_tejeduria_2';
 $db['default']['dbdriver'] = 'postgre';
 $db['default']['port'] = '5432';
 $db['default']['dbprefix'] = '';
