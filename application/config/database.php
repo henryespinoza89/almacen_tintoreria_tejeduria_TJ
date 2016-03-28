@@ -48,7 +48,7 @@
 $active_group = 'default';
 $active_record = TRUE;
 
-$db['default']['hostname'] = '192.168.1.5';
+$db['default']['hostname'] = 'localhost';
 $db['default']['username'] = 'postgres';
 $db['default']['password'] = '120492';
 $db['default']['database'] = 'almacen_tintoreria_tejeduria_2';

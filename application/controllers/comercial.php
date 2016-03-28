@@ -4484,6 +4484,8 @@ class Comercial extends CI_Controller {
                             }else if($descripcion == 'ENTRADA' || $descripcion == 'ORDEN INGRESO'){
                                 //$new_precio_unitario_especial = (($stock_actual*$precio_unitario_actual_promedio)+($item['qty']*$precio_unitario_soles))/($stock_actual+$item['qty']);
                                 $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
+                            }else if($descripcion == 'IMPORTACION'){
+                                $precio_unitario_anterior_especial = 0;
                             }
                             $new_stock = $stock_actual - $cantidad;
 
@@ -5182,14 +5184,14 @@ class Comercial extends CI_Controller {
                                 $descripcion = $row->descripcion;
                                 $precio_unitario_actual = $row->precio_unitario_actual;
                             }
-                            /* hacer el calculo del precio unitario y stock en funcion del movimiento */
-                            /* Nuevo precio unitario promedio */
+                            // hacer el calculo del precio unitario y stock en funcion del movimiento
+                            // nuevo precio unitario promedio
                             if($descripcion == 'SALIDA'){
-                                //$new_precio_unitario_especial = $precio_unitario_actual;
                                 $precio_unitario_anterior_especial = $precio_unitario_anterior;
                             }else if($descripcion == 'ENTRADA'){
-                                //$new_precio_unitario_especial = (($stock_actual*$precio_unitario_actual_promedio)+($item['qty']*$precio_unitario_soles))/($stock_actual+$item['qty']);
                                 $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
+                            }else if($descripcion == 'IMPORTACION'){
+                                $precio_unitario_anterior_especial = 0;
                             }
                             $new_stock = $stock_actual - $cantidad;
 
