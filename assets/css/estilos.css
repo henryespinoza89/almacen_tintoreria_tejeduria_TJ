@@ -673,7 +673,7 @@ nav a {
 }
 
 #datosalida{
-	min-height: 160px;
+	min-height: 180px;
     width: 1365px;
     background: whitesmoke;
     padding-left: 15px;
@@ -1147,7 +1147,7 @@ nav a {
 	width: 210px;
 	height: 15px;
 	background: url('../img/add.png') no-repeat;
-	padding: 3px 0px 0px 28px;
+	padding: 3px 0px 15px 28px;
 	overflow: hidden;
 	float: left;
 	cursor: pointer;
@@ -1156,6 +1156,23 @@ nav a {
 }
 
 #options .newarea a {
+	text-decoration: none;
+	color: #000;
+}
+
+#options .new_devolucion {
+	width: 250px;
+	height: 15px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 15px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #898989;
+	margin-right: 15px;
+}
+
+#options .new_devolucion a {
 	text-decoration: none;
 	color: #000;
 }
@@ -1200,7 +1217,7 @@ nav a {
 }
 
 .tituloTable td {
-	background-color: #005197;
+	background-color: #303F9F;
 	padding: 3px;
 	text-align: center;
 	border: 1px solid #FFF;
@@ -1210,7 +1227,7 @@ nav a {
 .contentTable td{
 	text-align: center;
 	padding: 2px;
-	color: #898989;
+	color: #111;
 }
 
 #modalerror {

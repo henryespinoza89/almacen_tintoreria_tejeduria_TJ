@@ -16,9 +16,9 @@
 		$encargado = array('name'=>'encargado','id'=>'encargado', 'style'=>'width:142px', 'class'=>'required','readonly'=> 'readonly');
 	}
 	if ($this->input->post('cantidad')){
-		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10','value'=>$this->input->post('cantidad'), 'style'=>'width:70px;margin-bottom: 0px;', 'class'=>'required', 'onpaste'=>'return false');
+		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10','value'=>$this->input->post('cantidad'), 'style'=>'width:70px', 'class'=>'required', 'onpaste'=>'return false');
 	}else{
-		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10', 'style'=>'width:70px;margin-bottom: 0px;', 'class'=>'required', 'onpaste'=>'return false');
+		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10', 'style'=>'width:70px', 'class'=>'required', 'onpaste'=>'return false');
 	}
 
 	if ($this->input->post('unidades_devolucion')){
@@ -34,9 +34,9 @@
 	}
 
 	if ($this->input->post('nombre_producto')){
-	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto','value'=>$this->input->post('nombre_producto'), 'style'=>'width:285px;font-family: verdana;height: 24px;margin-bottom: 8px;','placeholder'=>' :: Nombre del Producto ::');
+	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto','value'=>$this->input->post('nombre_producto'), 'style'=>'width:285px;font-family: verdana;height: 24px;','placeholder'=>' :: Nombre del Producto ::');
 	}else{
-	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto', 'style'=>'width:285px;font-family: verdana;height: 24px;margin-bottom: 8px;','placeholder'=>' :: Nombre del Producto ::'); 
+	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto', 'style'=>'width:285px;font-family: verdana;height: 24px;','placeholder'=>' :: Nombre del Producto ::'); 
 	}
 
 	if ($this->input->post('unidadmedida')){
@@ -46,9 +46,9 @@
 	}
 
 	if ($this->input->post('observacion')){
-		$observacion = array('name'=>'observacion','id'=>'observacion','value'=>$this->input->post('observacion'), 'style'=>'width: 242px;height: 60px;');
+		$observacion = array('name'=>'observacion','id'=>'observacion','value'=>$this->input->post('observacion'), 'style'=>'width: 242px;height: 60px;margin-left: 5px;');
 	}else{
-		$observacion = array('name'=>'observacion','id'=>'observacion', 'style'=>'width: 242px;height: 60px;');
+		$observacion = array('name'=>'observacion','id'=>'observacion', 'style'=>'width: 242px;height: 60px;margin-left: 5px;');
 	}
 ?>
 
@@ -91,20 +91,23 @@ $(function() {
 	$("#submit_finalizar").on("click",function(){
 		// Selecciono las variables para registro de salida
 		// Datos de la maquina
-		// var id_maquina = $("#maquina").val();
-		// var id_parte_maquina = $("#parte_maquina").val();
-		// Solicitante y fecha
+		var id_maquina = $("#maquina").val();
+		var id_parte_maquina = $("#parte_maquina").val();
+		/* Solicitante y fecha */
 		var id_area = $("#area").val();
 		//var encargado = $("#encargado").val();
 		var solicitante = $("#solicitante").val();
 		var fecharegistro = $("#fecharegistro").val();
-		// Datos del producto
-		//var nombre_producto = $("#nombre_producto").val();
-		//var cantidad = $("#cantidad").val();
+		/* Datos del producto */
+		var nombre_producto = $("#nombre_producto").val();
+		var cantidad = $("#cantidad").val();
 		var observacion = $("#observacion").val();
 		// Validación contra campos vacios valores nulos
-		if(id_area == '' || fecharegistro == ''){
-	        sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
+		if(id_area == '' || fecharegistro == '' || nombre_producto == '' || cantidad == '' || id_maquina == ''){
+	        $("#modalerror").html('<strong>!Falta Completar algunos Campos del Formulario. Verificar!</strong>').dialog({
+	            modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'slide',show: 'slide',
+	          	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+	        });
 	    }else{
 	    	var dataString = 'id_area='+id_area+'&fecharegistro='+fecharegistro+'&solicitante='+solicitante+'&nombre_producto='+nombre_producto+'&cantidad='+cantidad+'&id_maquina='+id_maquina+'&id_parte_maquina='+id_parte_maquina+'&observacion='+observacion+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
 	    	$.ajax({
@@ -268,28 +271,6 @@ $(function() {
 	                }
 	            }
 	       	});
-	    }
-	});
-
-	$("#agregar_producto_carrito").click(function(){
-		if($("#nombre_producto").val() == '' || $("#cantidad").val() == '' || $("#maquina").val() == ''){
-	        sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
-	    }else{
-    		$.ajax({
-		        type: 'POST',
-		        url: "<?php echo base_url(); ?>comercial/agregar_detalle_producto_ajax/",
-		        data: {
-		          'nombre_producto' : $("#nombre_producto").val(),
-		          'cantidad' : $("#cantidad").val(),
-		          'maquina' : $("#maquina").val(),
-		          'parte_maquina' : $("#parte_maquina").val(),
-		        },
-		        success: function(response){
-		        	if(response = 'successfull'){
-		        		window.location.href="<?php echo base_url();?>comercial/gestionsalida";
-		        	}
-		        }
-		    });
 	    }
 	});
 	
@@ -699,13 +680,38 @@ function fill_inputs(id_salida_producto){
 	<div id="formFiltro">
 		<div id="options" style="border-bottom: 1px solid #000; padding-bottom: 15px;margin-bottom: 0px;">
 			<div class="newarea"><a href="<?php echo base_url(); ?>comercial/gestionarea/">Gestionar Área y Responsable</a></div>
-			<div class="new_devolucion"><a href="<?php echo base_url(); ?>comercial/gestion_devolucion_producto/">Gestionar Devolución de Productos</a></div>
 			<!--<div class="newsalida"><a href="<?php // echo base_url(); ?>comercial/gestionconsultarSalidaRegistros/">Consultar Registro de Salida</a></div>-->
 			<!--<div class="reportOut"><a href="<?php //echo base_url(); ?>comercial/gestionreportesalida/">Gestionar Reporte de Salidas</a></div>-->
 		</div>
 		<div id="datosalida">
 			<input type="hidden" name="id_salida_producto_hidden" id="id_salida_producto_hidden" value="">
-		    <table width="400" border="0" cellspacing="0" cellpadding="0" style="margin-top: 5px; float: left; margin-left: 10px;width: 380px;margin-right: 45px;">
+			<table style="float: left; margin-top: 5px; width: 380px; margin-left: 0px;">
+				<tr>
+					<td width="285" valign="middle" style="height: 33px;">Máquina:</td>
+		          	<?php
+		          		$existe = count($listamaquina);
+		          		if($existe <= 0){ ?>
+			            	<td width="330" height="30"><b><?php echo 'Registrar en el Sistema';?></b></td>
+			        <?php    
+			            }
+			            else
+			            {
+		          	?>
+		          			<td width="370"><?php echo form_dropdown('maquina', $listamaquina,$selected_maquina,"id='maquina' class='required' style='width:170px;'");?></td>
+		          	<?php }?>
+				</tr>
+				<tr>
+					<td width="148" valign="middle">Parte de Máquina:</td>
+					<td>
+                  		<select name="tipo" id="parte_maquina" class='required' style='width:170px;'></select>
+                	</td>
+				</tr>
+				<tr>
+	                <td width="148" valign="middle" height="30" style="padding-bottom: 4px;">Observación:</td>
+	                <td width="228" height="30" colspan="5" style="padding-top: 7px;padding-bottom: 5px;"><?php echo form_textarea($observacion);?></td>
+	            </tr>
+		    </table>
+		    <table width="400" border="0" cellspacing="0" cellpadding="0" style="margin-top: 5px; float: left; margin-left: 10px;width: 320px;margin-right: 45px;">
 		        <tr>
 		          	<td width="370" valign="middle" style="height:30px;">Área:</td>
 		          	<?php
@@ -721,67 +727,40 @@ function fill_inputs(id_salida_producto){
 		          	<?php }?>
 			    </tr>
 				<tr style="height:30px;">
-					<td width="127" valign="middle" style="padding-bottom: 6px;">Solicitante:</td>
+					<td width="127" valign="middle">Solicitante:</td>
 			        <td width="128"><?php echo form_input($solicitante);?></td>
 				</tr>
 				<tr style="height:30px;">
-					<td width="127" valign="middle" style="padding-bottom: 6px;">Fecha de Registro:</td>
+					<td width="127" valign="middle">Fecha de Registro:</td>
 			        <td width="128"><?php echo form_input($fecharegistro);?></td>
 				</tr>
-				<tr>
-	                <td width="148" valign="middle" height="30" style="padding-bottom: 4px;">Observación:</td>
-	                <td width="228" height="30" colspan="5" style="padding-top: 3px;padding-bottom: 5px;"><?php echo form_textarea($observacion);?></td>
-	            </tr>
 			</table>
-			<table width="450" border="0" cellspacing="0" cellpadding="0" style="margin-top: 5px;">
-		        <tr>
-					<td width="285" valign="middle" style="height: 33px;">Máquina:</td>
-		          	<?php
-		          		$existe = count($listamaquina);
-		          		if($existe <= 0){ ?>
-			            	<td width="330" height="30"><b><?php echo 'Registrar en el Sistema';?></b></td>
-			        <?php    
-			            }
-			            else
-			            {
-		          	?>
-		          			<td width="370"><?php echo form_dropdown('maquina', $listamaquina,$selected_maquina,"id='maquina' class='required' style='width:170px;margin-left: 0px;'");?></td>
-		          	<?php }?>
-				</tr>
-				<tr>
-					<td width="148" valign="middle">Parte de Máquina:</td>
-					<td>
-                  		<select name="tipo" id="parte_maquina" class='required' style='width:170px;margin-left: 0px;margin-bottom: 9px;'></select>
-                	</td>
-				</tr>
+			<table width="460" border="0" cellspacing="0" cellpadding="0" style="margin-top: 5px; float: left;">
 		        <tr>
 	                <td width="133" valign="middle" height="30" style="padding-bottom: 4px;">Producto:</td>
 	                <td height="30" colspan="5"><?php echo form_input($nombre_producto);?></td>
 	            </tr>
-	            <tr>
+				<tr>
 					<td width="133" valign="middle" style="color:#005197;">Stock Actual:</td>
 			        <td width="109"><?php echo form_input($stockactual);?></td>
-	            </tr>
-			</table>
-			<table width="460" border="0" cellspacing="0" cellpadding="0" style="float: left;" id="table_button_finalizar_salida">
-				<tr style="height:30px;" id="cantidad_solicitada">
-					<td width="134" valign="middle">Cantidad Solicitada:</td>
-			        <td width="109"><?php echo form_input($cantidad);?></td>
-		        	<td style=" padding-top: 5px;"><input name="submit" type="submit" id="agregar_producto_carrito" value="AGREGAR PRODUCTO" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #FF5722; border-radius:6px; width: 150px;margin-left: 28px;" /></td>
+			        <td width="107" valign="middle" style="color:#005197;">Unidad Medida:</td>
+			        <td width="111"><?php echo form_input($unidadmedida);?></td>
 				</tr>
+				<tr style="height:30px;" id="cantidad_solicitada">
+					<td width="133" valign="middle">Cantidad Solicitada:</td>
+			        <td width="109"><?php echo form_input($cantidad);?></td>
+				</tr>
+				<!---
+				<tr style="height:30px;"> 
+		        	<td colspan="5" style=" padding-top: 5px; padding-left: 277px;"><input name="submit" type="submit" id="submit_finalizar" value="Registrar Salida" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
+		        </tr>
+		        -->
+		        <!---
+		        <tr style="height:30px;"> 
+		        	<td colspan="5" style=" padding-top: 5px; padding-left: 277px;"><input name="submit" type="submit" id="submit_finalizar_cuadre" value="Registrar Salida Cuadre" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
+		        </tr>
+		        -->
 			</table>
-			<!---
-			<table width="510" border="0" cellspacing="0" cellpadding="0" style="margin-top: 5px; float: left;">
-			<tr style="height:30px;"> 
-	        	<td colspan="5" style=" padding-top: 5px; padding-left: 277px;"><input name="submit" type="submit" id="submit_finalizar" value="Registrar Salida" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
-	        </tr>
-	        -->
-	        <!---
-	        <tr style="height:30px;"> 
-	        	<td colspan="5" style=" padding-top: 5px; padding-left: 277px;"><input name="submit" type="submit" id="submit_finalizar_cuadre" value="Registrar Salida Cuadre" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
-	        </tr>
-			</table>
-	        -->
 			<table width="580" border="0" cellspacing="0" cellpadding="0" style="float: left;margin-left: 375px;">
 				<tr style="height:30px;" id="cantidad_devolucion">
 					<td width="131" valign="middle" colspan="2">Cantidad Devolución:</td>
@@ -789,6 +768,11 @@ function fill_inputs(id_salida_producto){
 			        <td width="109"><input name="submit" type="submit" id="submit_devolucion_producto" value="Registrar Devolución" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
 			        <td width="109" style="padding-left: 25px;;"><input name="submit" type="submit" id="cancelar_devolucion" value="Cancelar Devolución" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
 				</tr>
+			</table>
+			<table width="460" border="0" cellspacing="0" cellpadding="0" style="float: left;" id="table_button_finalizar_salida">
+				<tr style="height:30px;"> 
+		        	<td colspan="5" style=" padding-top: 5px; padding-left: 640px;"><input name="submit" type="submit" id="submit_finalizar" value="Registrar Salida" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
+		        </tr>
 			</table>
 		</div>
 		
@@ -799,85 +783,60 @@ function fill_inputs(id_salida_producto){
 	    </table>
 	</div>
 	
-	<div style="float: left;margin-right: 0px;margin-top: 5px;">
-		<?php 
-            $existe = $this->cart->total_items();
-            if($existe <= 0){
-            	echo 'Listado de Productos vacio';
-            }
-            else
-            {
-        ?>
-		<?php echo form_open("comercial/actualizar_carrito", 'id="actualizar" style="border-bottom: none; float: left;"') ?>
-	        <table border="0" cellspacing="0" cellpadding="0" id="listaProductos"> <!--style="margin-left: 90px;"-->
-		        <thead>
-		            <tr class="tituloTable" style="height: 30px;">
-		              <td sort="idprod" width="80" height="25">ITEM</td>
-		              <td sort="procprod" width="210">MÁQUINA</td>
-		              <td sort="procprod" width="210">PARTE DE MÁQUINA</td>
-		              <td sort="catprod" width="120">ID PRODUCTO</td>
-		              <td sort="nombreprod" width="420">PRODUCTO O DESCRIPCIÓN</td>
-		              <td sort="idproducto" width="100" height="25">CANTIDAD</td>
-		              <td sort="procprod" width="20">&nbsp;</td>
-		            </tr>
-		        </thead>
-	            <?php 
-		            $i = 1;
-		            foreach($this->cart->contents() as $item){
-		            // Obtener los valores incluidos en el id
-			        $elementos = explode("-", $item['id']);
-			        $id_detalle_producto = $elementos[0];
-			        $id_parte_maquina = $elementos[1];
-
-	            	if($this->cart->has_options($item['rowid']) === TRUE){
-	            		$array = $this->cart->product_options($item['rowid']);
-		            	//foreach ( $array as $option_name => $option_value){
-	            			//echo $array[0];
-	            			//echo $array[1];
-	            			$nombre_maquina = $array[0];
-					        $nombre_parte_maquina = $array[1];
-	            			/*
-	            			echo $option_name['nom_maq'];
-	            			$data_maq = explode("-", $option_value);
-					        $nombre_maquina = $data_maq[0];
-					        $nombre_parte_maquina = $data_maq[1];
-					        */
-	            	}
-	            	
-	            ?>
-	            	<input type="hidden" name="<?php echo $i; ?>[rowid]" value="<?php echo $item['rowid']; ?>" >
-			        <tr class="contentTable" style="height: 32px; border-color: #F1EEEE;border-bottom-style: solid;">
-			            <td><?php echo str_pad($i, 3, 0, STR_PAD_LEFT); ?></td>
-			            <td><?php echo $nombre_maquina; ?></td>
-			            <td><?php echo $nombre_parte_maquina; ?></td>
-			            <td><?php echo 'PRD'.$id_detalle_producto; ?></td>
-			            <td><?php echo $item['name']; ?></td>
-			            <td>
-			            	<input type="text" name="<?php echo $i; ?>[qty]" value="<?php echo $item['qty']; ?>" style="border-style: inherit; color: #898989; margin-bottom: 0px; padding: 0px; font-size: 11px; font-family: verdana; width: 80px; text-align: center;" >
-			            </td>
-			            <td width="20" align="center">
-			            	<?php echo anchor('comercial/remove_salida/'.$item['rowid'],'X',array('style'=>'text-decoration: none; color:#898989;')); ?>
-			            </td>
-			        </tr>
-	            <?php 
-					$i++;
-					} 
-				?>
-	        </table>
-	        <table style="margin-top: 10px;">
-	        	<tr style="height:30px;"> 
-		        	<td colspan="5" style=" padding-top: 5px; padding-left: 1009px;"><input name="button" type="button" id="submit_finalizar" value="REGISTRAR SALIDA" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #FF5722; border-radius:6px; width: 150px;color: white;" /></td>
-		        </tr>
-	        </table>
-	    <?php echo form_close() ?>
-
-
-
-        <?php 
-			$i++;
-			} 
-		?>
-	</div>
+	<?php 
+      $existe = count($salidaproducto);
+      if($existe <= 0){
+        echo 'No existen Registros de Salida en el Sistema.';
+      }
+      else
+      {
+    ?>
+    <table border="0" cellspacing="0" cellpadding="0" id="listarSalidaProductos" style="width:1360px;" class="table table-hover table-striped">
+          <thead>
+              <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
+                <td sort="idprod" width="50" height="27">ITEM</td>
+                <td sort="idproducto" width="110" height="27">MÁQUINA</td>
+                <td sort="procprod" width="110">ÁREA</td>
+                <td sort="procprod" width="150">SOLICITANTE</td>
+                <td sort="procprod" width="80">FECHA</td>
+                <td sort="procprod" width="340">PRODUCTO</td>
+                <td sort="procprod" width="70">CANTIDAD</td>
+                
+                <td width="20" style="background-image: none;">&nbsp;</td>
+                <!--
+                <td width="20">&nbsp;</td>
+                -->
+              </tr>
+          </thead>
+          <?php 
+          $i = 1;
+          foreach($salidaproducto as $listasalidaproductos){ ?>  
+              <tr class="contentTable">
+                <td height="23" style="vertical-align: middle;"><?php echo str_pad($i, 3, 0, STR_PAD_LEFT); ?></td>
+                <td style="vertical-align: middle;"><?php echo $listasalidaproductos->nombre_maquina; ?></td>
+                <td style="vertical-align: middle;"><?php echo $listasalidaproductos->no_area; ?></td>
+                <td style="vertical-align: middle;"><?php echo $listasalidaproductos->solicitante; ?></td>
+                <td style="vertical-align: middle;"><?php echo $listasalidaproductos->fecha; ?></td>
+                <td style="vertical-align: middle;"><?php echo $listasalidaproductos->no_producto; ?></td>
+                <td style="vertical-align: middle;"><?php echo number_format($listasalidaproductos->cantidad_salida,2,'.',',');?></td>
+                <td width="20" align="center"><input type="radio" name="newsletter" onClick="fill_inputs(<?php echo $listasalidaproductos->id_salida_producto; ?>)" style="cursor: pointer;" title="Devolución"/></td>
+                
+				<!--
+                <td width="20" align="center"><img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listasalidaproductos->id_salida_producto; ?>)" style="cursor: pointer;"/></td>
+                -->
+                <!--
+                <td width="20" align="center">
+                  <a href="" class="eliminar_salida" id="elim_<?php echo $listasalidaproductos->id_salida_producto; ?>">
+                  <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida"/></a>
+                </td>
+                -->
+              </tr>
+          <?php 
+            $i++;
+            } 
+          ?>        
+      </table>
+    <?php }?>
 
 </div>
 <div id="finregistro"></div>

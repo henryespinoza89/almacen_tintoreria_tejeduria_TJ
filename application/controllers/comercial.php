@@ -1066,13 +1066,97 @@ class Comercial extends CI_Controller {
             $data['lista_parte_maquina']= $this->model_comercial->listar_parte_Maquinas();
             // $data['salidaproducto']= $this->model_comercial->listaSalidaProducto_2013();
             $data['areas_salidas']= $this->model_comercial->listar_areas_salidas();
-            $data['salidaproducto']= $this->model_comercial->listaSalidaProducto();
+            // $data['salidaproducto']= $this->model_comercial->listaSalidaProducto();
             /*
             $this->load->view('comercial/menu_script');
             $this->load->view('comercial/menu_cabecera');
             */
             $this->load->view('comercial/menu');
             $this->load->view('comercial/salida_almacen/registro_salida', $data);
+        }
+    }
+
+    public function agregar_detalle_producto_ajax(){
+        $this->cart->total();
+
+        $id_maquina = $this->input->post('maquina');
+        $id_parte_maquina = $this->input->post('parte_maquina');
+        $nombre_producto = $this->input->post('nombre_producto');
+
+        $this->db->select('id_detalle_producto');
+        $this->db->where('no_producto',$nombre_producto);
+        $query = $this->db->get('detalle_producto');
+        foreach($query->result() as $row){
+            $id_detalle_producto = $row->id_detalle_producto;
+        }
+
+        if($id_parte_maquina != ""){
+            $this->db->select('nombre_parte_maquina');
+            $this->db->where('id_parte_maquina',$id_parte_maquina);
+            $query = $this->db->get('parte_maquina');
+            foreach($query->result() as $row){
+                $nombre_parte_maquina = $row->nombre_parte_maquina;
+            }
+            
+            // Seleccionar el id de la parte de maquina
+            $this->db->select('id_parte_maquina');
+            $this->db->where('nombre_parte_maquina',$nombre_parte_maquina);
+            $this->db->where('id_maquina',$id_maquina);
+            $query = $this->db->get('parte_maquina');
+            foreach($query->result() as $row){
+                $id_parte_maquina = $row->id_parte_maquina;
+            }
+        }else{
+            $id_parte_maquina = 99999999;
+            $nombre_parte_maquina = "";
+        }
+
+        $this->db->select('nombre_maquina');
+        $this->db->where('id_maquina',$id_maquina);
+        $query = $this->db->get('maquina');
+        foreach($query->result() as $row){
+            $nombre_maquina = $row->nombre_maquina;
+        }
+
+        // $arr1 = explode(" ", $nombre_maquina);
+        // $arr2 = explode(" ", $nombre_parte_maquina);
+        
+        $data = array(
+            'id' => $id_detalle_producto.'-'.$id_parte_maquina,
+            'qty' => $this->input->post('cantidad'),
+            'price' => $id_parte_maquina,
+            'name'=> $nombre_producto,
+            'options'=> array( 0 => $nombre_maquina, 1 => $nombre_parte_maquina)
+        );
+        
+        $this->cart->insert($data);
+
+        echo 'successfull';
+    }
+
+    public function gestion_devolucion_producto(){
+        $nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
+        $apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
+        if($nombre == "" AND $apellido == ""){
+            $this->load->view('login');
+        }else{
+            if($this->model_comercial->existeTipoCambio() == TRUE){
+                $data['tipocambio'] = 0;
+            }else{
+                $data['tipocambio'] = 1;
+            }
+            $data['listaarea']= $this->model_comercial->listarArea();
+            $data['listamaquina']= $this->model_comercial->listarMaquinas();
+            $data['lista_parte_maquina']= $this->model_comercial->listar_parte_Maquinas();
+            // $data['salidaproducto']= $this->model_comercial->listaSalidaProducto_2013();
+            $data['areas_salidas']= $this->model_comercial->listar_areas_salidas();
+            $data['salidaproducto']= $this->model_comercial->listaSalidaProducto();
+            /*
+            $this->load->view('comercial/menu_script');
+            $this->load->view('comercial/menu_cabecera');
+            */
+            $this->load->view('comercial/menu');
+            $this->load->view('comercial/salida_almacen/devolucion_productos', $data);
         }
     }
 
@@ -3245,6 +3329,14 @@ class Comercial extends CI_Controller {
             'qty' => 0
         ));
         redirect('comercial/gestioningreso');
+    }
+
+    function remove_salida($rowid){
+        $this->cart->update(array(
+            'rowid' => $rowid,
+            'qty' => 0
+        ));
+        redirect('comercial/gestionsalida');
     }
 
     function remove_otros($rowid){
