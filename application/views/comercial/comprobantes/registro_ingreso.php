@@ -528,13 +528,13 @@ $(function(){
         <div id="retorno"></div>
       </div>
     <?php } ?>
-	<div id="tituloCont" style="margin-bottom: 10px;">Registro de Ingreso de Productos</div>
+	<div id="tituloCont" style="margin-bottom: 10px;">Registro de Facturas</div>
 	<div id="formFiltro">
 		<div id="options" style="border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 0;">
-        	<!--<div class="newagente"><a href="<?php echo base_url(); ?>comercial/gestionaduana/">Gestionar Datos del Agente Aduanero</a></div>-->
-        	<div class="newconsult"><a href="<?php echo base_url(); ?>comercial/gestionconsultarRegistros_optionsAdvanced/">Consultar Registros de Ingreso</a></div>
+        	<!--<div class="newagente"><a href="<?php // echo base_url(); ?>comercial/gestionaduana/">Gestionar Datos del Agente Aduanero</a></div>-->
+        	<div class="newconsult"><a href="<?php echo base_url(); ?>comercial/gestionconsultarRegistros_optionsAdvanced/">Consultar Facturas</a></div>
         	<!--<div class="newotros"><a href="<?php //echo base_url(); ?>comercial/gestionotrosDoc/">Otros</a></div>-->
-        	<!--<div class="facturas_opcion_masiva"><a href="<?php //echo base_url(); ?>comercial/gestionfacturasmasivas/">Registrar Facturas Importadas - Opción Masiva</a></div>-->
+        	<div class="facturas_opcion_masiva"><a href="<?php echo base_url(); ?>comercial/gestionfacturasmasivas/">Registrar Facturas Importadas</a></div>
       	</div>
 			<?php echo form_open("comercial/finalizar_registro", 'id="finalizar_registro_ingreso"') ?>
 				<div id="datoscompro">

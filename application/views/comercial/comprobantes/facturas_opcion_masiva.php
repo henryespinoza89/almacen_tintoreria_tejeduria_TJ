@@ -274,8 +274,11 @@
 </head>
 <body>
   <div id="contenedor" style="padding-top: 10px;">
-    <div id="tituloCont" style="margin-bottom: 0;">Cargar Facturas Importadas</div>
+    <div id="tituloCont" style="margin-bottom: 10px;">Cargar Facturas Importadas</div>
     <div id="formFiltro">
+      <div id="options" style="border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 0;">
+        <div class="newagente"><a href="<?php echo base_url(); ?>comercial/gestionaduana/">Gestionar Datos del Agente Aduanero</a></div>
+      </div>
       <form id="formulario" action="<?php echo base_url('comercial/guardar_informacion_factura_importada');?>" enctype="multipart/form-data" method="post" style="background: whitesmoke;padding-left: 15px;padding-top: 12px;margin-top: 0px;">
         <div style="float: left;width: 400px;"> 
           <table width="360" border="0" cellspacing="0" cellpadding="0" style="margin-top: 4px;">

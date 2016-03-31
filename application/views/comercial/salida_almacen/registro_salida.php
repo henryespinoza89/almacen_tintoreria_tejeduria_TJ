@@ -1,9 +1,9 @@
 <?php
 	
 	if ($this->input->post('solicitante')){
-		$solicitante = array('name'=>'solicitante','id'=>'solicitante','value'=>$this->input->post('solicitante'), 'style'=>'width:142px', 'onkeypress'=>'onlytext()');
+		$solicitante = array('name'=>'solicitante','id'=>'solicitante','value'=>$this->input->post('solicitante'), 'style'=>'width:242px', 'onkeypress'=>'onlytext()');
 	}else{
-		$solicitante = array('name'=>'solicitante','id'=>'solicitante', 'style'=>'width:142px','onkeypress'=>'onlytext()');
+		$solicitante = array('name'=>'solicitante','id'=>'solicitante', 'style'=>'width:242px','onkeypress'=>'onlytext()');
 	}
 	if ($this->input->post('stockactual')){
 		$stockactual = array('name'=>'stockactual','id'=>'stockactual','value'=>$this->input->post('stockactual'), 'style'=>'width:70px','readonly'=> 'readonly');
@@ -106,10 +106,10 @@ $(function() {
 		if(id_area == '' || fecharegistro == ''){
 	        sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
 	    }else{
-	    	var dataString = 'id_area='+id_area+'&fecharegistro='+fecharegistro+'&solicitante='+solicitante+'&nombre_producto='+nombre_producto+'&cantidad='+cantidad+'&id_maquina='+id_maquina+'&id_parte_maquina='+id_parte_maquina+'&observacion='+observacion+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+	    	var dataString = 'id_area='+id_area+'&fecharegistro='+fecharegistro+'&solicitante='+solicitante+'&observacion='+observacion+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
 	    	$.ajax({
 	            type: "POST",
-	            url: "<?php echo base_url(); ?>comercial/finalizar_salida_before_13/",
+	            url: "<?php echo base_url(); ?>comercial/procesar_detalle_productos_salida/",
 	          	data: dataString,
 	          	success: function(response){
 	            if(response == 1){
@@ -132,7 +132,8 @@ $(function() {
 					$('#stockactual').val('');
 					$('#unidadmedida').val('');
 					$('#cantidad').val('');
-	              	swal({ title: "Salida Registrada con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+	              	swal({ title: "Salida Registrada con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 600000 });
+	              	window.location.href="<?php echo base_url();?>comercial/gestionsalida";
 	            }else if(response == "error_stock"){
 	              	$("#modalerror").empty().append('<span style="color:red"><b>!No existe Stock Disponible!</b><br><b>Verificar la Cantidad Solicitada.</b></span>').dialog({
 	                	modal: true,position: 'center',width: 350,height: 145,resizable: false,title: 'Validación',hide: 'slide',show: 'slide',
@@ -292,6 +293,18 @@ $(function() {
 		    });
 	    }
 	});
+
+	$("#solicitante").autocomplete({
+        source: function (request, respond) {
+        	$.post("<?php echo base_url('comercial/traer_solicitante_autocomplete'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term},
+	        function (response) {
+	            respond(response);
+	        }, 'json');
+        }, select: function (event, ui) {
+	        var selectedObj = ui.item;
+	        $("#solicitante").val(selectedObj.nombre_solicitante);
+        }
+    });
 	
 	$("#nombre_producto").autocomplete({
         source: function (request, respond) {
@@ -717,7 +730,7 @@ function fill_inputs(id_salida_producto){
 			            else
 			            {
 		          	?>
-		          			<td width="330"><?php echo form_dropdown('area',$listaarea,$selected_area,"id='area' style='width:150px;margin-left: 0px;'" );?></td>
+		          			<td width="330"><?php echo form_dropdown('area',$listaarea,$selected_area,"id='area' style='width:210px;margin-left: 0px;'" );?></td>
 		          	<?php }?>
 			    </tr>
 				<tr style="height:30px;">
@@ -866,7 +879,8 @@ function fill_inputs(id_salida_producto){
 	        </table>
 	        <table style="margin-top: 10px;">
 	        	<tr style="height:30px;"> 
-		        	<td colspan="5" style=" padding-top: 5px; padding-left: 1009px;"><input name="button" type="button" id="submit_finalizar" value="REGISTRAR SALIDA" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #FF5722; border-radius:6px; width: 150px;color: white;" /></td>
+					<td style="padding-top: 2px;"><?php echo anchor('comercial/vaciar_listado', 'VACIAR LISTADO DE SALIDAS', array('style'=>'text-decoration: none; background-color: #FF5722; color: white; font-family: tahoma; border-radius: 6px; padding: 4px 15px 3px 15px; font-size: 11px;')); ?></td>
+		        	<td style=" padding-top: 5px; padding-left: 840px;"><input name="button" type="button" id="submit_finalizar" value="REGISTRAR SALIDA" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #FF5722; border-radius:6px; width: 150px;color: white;" /></td>
 		        </tr>
 	        </table>
 	    <?php echo form_close() ?>

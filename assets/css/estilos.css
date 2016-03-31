@@ -987,7 +987,7 @@ nav a {
 
 #options .facturas_opcion_masiva {
 	width: 260px;
-	height: 15px;
+	height: 17px;
 	background: url('../img/add.png') no-repeat;
 	padding: 3px 0px 0px 28px;
 	overflow: hidden;
@@ -1037,8 +1037,8 @@ nav a {
 }
 
 #options .newconsult {
-	width: 200px;
-	height: 20px;
+	width: 140px;
+	height: 22px;
 	background: url('../img/add.png') no-repeat;
 	padding: 3px 0px 0px 28px;
 	overflow: hidden;
