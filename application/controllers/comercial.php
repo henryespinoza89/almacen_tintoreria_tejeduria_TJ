@@ -3095,7 +3095,7 @@ class Comercial extends CI_Controller {
     function vaciar_listado(){
         $this->cart->destroy();
         $this->session->unset_userdata('csigv');
-        redirect('comercial/gestioningreso');
+        redirect('comercial/gestionsalida');
     }
 
     function vaciar_listado_otros(){
