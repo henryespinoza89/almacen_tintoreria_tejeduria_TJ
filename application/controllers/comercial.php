@@ -851,6 +851,11 @@ class Comercial extends CI_Controller {
             foreach($query->result() as $row){
                 $id_parte_maquina = $row->id_parte_maquina;
             }
+
+            $datasession_data_maquina = array(
+                'id_maquina' => $this->input->post('maquina')
+            );
+            $this->session->set_userdata($datasession_data_maquina);
         }else{
             $id_parte_maquina = 99999999;
             $nombre_parte_maquina = "";

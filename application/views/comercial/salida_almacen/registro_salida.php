@@ -474,14 +474,19 @@ $(function() {
 		}	
 	?>
 
-	<?php 
-		if ($this->input->post('maquina')){
-			$selected_maquina =  (int)$this->input->post('maquina');
-		}else{	$selected_maquina = "";
+	
+	<?php
+		if ($this->session->userdata('id_maquina') != ""){
+			$selected_maquina = $this->session->userdata('id_maquina');
+		}else{
+			if ($this->input->post('maquina')){
+				$selected_maquina =  (int)$this->input->post('maquina');
+			}else{	$selected_maquina = "";
 	?>
-   			 $("#maquina").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
+				$("#maquina").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
 	<?php 
-		}	
+			}
+		}
 	?>
 
 	<?php 
