@@ -185,33 +185,37 @@ $(function() {
 		var unidades_devolucion = $("#unidades_devolucion").val();
 		var id_salida_producto = $("#id_salida_producto_hidden").val();
 		var cantidad = $("#cantidad").val();
-		if(unidades_devolucion > cantidad){
-			sweetAlert("!La cantidad de devolución es mayor a la cantidad de salida. Verificar!", "", "error");
+		if(id_salida_producto == '' || unidades_devolucion == ''){
+			sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
 		}else{
-			var dataString = 'id_salida_producto='+id_salida_producto+'&unidades_devolucion='+unidades_devolucion+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
-			$.ajax({
-	            type: "POST",
-	            url: "<?php echo base_url(); ?>comercial/registrar_devolucion/",
-	          	data: dataString,
-	          	success: function(response){
-		            if(response == 1){
-		            	swal({ title: "El Devolución del Producto ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
-		            	$('#area').val('');
-						$('#maquina').val('');
-						$('#parte_maquina').val('');
-						$('#solicitante').val('');
-						$('#fecharegistro').val('');
-						$('#nombre_producto').val('');
-						$('#stockactual').val('');
-						$('#unidadmedida').val('');
-						$('#cantidad').val('');
-						$('#cantidad_devolucion').val('');
-						$('#unidades_devolucion').val('');
-		            	$("#cantidad_devolucion").css('display','none');
-						$("#table_button_finalizar_salida").css('display','block');
-		            }
-		        }
-	        });
+			if(unidades_devolucion > cantidad){
+				sweetAlert("!La cantidad de devolución es mayor a la cantidad de salida. Verificar!", "", "error");
+			}else{
+				var dataString = 'id_salida_producto='+id_salida_producto+'&unidades_devolucion='+unidades_devolucion+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+				$.ajax({
+		            type: "POST",
+		            url: "<?php echo base_url(); ?>comercial/registrar_devolucion/",
+		          	data: dataString,
+		          	success: function(response){
+			            if(response == 1){
+			            	swal({ title: "El Devolución del Producto ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+			            	$('#area').val('');
+							$('#maquina').val('');
+							$('#parte_maquina').val('');
+							$('#solicitante').val('');
+							$('#fecharegistro').val('');
+							$('#nombre_producto').val('');
+							$('#stockactual').val('');
+							$('#unidadmedida').val('');
+							$('#cantidad').val('');
+							$('#cantidad_devolucion').val('');
+							$('#unidades_devolucion').val('');
+			            	// $("#cantidad_devolucion").css('display','none');
+							// $("#table_button_finalizar_salida").css('display','block');
+			            }
+			        }
+		        });
+			}
 		}
 	});
 
@@ -521,8 +525,8 @@ $(function() {
 		$('#cantidad_devolucion').val('');
 		$('#unidades_devolucion').val('');
 
-		$("#cantidad_devolucion").css('display','none');
-		$("#table_button_finalizar_salida").css('display','block');
+		// $("#cantidad_devolucion").css('display','none');
+		// $("#table_button_finalizar_salida").css('display','block');
 	});
 
 	$("#fecharegistro").datepicker({
@@ -761,7 +765,7 @@ function fill_inputs(id_salida_producto){
 		        </tr>
 		        -->
 			</table>
-			<table width="580" border="0" cellspacing="0" cellpadding="0" style="float: left;margin-left: 375px;">
+			<table width="567" border="0" cellspacing="0" cellpadding="0" style="float: left;margin-left: 375px;">
 				<tr style="height:30px;" id="cantidad_devolucion">
 					<td width="131" valign="middle" colspan="2">Cantidad Devolución:</td>
 			        <td width="109"><?php echo form_input($unidades_devolucion);?></td>

@@ -4157,7 +4157,6 @@ class Comercial extends CI_Controller {
                 $auxiliar = $result;
                 $count++;
             }
-            
         }
         
         if($auxiliar == ''){
@@ -4168,7 +4167,8 @@ class Comercial extends CI_Controller {
             die();
         }
 
-
+        // Eliminar las variables de sesion de la maquina
+        $this->session->unset_userdata('id_maquina');
 
         $this->db->trans_complete();
     }
@@ -7482,7 +7482,7 @@ class Comercial extends CI_Controller {
                              ->setCellValue('H'.$p, $reg->stock_sta_clara)
                              ->setCellValue('I'.$p, "");
             }else if($almacen == 2){
-                $objWorkSheet->setCellValue('A'.$p, $reg->id_producto)
+                $objWorkSheet->setCellValue('A'.$p, $reg->id_pro)
                          ->setCellValue('B'.$p, $reg->no_producto)
                          ->setCellValue('C'.$p, $estado)
                          ->setCellValue('D'.$p, $reg->no_categoria)

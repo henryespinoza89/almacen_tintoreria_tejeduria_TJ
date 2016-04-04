@@ -69,6 +69,11 @@
                     if(msg == 1){
                       swal({ title: "El Tipo de Cambio ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
                       $("#mdlNuevoTipoCambio").dialog("close");
+                      $('#fecha_registro').val('');
+                      $('#dolar_compra_reg').val('');
+                      $('#dolar_venta_reg').val('');
+                      $('#euro_compra_reg').val('');
+                      $('#euro_venta_reg').val('');
                     }else{
                       sweetAlert(msg, "", "error");
                     }

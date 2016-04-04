@@ -476,7 +476,7 @@ $(function() {
 
 	
 	<?php
-		if ($this->session->userdata('id_maquina') != ""){
+		if($this->session->userdata('id_maquina') != ""){
 			$selected_maquina = $this->session->userdata('id_maquina');
 		}else{
 			if ($this->input->post('maquina')){
@@ -489,28 +489,41 @@ $(function() {
 		}
 	?>
 
-	<?php 
-		if ($this->input->post('parte_maquina')){
-			$selected_parte_maquina =  (int)$this->input->post('parte_maquina');
-		}else{	$selected_parte_maquina = "";
+	<?php
+		if($this->session->userdata('id_maquina') != ""){
+			$id_maquina = $this->session->userdata('id_maquina');
+	?>
+			var id_maquina = '<?php echo $id_maquina ?>';
+			
+			$.post("<?php echo base_url(); ?>comercial/get_parte_maquina", {
+			    id_maquina : id_maquina , <?php echo $this->security->get_csrf_token_name(); ?>: '<?php echo $this->security->get_csrf_hash(); ?>'
+			}, function(data) {
+			    $("#parte_maquina").html(data);
+			});
+	<?php
+		}else{		
+			if($this->input->post('parte_maquina')){
+				$selected_parte_maquina =  (int)$this->input->post('parte_maquina');
+			}else{	$selected_parte_maquina = "";
 	?>
    			$("#parte_maquina").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
 	<?php 
+			}
 		}	
 	?>
 	
 	<?php 
-		if ($this->input->post('nomproducto')){
+		if($this->input->post('nomproducto')){
 			$selected_prod =  (int)$this->input->post('nomproducto');
 		}else{	$selected_prod = "";
 	?>
-   			 $("#nomproducto").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
+   			$("#nomproducto").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
 	<?php 
 		}	
 	?>
 	
-	$("#nomproducto").change(function() {
-		$("#nomproducto option:selected").each(function() {
+	$("#nomproducto").change(function(){
+		$("#nomproducto option:selected").each(function(){
 	        nomproducto = $('#nomproducto').val();
 	        $.post("<?php echo base_url(); ?>comercial/traerStock", {
 	            nomproducto : nomproducto , <?php echo $this->security->get_csrf_token_name(); ?>: '<?php echo $this->security->get_csrf_hash(); ?>'
@@ -721,7 +734,7 @@ function fill_inputs(id_salida_producto){
 			<!--<div class="newsalida"><a href="<?php // echo base_url(); ?>comercial/gestionconsultarSalidaRegistros/">Consultar Registro de Salida</a></div>-->
 			<!--<div class="reportOut"><a href="<?php //echo base_url(); ?>comercial/gestionreportesalida/">Gestionar Reporte de Salidas</a></div>-->
 		</div>
-		<div id="datosalida">
+		<div id="datosalida" style="min-height: 185px;">
 			<input type="hidden" name="id_salida_producto_hidden" id="id_salida_producto_hidden" value="">
 		    <table width="400" border="0" cellspacing="0" cellpadding="0" style="margin-top: 5px; float: left; margin-left: 10px;width: 380px;margin-right: 45px;">
 		        <tr>
@@ -781,8 +794,8 @@ function fill_inputs(id_salida_producto){
 			        <td width="109"><?php echo form_input($stockactual);?></td>
 	            </tr>
 			</table>
-			<table width="460" border="0" cellspacing="0" cellpadding="0" style="float: left;" id="table_button_finalizar_salida">
-				<tr style="height:30px;" id="cantidad_solicitada">
+			<table width="460" border="0" cellspacing="0" cellpadding="0" style="float: left;display:block;" id="table_button_finalizar_salida">
+				<tr style="height:30px;display:block;" id="cantidad_solicitada">
 					<td width="134" valign="middle">Cantidad Solicitada:</td>
 			        <td width="109"><?php echo form_input($cantidad);?></td>
 		        	<td style=" padding-top: 5px;"><input name="submit" type="submit" id="agregar_producto_carrito" value="AGREGAR PRODUCTO" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #FF5722; border-radius:6px; width: 150px;margin-left: 28px;" /></td>
@@ -801,7 +814,7 @@ function fill_inputs(id_salida_producto){
 			</table>
 	        -->
 			<table width="580" border="0" cellspacing="0" cellpadding="0" style="float: left;margin-left: 375px;">
-				<tr style="height:30px;" id="cantidad_devolucion">
+				<tr style="height:30px;display:none;" id="cantidad_devolucion">
 					<td width="131" valign="middle" colspan="2">Cantidad Devolución:</td>
 			        <td width="109"><?php echo form_input($unidades_devolucion);?></td>
 			        <td width="109"><input name="submit" type="submit" id="submit_devolucion_producto" value="Registrar Devolución" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
