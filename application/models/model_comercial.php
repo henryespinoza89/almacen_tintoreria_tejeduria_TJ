@@ -586,6 +586,13 @@ class Model_comercial extends CI_Model {
                     );
                     $this->db->where('id_salida_producto',$num_comprobante);
                     $this->db->update('salida_producto', $actualizar_precio_salida);
+                }else if($descripcion == 'ORDEN INGRESO'){
+                    // Actualizar el precio unitario en el kardex
+                    $actualizar_precio_io_kardex = array(
+                        'precio_unitario_actual_promedio'=> $nuevo_precio_unitario
+                    );
+                    $this->db->where('id_kardex_producto',$id_kardex_producto);
+                    $this->db->update('kardex_producto', $actualizar_precio_io_kardex);
                 }
             }
             // Formateando la Fecha

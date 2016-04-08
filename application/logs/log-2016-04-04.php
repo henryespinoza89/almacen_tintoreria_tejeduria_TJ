@@ -9824,3 +9824,17 @@ DEBUG - 2016-04-04 14:44:53 --> UTF-8 Support Enabled
 DEBUG - 2016-04-04 14:44:53 --> URI Class Initialized
 DEBUG - 2016-04-04 14:44:53 --> Router Class Initialized
 ERROR - 2016-04-04 14:44:53 --> 404 Page Not Found --> assets
+DEBUG - 2016-04-04 14:48:34 --> Config Class Initialized
+DEBUG - 2016-04-04 14:48:34 --> Config Class Initialized
+DEBUG - 2016-04-04 14:48:34 --> Hooks Class Initialized
+DEBUG - 2016-04-04 14:48:34 --> Utf8 Class Initialized
+DEBUG - 2016-04-04 14:48:34 --> UTF-8 Support Enabled
+DEBUG - 2016-04-04 14:48:34 --> URI Class Initialized
+DEBUG - 2016-04-04 14:48:34 --> Router Class Initialized
+ERROR - 2016-04-04 14:48:34 --> 404 Page Not Found --> assets
+DEBUG - 2016-04-04 14:48:34 --> Hooks Class Initialized
+DEBUG - 2016-04-04 14:48:34 --> Utf8 Class Initialized
+DEBUG - 2016-04-04 14:48:34 --> UTF-8 Support Enabled
+DEBUG - 2016-04-04 14:48:34 --> URI Class Initialized
+DEBUG - 2016-04-04 14:48:34 --> Router Class Initialized
+ERROR - 2016-04-04 14:48:34 --> 404 Page Not Found --> assets
