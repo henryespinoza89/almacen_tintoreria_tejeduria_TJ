@@ -223,6 +223,7 @@
 						<a href='<?php echo base_url();?>comercial/gestioningreso'><span>Gestión Ingreso de Facturas</span></a>
 						<ul>
 							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestioncierrealmacen'><span style="padding-left: 6px;">Cierre de Almacén</span></a></li>
+							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestion_cierre_saldos_iniciales'><span style="padding-left: 6px;">Cierre de Saldos Iniciales</span></a></li>
 						</ul>
 					</li>
 					<li><a href='<?php echo base_url();?>comercial/gestionsalida'><span>Gestión Salida de Almacén</span></a></li>
