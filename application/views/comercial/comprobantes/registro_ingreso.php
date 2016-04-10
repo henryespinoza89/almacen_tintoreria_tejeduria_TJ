@@ -639,7 +639,7 @@ $(function(){
 				            </tr>
 						</tr>						        
 				        <tr> 
-				        	<td height="30" colspan="2" style="padding-top: 4px; padding-left: 194px;"><input name="submit" type="submit" id="submit" value="Finalizar Registro de Ingreso" style="padding-bottom:3px; padding-top:3px; margin-bottom: 14px; background-color: #F5A700; border-radius:6px; width:180px;padding-left: 13px;" /></td>
+				        	<td height="30" colspan="2" style="padding-top: 4px; padding-left: 170px;"><input name="submit" type="submit" id="submit" value="FINALIZAR REGISTRO DE FACTURA" style="padding-bottom:3px; padding-top:3px; margin-bottom: 14px; background-color: #FF5722; border-radius:6px; width:220px;padding-left: 13px;" /></td>
 				        </tr>
 				    </table>
 				</div>
@@ -656,7 +656,7 @@ $(function(){
 				          	<?php	
 								}else{
 							?>
-								<td><?php echo form_dropdown('csigv',$csigv,$selected_csigv,'id="csigv"');?></td>
+								<td><?php echo form_dropdown('csigv',$csigv,$selected_csigv,"id='csigv' style='margin-left: 0px;'");?></td>
 							<?php
 				          		}
 				          	?>
@@ -693,7 +693,7 @@ $(function(){
 					</table>
 					<table width="614" border="0" cellspacing="0" cellpadding="0">
 						<tr>
-					       	<td width="117" style="padding-top: 3px;" colspan="6"><input name="submit" type="submit" id="submit" value="Agregar Producto" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; margin-left: 300px; width: 150px;" /></td>
+					       	<td width="117" style="padding-top: 3px;" colspan="6"><input name="submit" type="submit" id="submit" value="AGREGAR PRODUCTO" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #FF5722; border-radius:6px; margin-left: 300px; width: 150px;" /></td>
 					    </tr>
 					</table>
 				</div>	

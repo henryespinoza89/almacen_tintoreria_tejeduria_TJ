@@ -73,6 +73,8 @@
                   if(msg == 1){
                     swal({ title: "La Máquina ha sido regristada con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
                     $("#mdlNuevaMaquina").dialog("close");
+                    $('#nombre_maquina_modal').val('');
+                    $('#obser').val('');
                   }else{
                     sweetAlert(msg, "", "error");
                   }

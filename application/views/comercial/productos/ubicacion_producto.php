@@ -37,6 +37,7 @@
                   if(msg == 1){
                     swal({ title: "La Ubicación del Producto ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
                     $("#mdlNuevaUbicacion").dialog("close");
+                    $('#ubicacion_producto_modal').val('');
                   }else{
                     sweetAlert(msg, "", "error");
                   }
