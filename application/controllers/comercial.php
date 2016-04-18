@@ -7604,14 +7604,14 @@ class Comercial extends CI_Controller {
         $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
         $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
         $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(30);
         //Write cells
         if($almacen == 1){
             $objWorkSheet->setCellValue('A1', 'INVENTARIO FISICO DE PRODUCTOS - STA. CLARA                     FECHA: '.date('d-m-y'));
         }else if($almacen == 2){
-            $objWorkSheet->setCellValue('A1', 'INVENTARIO FISICO DE PRODUCTOS - STA. ANITA                     FECHA: '.date('d-m-y'));
+            $objWorkSheet->setCellValue('A1', 'INVENTARIO FISICO DE PRODUCTOS - REPUESTOS                     FECHA: '.date('d-m-y'));
         }
         $objWorkSheet->setCellValue('A2', 'ID PRODUCTO')
                      ->setCellValue('B2', 'NOMBRE O DESCRIPCION')
@@ -7622,16 +7622,17 @@ class Comercial extends CI_Controller {
                      ->setCellValue('G2', 'U. MEDIDA')
                      ->setCellValue('H2', 'STOCK')
                      ->setCellValue('I2', 'P. UNITARIO')
-                     ->setCellValue('J2', 'INVENTARIO');
+                     ->setCellValue('J2', 'VALOR ECONOMICO S/.');
         /* Traer informacion de la BD */
         $result = $this->model_comercial->get_info_inventario_actual();
         /* Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex */
         $i = 0;
-        $sumatoria = 0;
+        $sumatoria_parciales = 0;
         $p = 3;
         foreach ($result as $reg) {
             $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             /* Centrar contenido */
             $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
             $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
@@ -7679,12 +7680,36 @@ class Comercial extends CI_Controller {
                          ->setCellValue('G'.$p, $reg->nom_uni_med)
                          ->setCellValue('H'.$p, $reg->stock)
                          ->setCellValue('I'.$p, $reg->precio_unitario)
-                         ->setCellValue('J'.$p, "");
+                         ->setCellValue('J'.$p, $reg->stock * $reg->precio_unitario);
+                $sumatoria_parciales = $sumatoria_parciales + ($reg->stock * $reg->precio_unitario);
             }
             /* Rename sheet */
             $objWorkSheet->setTitle("Inventario_Almacen");
             $p++;
         }
+
+        $y = $p;
+        $objWorkSheet->setCellValue('A'.$y, "")
+                     ->setCellValue('B'.$y, "")
+                     ->setCellValue('C'.$y, "")
+                     ->setCellValue('D'.$y, "")
+                     ->setCellValue('E'.$y, "")
+                     ->setCellValue('F'.$y, "")
+                     ->setCellValue('G'.$y, "")
+                     ->setCellValue('H'.$y, "")
+                     ->setCellValue('I'.$y, "TOTAL EN S/.")
+                     ->setCellValue('J'.$y, $sumatoria_parciales);
+
+        $objPHPExcel->getActiveSheet()->getStyle('I'.$y)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        $objPHPExcel->getActiveSheet()->getStyle('J'.$y)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        /* Centrar contenido */
+        $objPHPExcel->getActiveSheet()->getStyle('I'.$y)->applyFromArray($styleArray);
+        $objPHPExcel->getActiveSheet()->getStyle('I'.$y)->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('J'.$y)->applyFromArray($style);
+        /* border */
+        $objPHPExcel->getActiveSheet()->getStyle('I'.$y)->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('J'.$y)->applyFromArray($borders);
+
         $objPHPExcel->setActiveSheetIndex(0);
         /* datos de la salida del excel */
         header("Content-type: application/vnd.ms-excel");
@@ -8259,13 +8284,12 @@ class Comercial extends CI_Controller {
                 $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
 
                 /* Obtener el tipo de cambio de la fecha de registro de la factura */
-                $this->db->select('dolar_venta,euro_venta,fr_venta');
+                $this->db->select('dolar_venta,euro_venta');
                 $this->db->where('fecha_actual',$data->fecha);
                 $query = $this->db->get('tipo_cambio');
                 foreach($query->result() as $row){
                     $dolar_venta_fecha = $row->dolar_venta;
                     $euro_venta_fecha = $row->euro_venta;
-                    $fr_venta_fecha = $row->fr_venta;
                 }
                 /* Obtener el monto total en soles */
                 if($data->id_agente == 2){
@@ -8276,10 +8300,6 @@ class Comercial extends CI_Controller {
                     }else if($data->no_moneda == 'EURO'){
                         $convert_soles = $data->total * $euro_venta_fecha;
                         $suma_euro = $suma_euro + $data->total;
-                        $suma_total_soles = $suma_total_soles + $convert_soles;
-                    }else if($data->no_moneda == 'FRANCO SUIZO'){
-                        $convert_soles = $data->total * $fr_venta_fecha;
-                        $suma_franco = $suma_franco + $data->total;
                         $suma_total_soles = $suma_total_soles + $convert_soles;
                     }else{
                         $convert_soles = $data->total;
@@ -8292,7 +8312,7 @@ class Comercial extends CI_Controller {
                     $suma_total_soles = $suma_total_soles + $data->total;
                 }
 
-                if($data->id_agente == 2){
+                if($data->id_agente == ""){
                     $objWorkSheet->setCellValue('A'.$p, $i)
                                  ->setCellValue('B'.$p, $data->no_comprobante)
                                  ->setCellValue('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT)." - ".str_pad($data->nro_comprobante, 8, 0, STR_PAD_LEFT))
@@ -8375,24 +8395,6 @@ class Comercial extends CI_Controller {
                      ->setCellValue('E'.$p, "")
                      ->setCellValue('F'.$p, "T. EN EUROS")
                      ->setCellValue('G'.$p, $suma_euro);
-        $p = $p + 1;
-        /* ---------------------------------------------------------------------- */
-        $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style);
-        $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style);
-        $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($styleArray);
-        $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($styleArray);
-        /* border */
-        $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
-        $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
-        /* formato */
-        $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-        $objWorkSheet->setCellValue('A'.$p, "")
-                     ->setCellValue('B'.$p, "")
-                     ->setCellValue('C'.$p, "")
-                     ->setCellValue('D'.$p, "")
-                     ->setCellValue('E'.$p, "")
-                     ->setCellValue('F'.$p, "T. EN FRANCOS")
-                     ->setCellValue('G'.$p, $suma_franco);
         $p = $p + 1;
         /* ---------------------------------------------------------------------- */
         /* formato */
