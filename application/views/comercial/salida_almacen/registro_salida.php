@@ -132,7 +132,7 @@ $(function() {
 					$('#stockactual').val('');
 					$('#unidadmedida').val('');
 					$('#cantidad').val('');
-	              	swal({ title: "Salida Registrada con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 600000 });
+	              	swal({ title: "Salida Registrada con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 6000000 });
 	              	window.location.href="<?php echo base_url();?>comercial/gestionsalida";
 	            }else if(response == "error_stock"){
 	              	$("#modalerror").empty().append('<span style="color:red"><b>!No existe Stock Disponible!</b><br><b>Verificar la Cantidad Solicitada.</b></span>').dialog({

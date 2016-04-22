@@ -219,6 +219,18 @@ $(function() {
 		}
 	});
 
+	$("#submit_renovar_tabla").on("click",function(){
+		$.ajax({
+            type: "POST",
+            url: "<?php echo base_url(); ?>comercial/actualizar_tabla_detalle_salida/",
+          	success: function(response){
+	            if(response == 1){
+	            	swal({ title: "La tabla ha sido actualizada con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+	            }
+	        }
+        });
+	});
+
 	$("#submit_finalizar_cuadre").on("click",function(){
 		var id_area = $("#area").val();
 		var fecharegistro = $("#fecharegistro").val();
@@ -630,6 +642,22 @@ function fill_inputs(id_salida_producto){
 	$("#table_button_finalizar_salida").css('display','none');
 }
 
+function imprimir_salida(id_salida_producto){
+	var array_json = Array();
+	array_json[0] = id_salida_producto;
+	// Convert to Object
+    var jObject = {};
+
+    for(i in array_json){
+        jObject[i] = array_json[i];
+    }
+    // Luego lo paso por JSON  a un archivo php llamado js.php
+    jObject= JSON.stringify(jObject);
+  	
+  	url = '<?php echo base_url(); ?>comercial/exportar_doc_salida/'+jObject;
+  	$(location).attr('href',url);
+}
+
 </script>
 
 <div id="contenedor">
@@ -680,7 +708,7 @@ function fill_inputs(id_salida_producto){
         <div id="retorno"></div>
       </div>
     <?php } ?>
-	<div id="tituloCont" style="margin-bottom: 10px;">Registro de Salida de Productos</div>
+	<div id="tituloCont" style="margin-bottom: 10px;">Devolución y Consulta de Productos</div>
 	<div id="formFiltro">
 		<div id="options" style="border-bottom: 1px solid #000; padding-bottom: 15px;margin-bottom: 0px;">
 			<div class="newarea"><a href="<?php echo base_url(); ?>comercial/gestionarea/">Gestionar Área y Responsable</a></div>
@@ -769,6 +797,7 @@ function fill_inputs(id_salida_producto){
 				<tr style="height:30px;" id="cantidad_devolucion">
 					<td width="131" valign="middle" colspan="2">Cantidad Devolución:</td>
 			        <td width="109"><?php echo form_input($unidades_devolucion);?></td>
+			        <!--<td width="109"><input name="submit" type="submit" id="submit_renovar_tabla" value="RENOVAR TABLA DETALLE SALIDAS" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>-->
 			        <td width="109"><input name="submit" type="submit" id="submit_devolucion_producto" value="Registrar Devolución" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
 			        <td width="109" style="padding-left: 25px;;"><input name="submit" type="submit" id="cancelar_devolucion" value="Cancelar Devolución" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
 				</tr>
@@ -799,17 +828,15 @@ function fill_inputs(id_salida_producto){
           <thead>
               <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
                 <td sort="idprod" width="50" height="27">ITEM</td>
-                <td sort="idproducto" width="110" height="27">MÁQUINA</td>
-                <td sort="procprod" width="110">ÁREA</td>
-                <td sort="procprod" width="150">SOLICITANTE</td>
+                <td sort="idproducto" width="130" height="27">MÁQUINA</td>
+                <td sort="procprod" width="70">ÁREA</td>
+                <td sort="procprod" width="170">SOLICITANTE</td>
                 <td sort="procprod" width="80">FECHA</td>
                 <td sort="procprod" width="340">PRODUCTO</td>
                 <td sort="procprod" width="70">CANTIDAD</td>
                 
                 <td width="20" style="background-image: none;">&nbsp;</td>
-                <!--
-                <td width="20">&nbsp;</td>
-                -->
+                <td width="20" style="background-image: none;">&nbsp;</td>
               </tr>
           </thead>
           <?php 
@@ -824,14 +851,13 @@ function fill_inputs(id_salida_producto){
                 <td style="vertical-align: middle;"><?php echo $listasalidaproductos->no_producto; ?></td>
                 <td style="vertical-align: middle;"><?php echo number_format($listasalidaproductos->cantidad_salida,2,'.',',');?></td>
                 <td width="20" align="center"><input type="radio" name="newsletter" onClick="fill_inputs(<?php echo $listasalidaproductos->id_salida_producto; ?>)" style="cursor: pointer;" title="Devolución"/></td>
-                
-				<!--
-                <td width="20" align="center"><img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listasalidaproductos->id_salida_producto; ?>)" style="cursor: pointer;"/></td>
-                -->
+                <td width="20" align="center" style="vertical-align: inherit;">
+                	<span id="imprimir_salida" class="icon-ban" style="color: red;cursor: pointer;" onClick="imprimir_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)"></span>
+                </td>
                 <!--
                 <td width="20" align="center">
-                  <a href="" class="eliminar_salida" id="elim_<?php echo $listasalidaproductos->id_salida_producto; ?>">
-                  <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida"/></a>
+                  <a href="" class="eliminar_salida" id="elim_<?php // echo $listasalidaproductos->id_salida_producto; ?>">
+                  <img src="<?php // echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida"/></a>
                 </td>
                 -->
               </tr>

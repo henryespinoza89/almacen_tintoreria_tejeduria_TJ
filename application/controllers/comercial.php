@@ -910,6 +910,135 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function exportar_doc_salida(){
+        // Se carga el modelo alumno
+        $this->load->model('model_comercial');
+        // Se carga la libreria fpdf
+        $this->load->library('pdfSalidaproducto');
+        // Obtener las variables
+        $data = $this->security->xss_clean($this->uri->segment(3));
+        $data = json_decode($data, true);
+        $id_salida_producto = $data[0];
+        // Creacion del PDF
+        // Se crea un objeto de la clase Pdf, recuerda que la clase Pdf heredó todos las variables y métodos de fpdf
+        $this->pdf = new PdfSalidaproducto();
+        // Agregamos una página
+        $this->pdf->AddPage();
+        // Define el alias para el número de página que se imprimirá en el pie
+        $this->pdf->AliasNbPages();
+        // Se define el titulo, márgenes izquierdo, derecho y el color de relleno predeterminado
+        $this->pdf->SetTitle("Documento de Salida");
+        $this->pdf->SetLeftMargin(20);
+        $this->pdf->SetRightMargin(25);
+        $this->pdf->SetFillColor(200,200,200);
+        // Se define el formato de fuente: Arial, negritas, tamaño 9
+        $this->pdf->SetFont('Arial', 'B', 7);
+
+        /*
+            TITULOS DE COLUMNAS - EJEMPLO
+            $this->pdf->Cell(Ancho, Alto,texto,borde,posición,alineación,relleno);
+            $this->pdf->Cell(245,9,utf8_decode('LISTA DE PROVEEDORES'),'TBR TBL',0,'C','1');
+        */
+
+        $result = $this->model_comercial->getSalidasProductos_print_cabecera($id_salida_producto);
+        foreach ($result as $row){
+            // variable de observacion
+            $observacion = $row->observacion;
+            $solicitante = $row->solicitante;
+            $id_salida_producto = $row->id_salida_producto;
+            /* Formato para la fecha inicial */
+            $elementos = explode("-", $row->fecha);
+            $anio = $elementos[0];
+            $mes = $elementos[1];
+            $dia = $elementos[2];
+            $array = array($dia, $mes, $anio);
+            $fecharegistro = implode("/", $array);
+
+            $this->pdf->SetFont('Arial','B',7);
+            $this->pdf->Cell(25,9,utf8_decode('GENERADO EL: '.date('d-m-Y')),0,0,'C');
+            $this->pdf->Cell(240,9,utf8_decode('NOTA DE SALIDA 00000'.$id_salida_producto),0,0,'C');
+            $this->pdf->Ln(9);
+            $this->pdf->SetFont('Arial','B',12);
+            $this->pdf->Cell(155,9,utf8_decode('TEJIDOS JORGITO SAC'),0,0,'C');
+            $this->pdf->Ln(4);
+            $this->pdf->SetFont('Arial','B',7);
+
+            $this->pdf->Cell(30,20,utf8_decode("ALMACEN : "),'',0,'R','0');
+            $this->pdf->Cell(53,20,"ALMACEN DE REPUESTOS",'',0,'L','0');
+            $this->pdf->Cell(30,20,utf8_decode("MOTIVO : "),'',0,'R','0');
+            $this->pdf->Cell(35,20,"DESPACHO DE REPUESTOS",'',0,'L','0');
+
+            $this->pdf->Ln(4);
+            $this->pdf->Cell(30,20,utf8_decode("EMPLEADO : "),'',0,'R','0');
+            $this->pdf->Cell(53,20,utf8_decode($solicitante),'',0,'L','0');
+            $this->pdf->Cell(30,20,utf8_decode("MÁQUINA : "),'',0,'R','0');
+            $this->pdf->Cell(35,20,utf8_decode($row->nombre_maquina),'',0,'L','0');
+
+            $this->pdf->Ln(4);
+            $this->pdf->Cell(30,20,utf8_decode("APROBADO POR : "),'',0,'R','0');
+            $this->pdf->Cell(53,20,"EDIN MONTES",'',0,'L','0');
+            $this->pdf->Cell(30,20,utf8_decode("PARTE : "),'',0,'R','0');
+            $this->pdf->Cell(35,20,utf8_decode($row->nombre_parte_maquina),'',0,'L','0');
+
+            $this->pdf->Ln(4);
+            $this->pdf->Cell(30,20,utf8_decode("FECHA DE EMISION : "),'',0,'R','0');
+            $this->pdf->Cell(53,20,$fecharegistro,'',0,'L','0');
+            $this->pdf->Cell(30,20,utf8_decode("ÁREA : "),'',0,'R','0');
+            $this->pdf->Cell(35,20,utf8_decode($row->no_area),'',0,'L','0');
+        }
+
+        $this->pdf->Ln(18);
+        $this->pdf->Cell(8,6,utf8_decode('N°'),'BLTR',0,'C','0'); //La letra "C" indica la alineación del texto dentro del campo de la tabla: Center, Left L, Rigth R
+        $this->pdf->Cell(14,6,utf8_decode('CÓDIGO'),'BLTR',0,'C','0');
+        $this->pdf->Cell(60,6,utf8_decode('NOMBRE O DESCRIPCIÓN'),'BLTR',0,'C','0');
+        $this->pdf->Cell(18,6,utf8_decode('UBICACIÓN'),'BLTR',0,'C','0');
+        $this->pdf->Cell(15,6,utf8_decode('MED.'),'BLTR',0,'C','0');
+        $this->pdf->Cell(15,6,utf8_decode('CANT.'),'BLTR',0,'C','0');
+        $this->pdf->Cell(40,6,utf8_decode('OBSERVACIÓN'),'BLTR',0,'C','0');
+        $this->pdf->Ln(6);
+
+
+        $result_detalle_salida = $this->model_comercial->getSalidasProductos_print_detalle_salida($id_salida_producto);
+        
+        $x = 1;
+        $this->pdf->SetFont('Arial','B',6);
+        foreach ($result_detalle_salida as $item) {
+            $this->pdf->Cell(8,6,$x++,'BLTR',0,'C',0);
+            $this->pdf->Cell(14,6,utf8_decode('PRD'.$item->id_pro),'BLTR',0,'C',0);
+            $this->pdf->Cell(60,6,utf8_decode($item->no_producto),'BLTR',0,'C',0);
+            $this->pdf->Cell(18,6,utf8_decode($item->nombre_ubicacion),'BLTR',0,'C',0);
+            $this->pdf->Cell(15,6,utf8_decode($item->nom_uni_med),'BLTR',0,'C',0);
+            $this->pdf->Cell(15,6,utf8_decode($item->cantidad_salida),'BLTR',0,'C',0);
+            $this->pdf->Cell(40,6,utf8_decode($observacion),'BLTR',0,'C',0);
+            $this->pdf->Ln(6);
+        }
+        $this->pdf->Cell(20,20,utf8_decode('OBSERVACIONES'),'',0,'C','0');
+        $this->pdf->Ln(6);
+        $this->pdf->Cell(10,20,utf8_decode("__________________________________________________________________________________________________________________________________________"),'',0,'L','0');
+        // Firma de Conformidad
+        $this->pdf->Ln(15);
+        $this->pdf->Cell(20,20,utf8_decode(" "),'',0,'L','0');
+        $this->pdf->Cell(10,20,utf8_decode("______________________________________________"),'',0,'L','0');
+        $this->pdf->Cell(66,20,utf8_decode(" "),'',0,'L','0');
+        $this->pdf->Cell(60,20,utf8_decode("______________________________________________"),'',0,'L','0');
+        $this->pdf->Ln(4);
+        $this->pdf->Cell(30,20,utf8_decode(" "),'',0,'L','0');
+        $this->pdf->Cell(35,20,utf8_decode('EDIN MONTES'),'',0,'C','0');
+        $this->pdf->Cell(45,20,utf8_decode(" "),'',0,'L','0');
+        $this->pdf->Cell(30,20,utf8_decode($solicitante),'',0,'C','0');
+        
+        /*
+         * Se manda el pdf al navegador
+         *
+         * $this->pdf->Output(nombredelarchivo, destino);
+         *
+         * I = Muestra el pdf en el navegador
+         * D = Envia el pdf para descarga
+         *
+         */
+        $this->pdf->Output("Documento de Salida $id_salida_producto.pdf", 'D');
+    }
+
     public function gestiontipocambio(){
         $nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
         $apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
@@ -4111,6 +4240,29 @@ class Comercial extends CI_Controller {
         }while($aux_parametro_cuadre == 0);
     }
 
+    function actualizar_tabla_detalle_salida(){
+        $result_insert = $this->model_comercial->get_all_salidas_producto();
+        foreach ($result_insert as $item) {
+            $id_salida_producto = $item->id_salida_producto;
+            $id_detalle_producto = $item->id_detalle_producto;
+            $cantidad_salida = $item->cantidad_salida;
+            $id_maquina = $item->id_maquina;
+            $id_parte_maquina = $item->id_parte_maquina;
+            $p_u_salida = $item->p_u_salida;
+
+            $a_data_detalle = array('id_detalle_producto' => $id_detalle_producto,
+                                    'cantidad_salida' => $cantidad_salida,
+                                    'id_parte_maquina' => $id_parte_maquina,
+                                    'id_maquina' => $id_maquina,
+                                    'id_salida_producto' => $id_salida_producto,
+                                    'p_u_salida' => $p_u_salida
+                                    );
+            $this->model_comercial->save_salida_detalle_producto($a_data_detalle,true);
+        }
+
+
+    }
+
     function procesar_detalle_productos_salida(){
         $this->db->trans_begin();
 
@@ -4121,6 +4273,16 @@ class Comercial extends CI_Controller {
         $solicitante = strtoupper($this->security->xss_clean($this->input->post('solicitante')));
         $fecharegistro = $this->security->xss_clean($this->input->post('fecharegistro'));
         $observacion = $this->security->xss_clean($this->input->post('observacion'));
+        $id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+
+        // registrar los datos generales de salida
+        $a_data = array('id_area' => $id_area,
+                        'fecha' => $fecharegistro,
+                        'id_almacen' => $id_almacen,
+                        'solicitante' => $solicitante,
+                        'observacion' => $observacion
+                        );
+        $result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
 
         $detalle_producto_salida = $this->cart->contents();
         foreach ($detalle_producto_salida as $item) {
@@ -4151,7 +4313,7 @@ class Comercial extends CI_Controller {
             }
 
             // Enviar informacion a funcion que realizara el registro de salida de productos
-            $result = $this->model_comercial->finalizar_salida_before_13($id_area, $solicitante,$fecharegistro,$observacion,$id_maquina,$id_parte_maquina,$no_producto,$cantidad_salida);
+            $result = $this->model_comercial->finalizar_salida_before_13($result_insert, $id_area, $solicitante,$fecharegistro,$observacion,$id_maquina,$id_parte_maquina,$no_producto,$cantidad_salida);
             
             if($result != '1' && $count == 0){
                 $auxiliar = $result;
@@ -8637,9 +8799,9 @@ class Comercial extends CI_Controller {
         $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
         $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
         $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(40);
         $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(55);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(65);
         $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(25);
         $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(25);
         $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(25);
