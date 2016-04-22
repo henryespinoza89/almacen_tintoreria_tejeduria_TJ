@@ -27706,3 +27706,110 @@ DEBUG - 2016-03-31 15:52:08 --> UTF-8 Support Enabled
 DEBUG - 2016-03-31 15:52:08 --> URI Class Initialized
 DEBUG - 2016-03-31 15:52:08 --> Router Class Initialized
 ERROR - 2016-03-31 15:52:08 --> 404 Page Not Found --> assets
+DEBUG - 2016-03-31 16:17:55 --> Config Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Hooks Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Utf8 Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> UTF-8 Support Enabled
+DEBUG - 2016-03-31 16:17:55 --> URI Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Router Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Output Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Security Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Input Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Global POST and COOKIE data sanitized
+DEBUG - 2016-03-31 16:17:55 --> Language Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Loader Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Helper loaded: url_helper
+DEBUG - 2016-03-31 16:17:55 --> Helper loaded: form_helper
+DEBUG - 2016-03-31 16:17:55 --> Database Driver Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Form Validation Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Session Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Helper loaded: string_helper
+DEBUG - 2016-03-31 16:17:55 --> Session routines successfully run
+DEBUG - 2016-03-31 16:17:55 --> User Agent Class Initialized
+DEBUG - 2016-03-31 16:17:55 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:56 --> Cart Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Controller Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Model Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Model Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:56 --> Model Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:56 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:56 --> Table Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Config Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Hooks Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Utf8 Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> UTF-8 Support Enabled
+DEBUG - 2016-03-31 16:17:56 --> URI Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Router Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Output Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Security Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Input Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Global POST and COOKIE data sanitized
+DEBUG - 2016-03-31 16:17:56 --> Language Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Loader Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Helper loaded: url_helper
+DEBUG - 2016-03-31 16:17:56 --> Helper loaded: form_helper
+DEBUG - 2016-03-31 16:17:56 --> Database Driver Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Form Validation Class Initialized
+DEBUG - 2016-03-31 16:17:56 --> Session Class Initialized
+DEBUG - 2016-03-31 16:17:57 --> Helper loaded: string_helper
+DEBUG - 2016-03-31 16:17:57 --> Session routines successfully run
+DEBUG - 2016-03-31 16:17:57 --> User Agent Class Initialized
+DEBUG - 2016-03-31 16:17:57 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:57 --> Cart Class Initialized
+DEBUG - 2016-03-31 16:17:57 --> Controller Class Initialized
+DEBUG - 2016-03-31 16:17:57 --> Model Class Initialized
+DEBUG - 2016-03-31 16:17:57 --> Model Class Initialized
+DEBUG - 2016-03-31 16:17:57 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:57 --> Model Class Initialized
+DEBUG - 2016-03-31 16:17:57 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:57 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:57 --> Table Class Initialized
+DEBUG - 2016-03-31 16:17:57 --> XSS Filtering completed
+DEBUG - 2016-03-31 16:17:57 --> XSS Filtering completed
+DEBUG - 2016-03-31 16:17:57 --> XSS Filtering completed
+DEBUG - 2016-03-31 16:17:57 --> File loaded: application/views/comercial/menu.php
+DEBUG - 2016-03-31 16:17:57 --> File loaded: application/views/comercial/salida_almacen/registro_salida.php
+DEBUG - 2016-03-31 16:17:57 --> Final output sent to browser
+DEBUG - 2016-03-31 16:17:57 --> Total execution time: 1.2938
+DEBUG - 2016-03-31 16:17:57 --> Config Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Config Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Hooks Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Utf8 Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> UTF-8 Support Enabled
+DEBUG - 2016-03-31 16:17:58 --> URI Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Router Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Output Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Security Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Input Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Global POST and COOKIE data sanitized
+DEBUG - 2016-03-31 16:17:58 --> Language Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Hooks Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Loader Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Helper loaded: url_helper
+DEBUG - 2016-03-31 16:17:58 --> Helper loaded: form_helper
+DEBUG - 2016-03-31 16:17:58 --> Database Driver Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Form Validation Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Session Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Helper loaded: string_helper
+DEBUG - 2016-03-31 16:17:58 --> Session routines successfully run
+DEBUG - 2016-03-31 16:17:58 --> User Agent Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Utf8 Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> UTF-8 Support Enabled
+DEBUG - 2016-03-31 16:17:58 --> URI Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Router Class Initialized
+ERROR - 2016-03-31 16:17:58 --> 404 Page Not Found --> assets
+DEBUG - 2016-03-31 16:17:58 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:58 --> Cart Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Controller Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Model Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Model Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:58 --> Model Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:58 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-03-31 16:17:58 --> Table Class Initialized
+DEBUG - 2016-03-31 16:17:58 --> XSS Filtering completed
+DEBUG - 2016-03-31 16:17:58 --> Final output sent to browser
+DEBUG - 2016-03-31 16:17:58 --> Total execution time: 0.6516
