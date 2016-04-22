@@ -797,7 +797,7 @@ function imprimir_salida(id_salida_producto){
 				<tr style="height:30px;" id="cantidad_devolucion">
 					<td width="131" valign="middle" colspan="2">Cantidad Devolución:</td>
 			        <td width="109"><?php echo form_input($unidades_devolucion);?></td>
-			        <!--<td width="109"><input name="submit" type="submit" id="submit_renovar_tabla" value="RENOVAR TABLA DETALLE SALIDAS" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>-->
+			        <td width="109"><input name="submit" type="submit" id="submit_renovar_tabla" value="RENOVAR TABLA DETALLE SALIDAS" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
 			        <td width="109"><input name="submit" type="submit" id="submit_devolucion_producto" value="Registrar Devolución" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
 			        <td width="109" style="padding-left: 25px;;"><input name="submit" type="submit" id="cancelar_devolucion" value="Cancelar Devolución" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
 				</tr>
@@ -827,7 +827,7 @@ function imprimir_salida(id_salida_producto){
     <table border="0" cellspacing="0" cellpadding="0" id="listarSalidaProductos" style="width:1360px;" class="table table-hover table-striped">
           <thead>
               <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
-                <td sort="idprod" width="50" height="27">ITEM</td>
+                <td sort="idprod" width="50" height="27">ID</td>
                 <td sort="idproducto" width="130" height="27">MÁQUINA</td>
                 <td sort="procprod" width="70">ÁREA</td>
                 <td sort="procprod" width="170">SOLICITANTE</td>
@@ -843,7 +843,7 @@ function imprimir_salida(id_salida_producto){
           $i = 1;
           foreach($salidaproducto as $listasalidaproductos){ ?>  
               <tr class="contentTable">
-                <td height="23" style="vertical-align: middle;"><?php echo str_pad($i, 3, 0, STR_PAD_LEFT); ?></td>
+                <td height="23" style="vertical-align: middle;"><?php echo $listasalidaproductos->id_salida_producto; ?></td>
                 <td style="vertical-align: middle;"><?php echo $listasalidaproductos->nombre_maquina; ?></td>
                 <td style="vertical-align: middle;"><?php echo $listasalidaproductos->no_area; ?></td>
                 <td style="vertical-align: middle;"><?php echo $listasalidaproductos->solicitante; ?></td>
@@ -852,9 +852,10 @@ function imprimir_salida(id_salida_producto){
                 <td style="vertical-align: middle;"><?php echo number_format($listasalidaproductos->cantidad_salida,2,'.',',');?></td>
                 <td width="20" align="center"><input type="radio" name="newsletter" onClick="fill_inputs(<?php echo $listasalidaproductos->id_salida_producto; ?>)" style="cursor: pointer;" title="Devolución"/></td>
                 <td width="20" align="center" style="vertical-align: inherit;">
-                	<span id="imprimir_salida" class="icon-ban" style="color: red;cursor: pointer;" onClick="imprimir_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)"></span>
+                	<i class="fa fa-print" aria-hidden="true" style="color: red;cursor: pointer;" title="Exportar PDF" onClick="imprimir_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)"></i>
                 </td>
                 <!--
+                <span id="imprimir_salida" class="icon-ban" style="color: red;cursor: pointer;" onClick="imprimir_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)"></span>
                 <td width="20" align="center">
                   <a href="" class="eliminar_salida" id="elim_<?php // echo $listasalidaproductos->id_salida_producto; ?>">
                   <img src="<?php // echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida"/></a>
