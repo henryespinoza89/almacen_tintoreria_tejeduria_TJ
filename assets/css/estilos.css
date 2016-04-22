@@ -673,17 +673,17 @@ nav a {
 }
 
 #datosalida{
-	min-height: 180px;
+	min-height: 160px;
     width: 1365px;
     background: whitesmoke;
     padding-left: 15px;
-    padding-top: 5px;
+    padding-top: 10px;
     border-bottom: 1px solid #000;
     color: #000;
     margin-bottom: 10px;
 }
 
-#cantidad_devolucion{
+#table_button_finalizar_salida{
 	display: none;
 }
 

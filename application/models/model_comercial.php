@@ -586,6 +586,13 @@ class Model_comercial extends CI_Model {
                     );
                     $this->db->where('id_salida_producto',$num_comprobante);
                     $this->db->update('salida_producto', $actualizar_precio_salida);
+                }else if($descripcion == 'ORDEN INGRESO'){
+                    // Actualizar el precio unitario en el kardex
+                    $actualizar_precio_io_kardex = array(
+                        'precio_unitario_actual_promedio'=> $nuevo_precio_unitario
+                    );
+                    $this->db->where('id_kardex_producto',$id_kardex_producto);
+                    $this->db->update('kardex_producto', $actualizar_precio_io_kardex);
                 }
             }
             // Formateando la Fecha
@@ -2231,6 +2238,21 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    function save_salida_detalle_producto($a_data,$return_id = false){
+        try{
+            $this->db->insert('detalle_salida_producto',$a_data);
+            if($return_id){
+                //return 'partida_registrada';
+                return $this->db->insert_id();
+            }else{
+                return 'error_inesperado';
+            }
+        }catch(Exception $e){
+            throw new Exception("Error Inesperado");
+            return false;
+        }
+    }
+
     function saveSalidaProductoKardex($a_data_kardex,$return_id = false){
         try{
             $this->db->insert('kardex_producto',$a_data_kardex);
@@ -2702,13 +2724,14 @@ class Model_comercial extends CI_Model {
         }
         $filtro .= " ORDER BY area.no_area ASC";
         $filtro .= " LIMIT 100";
-        $sql = "SELECT salida_producto.id_salida_producto,salida_producto.solicitante,salida_producto.fecha,salida_producto.cantidad_salida,detalle_producto.no_producto,
-        area.no_area,parte_maquina.nombre_parte_maquina,maquina.nombre_maquina,salida_producto.observacion
+        $sql = "SELECT salida_producto.id_salida_producto,salida_producto.solicitante,salida_producto.fecha,detalle_salida_producto.cantidad_salida,detalle_producto.no_producto,
+        area.no_area,maquina.nombre_maquina,parte_maquina.nombre_parte_maquina,salida_producto.observacion
         FROM salida_producto
+        INNER JOIN detalle_salida_producto ON detalle_salida_producto.id_salida_producto = salida_producto.id_salida_producto
         INNER JOIN area ON salida_producto.id_area = area.id_area
-        INNER JOIN detalle_producto ON salida_producto.id_detalle_producto = detalle_producto.id_detalle_producto
-        INNER JOIN maquina ON salida_producto.id_maquina = maquina.id_maquina
-        LEFT JOIN parte_maquina ON salida_producto.id_parte_maquina = parte_maquina.id_parte_maquina
+        INNER JOIN detalle_producto ON detalle_salida_producto.id_detalle_producto = detalle_producto.id_detalle_producto
+        INNER JOIN maquina ON detalle_salida_producto.id_maquina = maquina.id_maquina
+        LEFT JOIN parte_maquina ON parte_maquina.id_maquina = maquina.id_maquina AND detalle_salida_producto.id_parte_maquina = parte_maquina.id_parte_maquina
         WHERE salida_producto.id_salida_producto IS NOT NULL".$filtro;
         $query = $this->db->query($sql);
         if($query->num_rows()>0)
@@ -3290,21 +3313,17 @@ class Model_comercial extends CI_Model {
         $filtro .= " AND DATE(salida_producto.fecha) BETWEEN'".$f_inicial."'AND'".$f_final."'";
         $filtro .= " AND salida_producto.id_almacen =".(int)$this->security->xss_clean($this->session->userdata('almacen'));
         $filtro .= " ORDER BY salida_producto.fecha ASC , salida_producto.id_salida_producto ASC";
-        $sql = "SELECT salida_producto.id_salida_producto,salida_producto.solicitante,salida_producto.cantidad_salida,
-                salida_producto.p_u_salida,detalle_producto.no_producto,producto.id_producto,area.no_area,nombre_maquina.nombre_maquina,
-                marca_maquina.no_marca,modelo_maquina.no_modelo,serie_maquina.no_serie,categoria.no_categoria,unidad_medida.nom_uni_med,
-                salida_producto.fecha,salida_producto.id_almacen
-                FROM
-                salida_producto
-                INNER JOIN detalle_producto ON salida_producto.id_detalle_producto = detalle_producto.id_detalle_producto
+        $sql = "SELECT salida_producto.id_salida_producto,salida_producto.id_area,salida_producto.solicitante,salida_producto.fecha,
+                detalle_salida_producto.id_detalle_producto,detalle_salida_producto.cantidad_salida,detalle_salida_producto.p_u_salida,
+                salida_producto.id_almacen,detalle_salida_producto.id_maquina,detalle_salida_producto.id_parte_maquina,
+                salida_producto.observacion,area.no_area,detalle_producto.no_producto,producto.id_pro,unidad_medida.nom_uni_med,categoria.no_categoria
+                FROM salida_producto
+                INNER JOIN detalle_salida_producto ON detalle_salida_producto.id_salida_producto = salida_producto.id_salida_producto
+                INNER JOIN detalle_producto ON detalle_salida_producto.id_detalle_producto = detalle_producto.id_detalle_producto
                 INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
-                INNER JOIN area ON salida_producto.id_area = area.id_area
-                LEFT JOIN nombre_maquina ON salida_producto.id_nombre_maquina = nombre_maquina.id_nombre_maquina
-                LEFT JOIN marca_maquina ON marca_maquina.id_nombre_maquina = nombre_maquina.id_nombre_maquina AND salida_producto.id_marca = marca_maquina.id_marca_maquina
-                LEFT JOIN modelo_maquina ON modelo_maquina.id_marca_maquina = marca_maquina.id_marca_maquina AND salida_producto.id_modelo = modelo_maquina.id_modelo_maquina
-                LEFT JOIN serie_maquina ON serie_maquina.id_modelo_maquina = modelo_maquina.id_modelo_maquina AND salida_producto.id_serie = serie_maquina.id_serie_maquina
                 INNER JOIN categoria ON producto.id_categoria = categoria.id_categoria
                 INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
+                INNER JOIN area ON salida_producto.id_area = area.id_area
                 WHERE salida_producto.id_salida_producto IS NOT NULL".$filtro;
         $query = $this->db->query($sql);
         if($query->num_rows()>0)
@@ -3483,13 +3502,12 @@ class Model_comercial extends CI_Model {
     }
 
     function get_info_inventario_actual(){
-        $sql = "SELECT producto.id_producto,detalle_producto.no_producto,producto.estado,categoria.no_categoria,
-        tipo_producto.no_tipo_producto,procedencia.no_procedencia,unidad_medida.nom_uni_med,detalle_producto.stock,
-        detalle_producto.precio_unitario,detalle_producto.stock_sta_clara,producto.id_pro
+        $sql = "SELECT producto.id_pro,producto.estado,detalle_producto.no_producto,categoria.no_categoria,tipo_producto.no_tipo_producto,
+        procedencia.no_procedencia,unidad_medida.nom_uni_med,detalle_producto.stock,detalle_producto.precio_unitario
         FROM producto
         INNER JOIN detalle_producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
         INNER JOIN categoria ON producto.id_categoria = categoria.id_categoria
-        INNER JOIN tipo_producto ON tipo_producto.id_categoria = categoria.id_categoria AND producto.id_tipo_producto = tipo_producto.id_tipo_producto
+        INNER JOIN tipo_producto ON producto.id_tipo_producto = tipo_producto.id_tipo_producto
         INNER JOIN procedencia ON producto.id_procedencia = procedencia.id_procedencia
         INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
         WHERE producto.id_pro IS NOT NULL ORDER BY producto.estado ASC";
@@ -3569,7 +3587,11 @@ class Model_comercial extends CI_Model {
     }
 
     public function listar_parte_Maquinas(){
+        $id_maquina = $this->session->userdata('id_maquina');
+        // echo $id_maquina;
         $this->db->select('id_parte_maquina,nombre_parte_maquina');
+        // if($this->session->userdata('id_maquina') != ""){$this->db->where('id_maquina',$this->session->userdata('id_maquina'));}
+        $this->db->where('id_maquina',$id_maquina);
         $this->db->order_by('nombre_parte_maquina', 'ASC');           
         $query = $this->db->get('parte_maquina');
         if($query->num_rows()>0)
@@ -4073,6 +4095,44 @@ class Model_comercial extends CI_Model {
                 INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
                 INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
                 WHERE salida_producto.id_salida_producto IS NOT NULL".$filtro;
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
+    function getSalidasProductos_print_cabecera($id_salida_producto){
+        $filtro = "";
+        $filtro .= " AND salida_producto.id_salida_producto =".(int)$id_salida_producto; 
+        $filtro .= " LIMIT 1";
+        $sql = "SELECT salida_producto.id_salida_producto,salida_producto.solicitante,salida_producto.fecha,area.no_area,salida_producto.observacion,
+                maquina.nombre_maquina,parte_maquina.nombre_parte_maquina
+                FROM salida_producto
+                INNER JOIN area ON salida_producto.id_area = area.id_area
+                INNER JOIN detalle_salida_producto ON detalle_salida_producto.id_salida_producto = salida_producto.id_salida_producto
+                INNER JOIN maquina ON detalle_salida_producto.id_maquina = maquina.id_maquina
+                LEFT JOIN parte_maquina ON parte_maquina.id_maquina = maquina.id_maquina AND detalle_salida_producto.id_parte_maquina = parte_maquina.id_parte_maquina
+                WHERE salida_producto.id_salida_producto IS NOT NULL".$filtro;
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
+    function getSalidasProductos_print_detalle_salida($id_salida_producto){
+        $filtro = "";
+        $filtro .= " AND detalle_salida_producto.id_salida_producto =".(int)$id_salida_producto; 
+        $sql = "SELECT detalle_salida_producto.id_salida_producto,detalle_producto.no_producto,producto.id_pro,ubicacion.nombre_ubicacion,unidad_medida.nom_uni_med,
+                detalle_salida_producto.cantidad_salida
+                FROM
+                detalle_salida_producto
+                INNER JOIN detalle_producto ON detalle_salida_producto.id_detalle_producto = detalle_producto.id_detalle_producto
+                INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
+                INNER JOIN ubicacion ON producto.id_ubicacion = ubicacion.id_ubicacion
+                INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
+                WHERE detalle_salida_producto.id_salida_producto IS NOT NULL".$filtro;
         $query = $this->db->query($sql);
         if($query->num_rows()>0)
         {
@@ -5432,6 +5492,45 @@ class Model_comercial extends CI_Model {
             return 'no_existe_movimiento';
         }else{
             return $id_kardex_producto_ultimo;
+        }
+    }
+
+    function cierre_almacen_montos_2016($fecha_formateada,$nombre_mes){
+        $sumatoria = 0;
+        $filtro = "";
+        $filtro .= " AND DATE(saldos_iniciales.fecha_cierre) ='".$fecha_formateada."'";
+        $sql = "SELECT saldos_iniciales.id_saldos_iniciales,saldos_iniciales.id_pro,saldos_iniciales.fecha_cierre,saldos_iniciales.stock_inicial,saldos_iniciales.precio_uni_inicial,saldos_iniciales.stock_inicial_sta_clara
+                FROM saldos_iniciales
+                WHERE saldos_iniciales.id_saldos_iniciales IS NOT NULL".$filtro;
+        $query = $this->db->query($sql);
+        foreach($query->result() as $row){
+            $id_pro = $row->id_pro;
+            $stock_inicial_sta_anita = $row->stock_inicial;
+            $stock_inicial_sta_clara = $row->stock_inicial_sta_clara;
+            $precio_unitario = $row->precio_uni_inicial;
+
+            $stock_general = $stock_inicial_sta_anita + $stock_inicial_sta_clara;
+            $sumatoria = $sumatoria + ($stock_general*$precio_unitario);
+        }
+        $datos_cierre_mes = array(
+            "fecha_cierre" => $fecha_formateada,
+            "monto_cierre" => $sumatoria,
+            "monto_cierre_sta_anita" => $sumatoria,
+            "monto_cierre_sta_clara" => 0,
+            "nombre_mes" => $nombre_mes,
+            "fecha_auxiliar" => $fecha_formateada
+        );
+        $this->db->insert('monto_cierre', $datos_cierre_mes);
+        return true;
+    }
+
+    public function insert_saldos_iniciales($datos)
+    {   
+        $last_id = $this->db->insert('saldos_iniciales', $datos);
+        if($last_id != ""){
+            return $this->db->insert_id();
+        }else{
+            return "error_inesperado";
         }
     }
 
@@ -7123,7 +7222,17 @@ class Model_comercial extends CI_Model {
         if($query->num_rows()>0){
             return $query->result();
         }
+    }
 
+    function get_all_productos_v2(){
+        $sql = "SELECT DISTINCT detalle_producto.id_detalle_producto,detalle_producto.no_producto,producto.id_pro,producto.estado,detalle_producto.stock
+        FROM detalle_producto
+        INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
+        WHERE detalle_producto.id_detalle_producto IS NOT NULL";
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0){
+            return $query->result();
+        }
     }
 
     public function actualizaTipoCambio(){
@@ -7922,6 +8031,19 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    public function get_all_salidas_producto(){
+        $sql = "SELECT salida_producto.id_salida_producto,salida_producto.id_area,salida_producto.solicitante,salida_producto.fecha,
+        salida_producto.id_detalle_producto,salida_producto.cantidad_salida,salida_producto.id_almacen,salida_producto.p_u_salida,
+        salida_producto.id_maquina,salida_producto.id_parte_maquina,salida_producto.observacion 
+        FROM salida_producto
+        WHERE salida_producto.id_salida_producto IS NOT NULL ";
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
     public function listarAreaE(){
         //$almacen = $this->session->userdata('almacen');
         /*
@@ -8154,7 +8276,7 @@ class Model_comercial extends CI_Model {
         return true;
     }
 
-    function finalizar_salida_before_13($id_area, $solicitante,$fecharegistro,$observacion,$id_maquina,$id_parte_maquina,$nombre_producto,$cantidad)
+    function finalizar_salida_before_13($result_insert, $id_area, $solicitante,$fecharegistro,$observacion,$id_maquina,$id_parte_maquina,$nombre_producto,$cantidad)
     {
         /* Inicio del proceso - transacción */
         $this->db->trans_begin();
@@ -8212,23 +8334,18 @@ class Model_comercial extends CI_Model {
                 $result_cierre = $this->model_comercial->validarRegistroCierre($fecharegistro);
                 if($result_cierre == 'successfull'){
                     // Realizar la salida del prodcuto
-                    $a_data = array('id_area' => $id_area,
-                                    'fecha' => $fecharegistro,
-                                    'id_detalle_producto' => $id_detalle_producto,
-                                    'cantidad_salida' => $cantidad,
-                                    'id_almacen' => $id_almacen,
-                                    'p_u_salida' => $precio_unitario,
-                                    'solicitante' => $solicitante,
-                                    'id_maquina' => $id_maquina,
-                                    'id_parte_maquina' => $id_parte_maquina,
-                                    'observacion' => $observacion
-                                    );
-                    $result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
+                    $a_data_detalle = array('id_detalle_producto' => $id_detalle_producto,
+                                            'cantidad_salida' => $cantidad,
+                                            'id_parte_maquina' => $id_parte_maquina,
+                                            'id_maquina' => $id_maquina,
+                                            'id_salida_producto' => $result_insert,
+                                            'p_u_salida' => $precio_unitario
+                                            );
+                    $this->model_comercial->save_salida_detalle_producto($a_data_detalle,true);
                     // Fin del registro de la salida
-
                     if($result_insert != ""){
-                        /* Gestión de kardex */
-                        /* Obtener el ultimo id de registro para la fecha */
+                        // Gestión de kardex
+                        // Obtener el ultimo id de registro para la fecha
                         $this->db->select('id_kardex_producto');
                         $this->db->where('fecha_registro <=',$fecharegistro);
                         $this->db->where('id_detalle_producto',$id_detalle_producto);
@@ -8237,11 +8354,11 @@ class Model_comercial extends CI_Model {
                         $query = $this->db->get('kardex_producto');
                         if(count($query->result()) > 0){
                             foreach($query->result() as $row){
-                                /*if($row->id_kardex_producto > $auxiliar){*/
+                                // if($row->id_kardex_producto > $auxiliar){
                                     $auxiliar = $row->id_kardex_producto; // devuelve el ultimo id que no necesariamente es el mayor
-                                /*}*/
+                                // }
                             }
-                            /* Obtener los datos del ultimo registro de la fecha */
+                            // Obtener los datos del ultimo registro de la fecha
                             $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual');
                             $this->db->where('id_kardex_producto',$auxiliar);
                             $query = $this->db->get('kardex_producto');

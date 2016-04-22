@@ -83,6 +83,8 @@
                 if(msg == 1){
                   swal({ title: "La Parte de Máquina ha sido regristada con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
                   $("#mdlNuevaParteMaquina").dialog("close");
+                  $('#maquina').val('');
+                  $('#parte_maquina_modal').val('');
                 }else{
                   sweetAlert(msg, "", "error");
                 }

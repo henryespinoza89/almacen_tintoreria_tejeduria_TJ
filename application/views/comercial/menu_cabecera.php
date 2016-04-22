@@ -181,6 +181,7 @@
 						<a href='<?php echo base_url();?>comercial/gestioningreso'><span>Gestión Ingreso de Facturas</span></a>
 						<ul>
 							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestioncierrealmacen'><span style="padding-left: 6px;">Cierre de Almacén</span></a></li>
+							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestion_cierre_saldos_iniciales'><span style="padding-left: 6px;">Cierre de Saldos Iniciales</span></a></li>
 						</ul>
 					</li>
 					<li><a href='<?php echo base_url();?>comercial/gestionsalida'><span>Gestión Salida de Almacén</span></a></li>
@@ -191,16 +192,16 @@
 							<li><a href='<?php echo base_url();?>comercial/gestionreportkardexgeneral'><span>Kardex General</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportsunat'><span>Reporte SUNAT</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestioninventario'><span>Inventario de Cierre</span></a>
-							<li><a href='<?php echo base_url();?>comercial/gestioninventarioalmacen'><span>Inventario de Almacén</span></a>
 						</ul>
 					</li>
 					<!--<li><a href='<?php echo base_url();?>comercial/gestioninterfaz'><span>Interfaz</span></a></li>-->
 					<!--<li><a href='<?php //echo base_url();?>comercial/backup'><span>Backup de la BD</span></a></li>-->
-					<li><a href="" style="width: 150px;"><span>Gestión Reportes</span></a>
+					<li><a href="" style="width: 193px;"><span>Gestión Reportes</span></a>
 						<ul>
-							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada' style="width: 150px;"><span>Reporte de Facturas</span></a>
+							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada' ><span>Reporte de Facturas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportsalida'><span>Reporte de Salidas</span></a>
-							<li><a href='<?php echo base_url();?>comercial/gestionreportmensual'><span>Reporte Mensual</span></a>
+							<li><a href='<?php echo base_url();?>comercial/gestioninventarioalmacen'><span>Inventario Valorizado de Almacén</span></a>
+							<!--<li><a href='<?php //echo base_url();?>comercial/gestionreportmensual'><span>Reporte Mensual</span></a>-->
 						</ul>
 					</li>
 				</ul>

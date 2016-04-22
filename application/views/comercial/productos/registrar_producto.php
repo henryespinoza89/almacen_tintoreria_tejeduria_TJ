@@ -196,6 +196,14 @@
                     if(msg == 1){
                       swal({ title: "El Producto ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
                       $("#mdlNuevoProducto").dialog("close");
+
+                      $('#nombrepro').val('');
+                      $('#ubicacion_producto').val('');
+                      $('#uni_med').val('');
+                      $('#obser').val('');
+                      $('#categoriaN').val('');
+                      $('#tipo_producto').val('');
+                      $('#procedenciaN').val('');
                       /*
                       var dataString_reload_table = 'nombrepro='+nombrepro+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
                       $.ajax({

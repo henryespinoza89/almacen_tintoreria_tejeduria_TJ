@@ -851,6 +851,11 @@ class Comercial extends CI_Controller {
             foreach($query->result() as $row){
                 $id_parte_maquina = $row->id_parte_maquina;
             }
+
+            $datasession_data_maquina = array(
+                'id_maquina' => $this->input->post('maquina')
+            );
+            $this->session->set_userdata($datasession_data_maquina);
         }else{
             $id_parte_maquina = 99999999;
             $nombre_parte_maquina = "";
@@ -903,6 +908,135 @@ class Comercial extends CI_Controller {
             $this->load->view('comercial/menu');
             $this->load->view('comercial/salida_almacen/devolucion_productos', $data);
         }
+    }
+
+    public function exportar_doc_salida(){
+        // Se carga el modelo alumno
+        $this->load->model('model_comercial');
+        // Se carga la libreria fpdf
+        $this->load->library('pdfSalidaproducto');
+        // Obtener las variables
+        $data = $this->security->xss_clean($this->uri->segment(3));
+        $data = json_decode($data, true);
+        $id_salida_producto = $data[0];
+        // Creacion del PDF
+        // Se crea un objeto de la clase Pdf, recuerda que la clase Pdf heredó todos las variables y métodos de fpdf
+        $this->pdf = new PdfSalidaproducto();
+        // Agregamos una página
+        $this->pdf->AddPage();
+        // Define el alias para el número de página que se imprimirá en el pie
+        $this->pdf->AliasNbPages();
+        // Se define el titulo, márgenes izquierdo, derecho y el color de relleno predeterminado
+        $this->pdf->SetTitle("Documento de Salida");
+        $this->pdf->SetLeftMargin(20);
+        $this->pdf->SetRightMargin(25);
+        $this->pdf->SetFillColor(200,200,200);
+        // Se define el formato de fuente: Arial, negritas, tamaño 9
+        $this->pdf->SetFont('Arial', 'B', 7);
+
+        /*
+            TITULOS DE COLUMNAS - EJEMPLO
+            $this->pdf->Cell(Ancho, Alto,texto,borde,posición,alineación,relleno);
+            $this->pdf->Cell(245,9,utf8_decode('LISTA DE PROVEEDORES'),'TBR TBL',0,'C','1');
+        */
+
+        $result = $this->model_comercial->getSalidasProductos_print_cabecera($id_salida_producto);
+        foreach ($result as $row){
+            // variable de observacion
+            $observacion = $row->observacion;
+            $solicitante = $row->solicitante;
+            $id_salida_producto = $row->id_salida_producto;
+            /* Formato para la fecha inicial */
+            $elementos = explode("-", $row->fecha);
+            $anio = $elementos[0];
+            $mes = $elementos[1];
+            $dia = $elementos[2];
+            $array = array($dia, $mes, $anio);
+            $fecharegistro = implode("/", $array);
+
+            $this->pdf->SetFont('Arial','B',7);
+            $this->pdf->Cell(25,9,utf8_decode('GENERADO EL: '.date('d-m-Y')),0,0,'C');
+            $this->pdf->Cell(240,9,utf8_decode('NOTA DE SALIDA 00000'.$id_salida_producto),0,0,'C');
+            $this->pdf->Ln(9);
+            $this->pdf->SetFont('Arial','B',12);
+            $this->pdf->Cell(155,9,utf8_decode('TEJIDOS JORGITO SAC'),0,0,'C');
+            $this->pdf->Ln(4);
+            $this->pdf->SetFont('Arial','B',7);
+
+            $this->pdf->Cell(30,20,utf8_decode("ALMACEN : "),'',0,'R','0');
+            $this->pdf->Cell(53,20,"ALMACEN DE REPUESTOS",'',0,'L','0');
+            $this->pdf->Cell(30,20,utf8_decode("MOTIVO : "),'',0,'R','0');
+            $this->pdf->Cell(35,20,"DESPACHO DE REPUESTOS",'',0,'L','0');
+
+            $this->pdf->Ln(4);
+            $this->pdf->Cell(30,20,utf8_decode("EMPLEADO : "),'',0,'R','0');
+            $this->pdf->Cell(53,20,utf8_decode($solicitante),'',0,'L','0');
+            $this->pdf->Cell(30,20,utf8_decode("MÁQUINA : "),'',0,'R','0');
+            $this->pdf->Cell(35,20,utf8_decode($row->nombre_maquina),'',0,'L','0');
+
+            $this->pdf->Ln(4);
+            $this->pdf->Cell(30,20,utf8_decode("APROBADO POR : "),'',0,'R','0');
+            $this->pdf->Cell(53,20,"EDIN MONTES",'',0,'L','0');
+            $this->pdf->Cell(30,20,utf8_decode("PARTE : "),'',0,'R','0');
+            $this->pdf->Cell(35,20,utf8_decode($row->nombre_parte_maquina),'',0,'L','0');
+
+            $this->pdf->Ln(4);
+            $this->pdf->Cell(30,20,utf8_decode("FECHA DE EMISION : "),'',0,'R','0');
+            $this->pdf->Cell(53,20,$fecharegistro,'',0,'L','0');
+            $this->pdf->Cell(30,20,utf8_decode("ÁREA : "),'',0,'R','0');
+            $this->pdf->Cell(35,20,utf8_decode($row->no_area),'',0,'L','0');
+        }
+
+        $this->pdf->Ln(18);
+        $this->pdf->Cell(8,6,utf8_decode('N°'),'BLTR',0,'C','0'); //La letra "C" indica la alineación del texto dentro del campo de la tabla: Center, Left L, Rigth R
+        $this->pdf->Cell(14,6,utf8_decode('CÓDIGO'),'BLTR',0,'C','0');
+        $this->pdf->Cell(60,6,utf8_decode('NOMBRE O DESCRIPCIÓN'),'BLTR',0,'C','0');
+        $this->pdf->Cell(18,6,utf8_decode('UBICACIÓN'),'BLTR',0,'C','0');
+        $this->pdf->Cell(15,6,utf8_decode('MED.'),'BLTR',0,'C','0');
+        $this->pdf->Cell(15,6,utf8_decode('CANT.'),'BLTR',0,'C','0');
+        $this->pdf->Cell(40,6,utf8_decode('OBSERVACIÓN'),'BLTR',0,'C','0');
+        $this->pdf->Ln(6);
+
+
+        $result_detalle_salida = $this->model_comercial->getSalidasProductos_print_detalle_salida($id_salida_producto);
+        
+        $x = 1;
+        $this->pdf->SetFont('Arial','B',6);
+        foreach ($result_detalle_salida as $item) {
+            $this->pdf->Cell(8,6,$x++,'BLTR',0,'C',0);
+            $this->pdf->Cell(14,6,utf8_decode('PRD'.$item->id_pro),'BLTR',0,'C',0);
+            $this->pdf->Cell(60,6,utf8_decode($item->no_producto),'BLTR',0,'C',0);
+            $this->pdf->Cell(18,6,utf8_decode($item->nombre_ubicacion),'BLTR',0,'C',0);
+            $this->pdf->Cell(15,6,utf8_decode($item->nom_uni_med),'BLTR',0,'C',0);
+            $this->pdf->Cell(15,6,utf8_decode($item->cantidad_salida),'BLTR',0,'C',0);
+            $this->pdf->Cell(40,6,utf8_decode($observacion),'BLTR',0,'C',0);
+            $this->pdf->Ln(6);
+        }
+        $this->pdf->Cell(20,20,utf8_decode('OBSERVACIONES'),'',0,'C','0');
+        $this->pdf->Ln(6);
+        $this->pdf->Cell(10,20,utf8_decode("__________________________________________________________________________________________________________________________________________"),'',0,'L','0');
+        // Firma de Conformidad
+        $this->pdf->Ln(15);
+        $this->pdf->Cell(20,20,utf8_decode(" "),'',0,'L','0');
+        $this->pdf->Cell(10,20,utf8_decode("______________________________________________"),'',0,'L','0');
+        $this->pdf->Cell(66,20,utf8_decode(" "),'',0,'L','0');
+        $this->pdf->Cell(60,20,utf8_decode("______________________________________________"),'',0,'L','0');
+        $this->pdf->Ln(4);
+        $this->pdf->Cell(30,20,utf8_decode(" "),'',0,'L','0');
+        $this->pdf->Cell(35,20,utf8_decode('EDIN MONTES'),'',0,'C','0');
+        $this->pdf->Cell(45,20,utf8_decode(" "),'',0,'L','0');
+        $this->pdf->Cell(30,20,utf8_decode($solicitante),'',0,'C','0');
+        
+        /*
+         * Se manda el pdf al navegador
+         *
+         * $this->pdf->Output(nombredelarchivo, destino);
+         *
+         * I = Muestra el pdf en el navegador
+         * D = Envia el pdf para descarga
+         *
+         */
+        $this->pdf->Output("Documento de Salida $id_salida_producto.pdf", 'D');
     }
 
     public function gestiontipocambio(){
@@ -4106,6 +4240,29 @@ class Comercial extends CI_Controller {
         }while($aux_parametro_cuadre == 0);
     }
 
+    function actualizar_tabla_detalle_salida(){
+        $result_insert = $this->model_comercial->get_all_salidas_producto();
+        foreach ($result_insert as $item) {
+            $id_salida_producto = $item->id_salida_producto;
+            $id_detalle_producto = $item->id_detalle_producto;
+            $cantidad_salida = $item->cantidad_salida;
+            $id_maquina = $item->id_maquina;
+            $id_parte_maquina = $item->id_parte_maquina;
+            $p_u_salida = $item->p_u_salida;
+
+            $a_data_detalle = array('id_detalle_producto' => $id_detalle_producto,
+                                    'cantidad_salida' => $cantidad_salida,
+                                    'id_parte_maquina' => $id_parte_maquina,
+                                    'id_maquina' => $id_maquina,
+                                    'id_salida_producto' => $id_salida_producto,
+                                    'p_u_salida' => $p_u_salida
+                                    );
+            $this->model_comercial->save_salida_detalle_producto($a_data_detalle,true);
+        }
+
+
+    }
+
     function procesar_detalle_productos_salida(){
         $this->db->trans_begin();
 
@@ -4116,6 +4273,16 @@ class Comercial extends CI_Controller {
         $solicitante = strtoupper($this->security->xss_clean($this->input->post('solicitante')));
         $fecharegistro = $this->security->xss_clean($this->input->post('fecharegistro'));
         $observacion = $this->security->xss_clean($this->input->post('observacion'));
+        $id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+
+        // registrar los datos generales de salida
+        $a_data = array('id_area' => $id_area,
+                        'fecha' => $fecharegistro,
+                        'id_almacen' => $id_almacen,
+                        'solicitante' => $solicitante,
+                        'observacion' => $observacion
+                        );
+        $result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
 
         $detalle_producto_salida = $this->cart->contents();
         foreach ($detalle_producto_salida as $item) {
@@ -4146,13 +4313,12 @@ class Comercial extends CI_Controller {
             }
 
             // Enviar informacion a funcion que realizara el registro de salida de productos
-            $result = $this->model_comercial->finalizar_salida_before_13($id_area, $solicitante,$fecharegistro,$observacion,$id_maquina,$id_parte_maquina,$no_producto,$cantidad_salida);
+            $result = $this->model_comercial->finalizar_salida_before_13($result_insert, $id_area, $solicitante,$fecharegistro,$observacion,$id_maquina,$id_parte_maquina,$no_producto,$cantidad_salida);
             
             if($result != '1' && $count == 0){
                 $auxiliar = $result;
                 $count++;
             }
-            
         }
         
         if($auxiliar == ''){
@@ -4163,7 +4329,8 @@ class Comercial extends CI_Controller {
             die();
         }
 
-
+        // Eliminar las variables de sesion de la maquina
+        $this->session->unset_userdata('id_maquina');
 
         $this->db->trans_complete();
     }
@@ -6646,6 +6813,194 @@ class Comercial extends CI_Controller {
         echo '1';
     }
 
+    public function gestion_cierre_saldos_iniciales(){
+        $nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
+        $apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
+        if($nombre == "" AND $apellido == ""){
+            $this->load->view('login');
+        }else{
+            if($this->model_comercial->existeTipoCambio() == TRUE){
+            $data['tipocambio'] = 0;
+            }else{
+                $data['tipocambio'] = 1;
+            }
+            $data['monto']= $this->model_comercial->listarMontoCierre();
+            $this->load->view('comercial/menu');
+            $this->load->view('comercial/view_cierre_saldos_iniciales', $data);
+        }
+    }
+
+    public function actualizar_saldos_iniciales_controller_version_6(){
+        $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+        $fecha_inicial = $this->security->xss_clean($this->input->post("fecha_inicial"));
+        $fecha_final = $this->security->xss_clean($this->input->post("fecha_final"));
+        // Formato de la fecha anterior
+        $elementos = explode("-", $fecha_inicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+        if($mes == 12){
+            $anio = $anio + 1;
+            $mes_siguiente = 1;
+            $dia = 1;
+        }else if($mes <= 11 ){
+            $mes_siguiente = $mes;
+            $dia = 1;
+        }
+        $array = array($anio, $mes_siguiente, $dia);
+        $fecha_formateada_anterior = implode("-", $array);
+        // Formato a la fecha posterior
+        $elementos = explode("-", $fecha_inicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+        if($mes == 12){
+            $anio = $anio + 1;
+            $mes_siguiente = 1;
+            $dia = 1;
+        }else if($mes <= 11 ){
+            $mes_siguiente = $mes + 1;
+            $dia = 1;
+        }
+        $array = array($anio, $mes_siguiente, $dia);
+        $fecha_formateada_posterior = implode("-", $array);
+        // Realizar un consulta de todos los productos registrados en el sistema
+        // para verificar los movimientos de esos productos en el kardex y seleccionar el ultimo movimiento de ese mes
+        // para obtener el stock y el precio final para el cierre del mes
+        $data_product = $this->model_comercial->get_all_productos_v2();
+        foreach ($data_product as $row){
+            $id_detalle_producto = $row->id_detalle_producto;
+            $id_pro = $row->id_pro;
+            // validacion si existe un registro de este producto en kardex dentro del periodo seleccionado
+            $validacion = $this->model_comercial->validar_registros_producto_periodo($fecha_inicial, $fecha_final, $id_detalle_producto);
+            if($validacion == 'no_existe_movimiento'){
+                // Verificar si existe saldos iniciales del mes anterior para colocarlos en el saldo inicial actual
+                $this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
+                $this->db->where('fecha_cierre',date($fecha_formateada_anterior));
+                $this->db->where('id_pro',$id_pro);
+                $query = $this->db->get('saldos_iniciales');
+                if(count($query->result()) > 0){
+                    // Obtengo los saldos iniciales del mes anterior
+                    // osea del mes actual que se esta trabajando
+                    foreach($query->result() as $row){
+                        $id_saldos_iniciales_anterior = $row->id_saldos_iniciales;
+                        $stock_inicial_anterior = $row->stock_inicial;
+                        $stock_inicial_sta_clara_anterior = $row->stock_inicial_sta_clara;
+                        $precio_uni_inicial_anterior = $row->precio_uni_inicial;
+                    }
+                    // Actualizar los saldos iniciales del mes que se selecciono
+                    $datos = array(
+                        'id_pro'=> $id_pro,
+                        'fecha_cierre'=> $fecha_formateada_posterior,
+                        'precio_uni_inicial'=> $precio_uni_inicial_anterior,
+                        'stock_inicial' => $stock_inicial_anterior,
+                        'stock_inicial_sta_clara' => $stock_inicial_sta_clara_anterior
+                    );
+                    $this->model_comercial->insert_saldos_iniciales($datos);
+                }else{
+                    $datos = array(
+                        'id_pro'=> $id_pro,
+                        'fecha_cierre'=> $fecha_formateada_posterior,
+                        'precio_uni_inicial'=> 0,
+                        'stock_inicial' => 0,
+                        'stock_inicial_sta_clara' => 0
+                    );
+                    $this->model_comercial->insert_saldos_iniciales($datos);
+                }
+            }else{
+                // Obtener los ultimos datos nececesarios del kardex para la actualizacion del saldos inicial del producto en el periodo que corresponde
+                $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual,fecha_registro');
+                $this->db->where('id_kardex_producto',(int)$validacion);
+                $query = $this->db->get('kardex_producto');
+                foreach($query->result() as $row){
+                    $stock_actual = $row->stock_actual;
+                    $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
+                    $precio_unitario_anterior = $row->precio_unitario_anterior;
+                    $descripcion = $row->descripcion;
+                    $precio_unitario_actual = $row->precio_unitario_actual;
+                    $fecha_registro = $row->fecha_registro;
+                }
+                // Considerar el ultimo precio que se manejo dependiente del tipo de movimiento
+                if($descripcion == 'SALIDA'){
+                    $precio_unitario_anterior_especial = $precio_unitario_anterior;
+                }else if($descripcion == 'ENTRADA'  || $descripcion == 'ORDEN INGRESO'){
+                    $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
+                }
+                // datos los saldos iniciales del mes que se selecciono
+                $datos = array(
+                    'id_pro'=> $id_pro,
+                    'fecha_cierre'=> $fecha_formateada_posterior,
+                    'precio_uni_inicial'=> $precio_unitario_anterior_especial,
+                    'stock_inicial' => $stock_actual,
+                    'stock_inicial_sta_clara' => 0
+                );
+                $this->model_comercial->insert_saldos_iniciales($datos);
+            }
+        }
+        echo '1';
+    }
+
+    public function registrar_cierre_mes(){
+        $fecha_inicial = $this->security->xss_clean($this->input->post('fecha_inicial'));
+        $fecha_final = $this->security->xss_clean($this->input->post('fecha_final'));
+        // Formateo de la fecha
+        $elementos = explode("-", $fecha_inicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+        // Nombre del mes
+        if($mes == 1){
+            $nombre_mes = "ENERO";
+        }else if($mes == 2){
+            $nombre_mes = "FEBRERO";
+        }else if($mes == 3){
+            $nombre_mes = "MARZO";
+        }else if($mes == 4){
+            $nombre_mes = "ABRIL";
+        }else if($mes == 5){
+            $nombre_mes = "MAYO";
+        }else if($mes == 6){
+            $nombre_mes = "JUNIO";
+        }else if($mes == 7){
+            $nombre_mes = "JULIO";
+        }else if($mes == 8){
+            $nombre_mes = "AGOSTO";
+        }else if($mes == 9){
+            $nombre_mes = "SETIEMBRE";
+        }else if($mes == 10){
+            $nombre_mes = "OCTUBRE";
+        }else if($mes == 11){
+            $nombre_mes = "NOVIEMBRE";
+        }else if($mes == 12){
+            $nombre_mes = "DICIEMBRE";
+        }
+        // Fecha posterior
+        if($mes == 12){
+            $anio = $anio + 1;
+            $mes_siguiente = 1;
+            $dia = 1;
+        }else if($mes <= 11 ){
+            $mes_siguiente = $mes + 1;
+            $dia = 1;
+        }
+        $array = array($anio, $mes_siguiente, $dia);
+        $fecha_formateada = implode("-", $array);
+        // Procedimiento de validación
+        $this->db->select('id_monto_cierre');
+        $this->db->where('nombre_mes',$nombre_mes);
+        $this->db->where('fecha_auxiliar',$fecha_formateada);
+        $query = $this->db->get('monto_cierre');
+        if(count($query->result()) > 0){
+            echo 'error_validacion';
+        }else{
+            $result_monto = $this->model_comercial->cierre_almacen_montos_2016($fecha_formateada,$nombre_mes); // guarda el monto de cierre del mes en la tabla monto_cierre
+            if(!$result_monto){
+                echo 'error_validacion_monto';
+            }else{
+                echo '1';
+            }
+        }
+    }
 
     public function eliminartrasladoproducto()
     {
@@ -7411,14 +7766,14 @@ class Comercial extends CI_Controller {
         $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
         $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
         $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(30);
         //Write cells
         if($almacen == 1){
             $objWorkSheet->setCellValue('A1', 'INVENTARIO FISICO DE PRODUCTOS - STA. CLARA                     FECHA: '.date('d-m-y'));
         }else if($almacen == 2){
-            $objWorkSheet->setCellValue('A1', 'INVENTARIO FISICO DE PRODUCTOS - STA. ANITA                     FECHA: '.date('d-m-y'));
+            $objWorkSheet->setCellValue('A1', 'INVENTARIO FISICO DE PRODUCTOS - REPUESTOS                     FECHA: '.date('d-m-y'));
         }
         $objWorkSheet->setCellValue('A2', 'ID PRODUCTO')
                      ->setCellValue('B2', 'NOMBRE O DESCRIPCION')
@@ -7429,16 +7784,17 @@ class Comercial extends CI_Controller {
                      ->setCellValue('G2', 'U. MEDIDA')
                      ->setCellValue('H2', 'STOCK')
                      ->setCellValue('I2', 'P. UNITARIO')
-                     ->setCellValue('J2', 'INVENTARIO');
+                     ->setCellValue('J2', 'VALOR ECONOMICO S/.');
         /* Traer informacion de la BD */
         $result = $this->model_comercial->get_info_inventario_actual();
         /* Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex */
         $i = 0;
-        $sumatoria = 0;
+        $sumatoria_parciales = 0;
         $p = 3;
         foreach ($result as $reg) {
             $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             /* Centrar contenido */
             $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
             $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
@@ -7477,7 +7833,7 @@ class Comercial extends CI_Controller {
                              ->setCellValue('H'.$p, $reg->stock_sta_clara)
                              ->setCellValue('I'.$p, "");
             }else if($almacen == 2){
-                $objWorkSheet->setCellValue('A'.$p, $reg->id_producto)
+                $objWorkSheet->setCellValue('A'.$p, $reg->id_pro)
                          ->setCellValue('B'.$p, $reg->no_producto)
                          ->setCellValue('C'.$p, $estado)
                          ->setCellValue('D'.$p, $reg->no_categoria)
@@ -7486,12 +7842,36 @@ class Comercial extends CI_Controller {
                          ->setCellValue('G'.$p, $reg->nom_uni_med)
                          ->setCellValue('H'.$p, $reg->stock)
                          ->setCellValue('I'.$p, $reg->precio_unitario)
-                         ->setCellValue('J'.$p, "");
+                         ->setCellValue('J'.$p, $reg->stock * $reg->precio_unitario);
+                $sumatoria_parciales = $sumatoria_parciales + ($reg->stock * $reg->precio_unitario);
             }
             /* Rename sheet */
             $objWorkSheet->setTitle("Inventario_Almacen");
             $p++;
         }
+
+        $y = $p;
+        $objWorkSheet->setCellValue('A'.$y, "")
+                     ->setCellValue('B'.$y, "")
+                     ->setCellValue('C'.$y, "")
+                     ->setCellValue('D'.$y, "")
+                     ->setCellValue('E'.$y, "")
+                     ->setCellValue('F'.$y, "")
+                     ->setCellValue('G'.$y, "")
+                     ->setCellValue('H'.$y, "")
+                     ->setCellValue('I'.$y, "TOTAL EN S/.")
+                     ->setCellValue('J'.$y, $sumatoria_parciales);
+
+        $objPHPExcel->getActiveSheet()->getStyle('I'.$y)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        $objPHPExcel->getActiveSheet()->getStyle('J'.$y)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        /* Centrar contenido */
+        $objPHPExcel->getActiveSheet()->getStyle('I'.$y)->applyFromArray($styleArray);
+        $objPHPExcel->getActiveSheet()->getStyle('I'.$y)->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('J'.$y)->applyFromArray($style);
+        /* border */
+        $objPHPExcel->getActiveSheet()->getStyle('I'.$y)->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('J'.$y)->applyFromArray($borders);
+
         $objPHPExcel->setActiveSheetIndex(0);
         /* datos de la salida del excel */
         header("Content-type: application/vnd.ms-excel");
@@ -8066,13 +8446,12 @@ class Comercial extends CI_Controller {
                 $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
 
                 /* Obtener el tipo de cambio de la fecha de registro de la factura */
-                $this->db->select('dolar_venta,euro_venta,fr_venta');
+                $this->db->select('dolar_venta,euro_venta');
                 $this->db->where('fecha_actual',$data->fecha);
                 $query = $this->db->get('tipo_cambio');
                 foreach($query->result() as $row){
                     $dolar_venta_fecha = $row->dolar_venta;
                     $euro_venta_fecha = $row->euro_venta;
-                    $fr_venta_fecha = $row->fr_venta;
                 }
                 /* Obtener el monto total en soles */
                 if($data->id_agente == 2){
@@ -8083,10 +8462,6 @@ class Comercial extends CI_Controller {
                     }else if($data->no_moneda == 'EURO'){
                         $convert_soles = $data->total * $euro_venta_fecha;
                         $suma_euro = $suma_euro + $data->total;
-                        $suma_total_soles = $suma_total_soles + $convert_soles;
-                    }else if($data->no_moneda == 'FRANCO SUIZO'){
-                        $convert_soles = $data->total * $fr_venta_fecha;
-                        $suma_franco = $suma_franco + $data->total;
                         $suma_total_soles = $suma_total_soles + $convert_soles;
                     }else{
                         $convert_soles = $data->total;
@@ -8099,7 +8474,7 @@ class Comercial extends CI_Controller {
                     $suma_total_soles = $suma_total_soles + $data->total;
                 }
 
-                if($data->id_agente == 2){
+                if($data->id_agente == ""){
                     $objWorkSheet->setCellValue('A'.$p, $i)
                                  ->setCellValue('B'.$p, $data->no_comprobante)
                                  ->setCellValue('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT)." - ".str_pad($data->nro_comprobante, 8, 0, STR_PAD_LEFT))
@@ -8182,24 +8557,6 @@ class Comercial extends CI_Controller {
                      ->setCellValue('E'.$p, "")
                      ->setCellValue('F'.$p, "T. EN EUROS")
                      ->setCellValue('G'.$p, $suma_euro);
-        $p = $p + 1;
-        /* ---------------------------------------------------------------------- */
-        $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style);
-        $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style);
-        $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($styleArray);
-        $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($styleArray);
-        /* border */
-        $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
-        $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
-        /* formato */
-        $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-        $objWorkSheet->setCellValue('A'.$p, "")
-                     ->setCellValue('B'.$p, "")
-                     ->setCellValue('C'.$p, "")
-                     ->setCellValue('D'.$p, "")
-                     ->setCellValue('E'.$p, "")
-                     ->setCellValue('F'.$p, "T. EN FRANCOS")
-                     ->setCellValue('G'.$p, $suma_franco);
         $p = $p + 1;
         /* ---------------------------------------------------------------------- */
         /* formato */
@@ -8442,9 +8799,9 @@ class Comercial extends CI_Controller {
         $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
         $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
         $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(40);
         $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(55);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(65);
         $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(25);
         $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(25);
         $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(25);
@@ -8460,7 +8817,7 @@ class Comercial extends CI_Controller {
                      ->setCellValue('H1', 'PRODUCTO')
                      ->setCellValue('I1', 'UNID. MEDIDA')
                      ->setCellValue('J1', 'CANTIDAD SALIDA')
-                     ->setCellValue('K1', 'VALORIZADO');
+                     ->setCellValue('K1', 'VALORIZADO S/.');
 
         /* Traer informacion de la BD */
         $movimientos_salida = $this->model_comercial->traer_movimientos_salidas_facturas($f_inicial,$f_final);
@@ -8506,7 +8863,7 @@ class Comercial extends CI_Controller {
                              ->setCellValue('D'.$p, str_pad($data->id_salida_producto, 8, 0, STR_PAD_LEFT))
                              ->setCellValue('E'.$p, $data->no_categoria)
                              ->setCellValue('F'.$p, $data->no_area)
-                             ->setCellValue('G'.$p, $data->id_producto)
+                             ->setCellValue('G'.$p, "PRD".$data->id_pro)
                              ->setCellValue('H'.$p, $data->no_producto)
                              ->setCellValue('I'.$p, $data->nom_uni_med)
                              ->setCellValue('J'.$p, $data->cantidad_salida)
@@ -8537,7 +8894,7 @@ class Comercial extends CI_Controller {
                      ->setCellValue('G'.$p, "")
                      ->setCellValue('H'.$p, "")
                      ->setCellValue('I'.$p, "")
-                     ->setCellValue('J'.$p, "TOTALES")
+                     ->setCellValue('J'.$p, "TOTALES S/.")
                      ->setCellValue('K'.$p, $sumatoria_totales); // colocar lo siguiente me da un error: ->setCellValue('G'.$p, "S/. ".$suma_soles); al insertar el icono de soles, convierte todo los valores en texto y no lo puedo pasar a numerico
         /* ---------------------------------------------------------------------- */
         /* Rename sheet */
