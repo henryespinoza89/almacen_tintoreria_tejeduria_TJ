@@ -797,7 +797,7 @@ function imprimir_salida(id_salida_producto){
 				<tr style="height:30px;" id="cantidad_devolucion">
 					<td width="131" valign="middle" colspan="2">Cantidad Devolución:</td>
 			        <td width="109"><?php echo form_input($unidades_devolucion);?></td>
-			        <td width="109"><input name="submit" type="submit" id="submit_renovar_tabla" value="RENOVAR TABLA DETALLE SALIDAS" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
+			        <!--<td width="109"><input name="submit" type="submit" id="submit_renovar_tabla" value="RENOVAR TABLA DETALLE SALIDAS" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>-->
 			        <td width="109"><input name="submit" type="submit" id="submit_devolucion_producto" value="Registrar Devolución" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
 			        <td width="109" style="padding-left: 25px;;"><input name="submit" type="submit" id="cancelar_devolucion" value="Cancelar Devolución" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
 				</tr>

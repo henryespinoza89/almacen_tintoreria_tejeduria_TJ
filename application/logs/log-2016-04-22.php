@@ -4215,3 +4215,10 @@ ERROR - 2016-04-22 15:48:00 --> Query error: ERROR:  no existe la columna salida
 LINE 2:         salida_producto.id_detalle_producto,salida_producto....
                 ^
 DEBUG - 2016-04-22 15:48:00 --> Language file loaded: language/english/db_lang.php
+DEBUG - 2016-04-22 15:49:37 --> Config Class Initialized
+DEBUG - 2016-04-22 15:49:37 --> Hooks Class Initialized
+DEBUG - 2016-04-22 15:49:37 --> Utf8 Class Initialized
+DEBUG - 2016-04-22 15:49:37 --> UTF-8 Support Enabled
+DEBUG - 2016-04-22 15:49:37 --> URI Class Initialized
+DEBUG - 2016-04-22 15:49:37 --> Router Class Initialized
+ERROR - 2016-04-22 15:49:37 --> 404 Page Not Found --> assets
