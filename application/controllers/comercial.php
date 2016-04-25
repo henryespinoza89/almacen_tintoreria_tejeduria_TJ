@@ -1058,7 +1058,8 @@ class Comercial extends CI_Controller {
 
     public function obtener_datos_salida(){
         $id_salida_producto = $this->input->post('id_salida_producto');
-        $resultado = $this->model_comercial->get_datos_detalle_pedido($id_salida_producto);
+        $id_detalle_producto = $this->input->post('id_detalle_producto');
+        $resultado = $this->model_comercial->get_datos_detalle_pedido($id_salida_producto,$id_detalle_producto);
         if (count($resultado) > 0){
             foreach ($resultado as $data) {
                 $array = array(
@@ -4356,17 +4357,27 @@ class Comercial extends CI_Controller {
 
         $id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
         $id_salida_producto = $this->security->xss_clean($this->input->post('id_salida_producto'));
+        $id_detalle_producto = $this->security->xss_clean($this->input->post('id_detalle_producto'));
         $unidades_devolucion = $this->security->xss_clean($this->input->post('unidades_devolucion'));
 
         // Obtengo los datos del salida del producto
-        $this->db->select('id_salida_producto,id_area,solicitante,fecha,id_detalle_producto,cantidad_salida,p_u_salida');
+        $this->db->select('id_salida_producto,id_area,solicitante,fecha');
         $this->db->where('id_salida_producto',$id_salida_producto);
         $query = $this->db->get('salida_producto');
         foreach($query->result() as $row){
             $id_salida_producto = $row->id_salida_producto;
-            $id_detalle_producto = $row->id_detalle_producto;
-            $cantidad_salida = $row->cantidad_salida;
+            $id_area = $row->id_area;
+            $solicitante = $row->solicitante;
             $fecharegistro = $row->fecha;
+        }
+
+        // obtener los datos del detalle de la salida
+        $this->db->select('cantidad_salida');
+        $this->db->where('id_salida_producto',$id_salida_producto);
+        $this->db->where('id_detalle_producto',$id_detalle_producto);
+        $query = $this->db->get('detalle_salida_producto');
+        foreach($query->result() as $row){
+            $cantidad_salida = $row->cantidad_salida;
         }
 
         // Obtengo los datos del producto antes de actualizarlos. Stock y Precio Unitario anterior
@@ -4401,7 +4412,8 @@ class Comercial extends CI_Controller {
             'cantidad_salida'=> $unidades_salida_final
         );
         $this->db->where('id_salida_producto',$id_salida_producto);
-        $this->db->update('salida_producto', $actualizar_stock_salida);
+        $this->db->where('id_detalle_producto',$id_detalle_producto);
+        $this->db->update('detalle_salida_producto', $actualizar_stock_salida);
 
         // Obtener los datos del registro de la salida en el kardex para su actualizacion
         $this->db->select('id_kardex_producto,stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,cantidad_salida');

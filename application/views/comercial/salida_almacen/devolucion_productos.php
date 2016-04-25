@@ -184,6 +184,7 @@ $(function() {
 	$("#submit_devolucion_producto").on("click",function(){
 		var unidades_devolucion = $("#unidades_devolucion").val();
 		var id_salida_producto = $("#id_salida_producto_hidden").val();
+		var id_detalle_producto = $("#id_detalle_producto_hidden").val();
 		var cantidad = $("#cantidad").val();
 		if(id_salida_producto == '' || unidades_devolucion == ''){
 			sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
@@ -191,7 +192,7 @@ $(function() {
 			if(unidades_devolucion > cantidad){
 				sweetAlert("!La cantidad de devolución es mayor a la cantidad de salida. Verificar!", "", "error");
 			}else{
-				var dataString = 'id_salida_producto='+id_salida_producto+'&unidades_devolucion='+unidades_devolucion+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+				var dataString = 'id_salida_producto='+id_salida_producto+'&unidades_devolucion='+unidades_devolucion+'&id_detalle_producto='+id_detalle_producto+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
 				$.ajax({
 		            type: "POST",
 		            url: "<?php echo base_url(); ?>comercial/registrar_devolucion/",
@@ -613,13 +614,14 @@ function view_salidas(id_area){
     });
 }
 
-function fill_inputs(id_salida_producto){
+function fill_inputs(id_salida_producto,id_detalle_producto){
 	/* Llenar datos del pedido en los inputs del formulario */
 	$.ajax({
         type: 'POST',
         url: "<?php echo base_url(); ?>comercial/obtener_datos_salida/",
         data:{
-          	'id_salida_producto' : id_salida_producto
+          	'id_salida_producto' : id_salida_producto,
+          	'id_detalle_producto' : id_detalle_producto
         },
         success: function(data){
         	var dataJson = JSON.parse(data);
@@ -633,6 +635,7 @@ function fill_inputs(id_salida_producto){
             $("#cantidad").val(dataJson.cantidad);
             $("#fecharegistro").val(dataJson.fecha);
             $("#id_salida_producto_hidden").val(id_salida_producto);
+            $("#id_detalle_producto_hidden").val(id_detalle_producto);
             $("#area option[value="+id_area+"]").attr("selected",true);
             $("#maquina option[value="+id_maquina+"]").attr("selected",true);
             $("#parte_maquina option[value="+id_parte_maquina+"]").attr("selected",true);
@@ -717,6 +720,7 @@ function imprimir_salida(id_salida_producto){
 		</div>
 		<div id="datosalida">
 			<input type="hidden" name="id_salida_producto_hidden" id="id_salida_producto_hidden" value="">
+			<input type="hidden" name="id_detalle_producto_hidden" id="id_detalle_producto_hidden" value="">
 			<table style="float: left; margin-top: 5px; width: 380px; margin-left: 0px;">
 				<tr>
 					<td width="285" valign="middle" style="height: 33px;">Máquina:</td>
@@ -729,7 +733,7 @@ function imprimir_salida(id_salida_producto){
 			            else
 			            {
 		          	?>
-		          			<td width="370"><?php echo form_dropdown('maquina', $listamaquina,$selected_maquina,"id='maquina' class='required' style='width:170px;'");?></td>
+		          		<td width="370"><?php echo form_dropdown('maquina', $listamaquina,$selected_maquina,"id='maquina' class='required' style='width:170px;'");?></td>
 		          	<?php }?>
 				</tr>
 				<tr>
@@ -827,7 +831,7 @@ function imprimir_salida(id_salida_producto){
     <table border="0" cellspacing="0" cellpadding="0" id="listarSalidaProductos" style="width:1360px;" class="table table-hover table-striped">
           <thead>
               <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
-                <td sort="idprod" width="50" height="27">ITEM</td>
+                <td sort="idprod" width="50" height="27">ID</td>
                 <td sort="idproducto" width="130" height="27">MÁQUINA</td>
                 <td sort="procprod" width="70">ÁREA</td>
                 <td sort="procprod" width="170">SOLICITANTE</td>
@@ -843,18 +847,20 @@ function imprimir_salida(id_salida_producto){
           $i = 1;
           foreach($salidaproducto as $listasalidaproductos){ ?>  
               <tr class="contentTable">
-                <td height="23" style="vertical-align: middle;"><?php echo str_pad($i, 3, 0, STR_PAD_LEFT); ?></td>
+                <td height="23" style="vertical-align: middle;"><?php echo $listasalidaproductos->id_salida_producto; ?></td>
                 <td style="vertical-align: middle;"><?php echo $listasalidaproductos->nombre_maquina; ?></td>
                 <td style="vertical-align: middle;"><?php echo $listasalidaproductos->no_area; ?></td>
                 <td style="vertical-align: middle;"><?php echo $listasalidaproductos->solicitante; ?></td>
                 <td style="vertical-align: middle;"><?php echo $listasalidaproductos->fecha; ?></td>
                 <td style="vertical-align: middle;"><?php echo $listasalidaproductos->no_producto; ?></td>
                 <td style="vertical-align: middle;"><?php echo number_format($listasalidaproductos->cantidad_salida,2,'.',',');?></td>
-                <td width="20" align="center"><input type="radio" name="newsletter" onClick="fill_inputs(<?php echo $listasalidaproductos->id_salida_producto; ?>)" style="cursor: pointer;" title="Devolución"/></td>
+                <td width="20" align="center"><input type="radio" name="newsletter" onClick="fill_inputs(<?php echo $listasalidaproductos->id_salida_producto; ?> , <?php echo $listasalidaproductos->id_detalle_producto; ?>)" style="cursor: pointer;" title="Devolución"/></td>
+                
                 <td width="20" align="center" style="vertical-align: inherit;">
-                	<span id="imprimir_salida" class="icon-ban" style="color: red;cursor: pointer;" onClick="imprimir_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)"></span>
+                	<i class="fa fa-print" aria-hidden="true" style="color: red;cursor: pointer;" title="Exportar PDF" onClick="imprimir_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)"></i>
                 </td>
                 <!--
+                <span id="imprimir_salida" class="icon-ban" style="color: red;cursor: pointer;" onClick="imprimir_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)"></span>
                 <td width="20" align="center">
                   <a href="" class="eliminar_salida" id="elim_<?php // echo $listasalidaproductos->id_salida_producto; ?>">
                   <img src="<?php // echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida"/></a>

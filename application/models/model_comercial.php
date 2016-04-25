@@ -2725,7 +2725,7 @@ class Model_comercial extends CI_Model {
         $filtro .= " ORDER BY area.no_area ASC";
         $filtro .= " LIMIT 100";
         $sql = "SELECT salida_producto.id_salida_producto,salida_producto.solicitante,salida_producto.fecha,detalle_salida_producto.cantidad_salida,detalle_producto.no_producto,
-        area.no_area,maquina.nombre_maquina,parte_maquina.nombre_parte_maquina,salida_producto.observacion
+        area.no_area,maquina.nombre_maquina,parte_maquina.nombre_parte_maquina,salida_producto.observacion,detalle_salida_producto.id_detalle_producto
         FROM salida_producto
         INNER JOIN detalle_salida_producto ON detalle_salida_producto.id_salida_producto = salida_producto.id_salida_producto
         INNER JOIN area ON salida_producto.id_area = area.id_area
@@ -2740,19 +2740,22 @@ class Model_comercial extends CI_Model {
         }
     }
 
-    function get_datos_detalle_pedido($id_salida_producto){
+    function get_datos_detalle_pedido($id_salida_producto,$id_detalle_producto){
         try{
-            $filtro = $id_salida_producto;
-            $sql = "SELECT salida_producto.id_salida_producto,salida_producto.id_area,salida_producto.solicitante,salida_producto.fecha,
-                    salida_producto.id_detalle_producto,salida_producto.cantidad_salida,salida_producto.id_almacen,salida_producto.p_u_salida,
-                    salida_producto.id_maquina,salida_producto.id_parte_maquina,detalle_producto.no_producto,detalle_producto.stock,
-                    unidad_medida.nom_uni_med
+            $filtro = "";
+            $filtro .= " AND salida_producto.id_salida_producto =".(int)$id_salida_producto;
+            $filtro .= " AND detalle_salida_producto.id_detalle_producto =".(int)$id_detalle_producto;
+            $sql = "SELECT salida_producto.id_salida_producto,detalle_salida_producto.id_detalle_producto,salida_producto.id_area,
+                    salida_producto.solicitante,salida_producto.fecha,detalle_salida_producto.cantidad_salida,salida_producto.id_almacen,
+                    detalle_salida_producto.p_u_salida,detalle_salida_producto.id_maquina,detalle_salida_producto.id_parte_maquina,
+                    detalle_producto.no_producto,detalle_producto.stock,unidad_medida.nom_uni_med
                     FROM
                     salida_producto
-                    INNER JOIN detalle_producto ON salida_producto.id_detalle_producto = detalle_producto.id_detalle_producto
+                    INNER JOIN detalle_salida_producto ON detalle_salida_producto.id_salida_producto = salida_producto.id_salida_producto
+                    INNER JOIN detalle_producto ON detalle_salida_producto.id_detalle_producto = detalle_producto.id_detalle_producto
                     INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
                     INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
-                    WHERE salida_producto.id_salida_producto =".$filtro;
+                    WHERE salida_producto.id_salida_producto IS NOT NULL".$filtro;
             $query = $this->db->query($sql);
             $a_data = $query->result_array();
             return $a_data;
