@@ -987,14 +987,18 @@ class Comercial extends CI_Controller {
             $this->pdf->Cell(35,20,utf8_decode($row->no_area),'',0,'L','0');
         }
 
+        $this->pdf->Ln(4);
+        $this->pdf->Cell(30,20,utf8_decode("OBSERVACIÓN : "),'',0,'R','0');
+        $this->pdf->Cell(53,20,$observacion,'',0,'L','0');
+
         $this->pdf->Ln(18);
         $this->pdf->Cell(8,6,utf8_decode('N°'),'BLTR',0,'C','0'); //La letra "C" indica la alineación del texto dentro del campo de la tabla: Center, Left L, Rigth R
         $this->pdf->Cell(14,6,utf8_decode('CÓDIGO'),'BLTR',0,'C','0');
-        $this->pdf->Cell(60,6,utf8_decode('NOMBRE O DESCRIPCIÓN'),'BLTR',0,'C','0');
+        $this->pdf->Cell(100,6,utf8_decode('NOMBRE O DESCRIPCIÓN'),'BLTR',0,'C','0');
         $this->pdf->Cell(18,6,utf8_decode('UBICACIÓN'),'BLTR',0,'C','0');
         $this->pdf->Cell(15,6,utf8_decode('MED.'),'BLTR',0,'C','0');
         $this->pdf->Cell(15,6,utf8_decode('CANT.'),'BLTR',0,'C','0');
-        $this->pdf->Cell(40,6,utf8_decode('OBSERVACIÓN'),'BLTR',0,'C','0');
+        // $this->pdf->Cell(40,6,utf8_decode('OBSERVACIÓN'),'BLTR',0,'C','0');
         $this->pdf->Ln(6);
 
 
@@ -1005,11 +1009,11 @@ class Comercial extends CI_Controller {
         foreach ($result_detalle_salida as $item) {
             $this->pdf->Cell(8,6,$x++,'BLTR',0,'C',0);
             $this->pdf->Cell(14,6,utf8_decode('PRD'.$item->id_pro),'BLTR',0,'C',0);
-            $this->pdf->Cell(60,6,utf8_decode($item->no_producto),'BLTR',0,'C',0);
+            $this->pdf->Cell(100,6,utf8_decode($item->no_producto),'BLTR',0,'C',0);
             $this->pdf->Cell(18,6,utf8_decode($item->nombre_ubicacion),'BLTR',0,'C',0);
             $this->pdf->Cell(15,6,utf8_decode($item->nom_uni_med),'BLTR',0,'C',0);
             $this->pdf->Cell(15,6,utf8_decode($item->cantidad_salida),'BLTR',0,'C',0);
-            $this->pdf->Cell(40,6,utf8_decode($observacion),'BLTR',0,'C',0);
+            // $this->pdf->Cell(40,6,utf8_decode($observacion),'BLTR',0,'C',0);
             $this->pdf->Ln(6);
         }
         $this->pdf->Cell(20,20,utf8_decode('OBSERVACIONES'),'',0,'C','0');
