@@ -3127,7 +3127,7 @@ class Comercial extends CI_Controller {
             }
 
             $data = array(
-                'id' => 'PRD'.$id_pro,
+                'id' => $id_pro,
                 'qty' => $this->input->post('cantidad'),
                 'price' => $this->input->post('pu'),
                 'name'=> $nombre_producto

@@ -802,8 +802,8 @@ $(function(){
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
-		            	<td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> SUB-TOTAL: </td>
-		            	<td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
+		            	<td style="text-align:center; padding:2px; color:#111; height: 30px; border-color: #F1EEEE;border-bottom-style: solid;"> SUB-TOTAL: </td>
+		            	<td style="text-align:center; padding:2px; color:#111; height: 30px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
 		            																																	if($this->session->userdata('csigv') == "false"){
 		            																																		echo number_format($this->cart->total(),2,'.',',');
 		            																																	}else if($this->session->userdata('csigv') == "true"){
@@ -816,8 +816,8 @@ $(function(){
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
-		            	<td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> I.G.V. 18%: </td>
-		            	<td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
+		            	<td style="text-align:center; padding:2px; color:#111; height: 30px; border-color: #F1EEEE;border-bottom-style: solid;"> I.G.V. 18%: </td>
+		            	<td style="text-align:center; padding:2px; color:#111; height: 30px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
 		            																																	if($this->session->userdata('csigv') == "false"){
 		            																																		echo number_format(($this->cart->total()*0.18),2,'.',',');
 		            																																	}else if($this->session->userdata('csigv') == "true"){
@@ -830,9 +830,9 @@ $(function(){
 		                <td>&nbsp;</td>
 		                <td>&nbsp;</td>
 		                <td>&nbsp;</td>
-		                <td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> TOTAL: </td>
+		                <td style="text-align:center; padding:2px; color:#111; height: 30px; border-color: #F1EEEE;border-bottom-style: solid;"> TOTAL: </td>
 		                <!--<td colspan="5">TOTAL:</td>-->
-		                <td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
+		                <td style="text-align:center; padding:2px; color:#111; height: 30px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
 		                																																if($this->session->userdata('csigv') == "false"){
 		            																																		echo number_format(($this->cart->total()+($this->cart->total()*0.18)),2,'.',','); 
 		            																																	}else if($this->session->userdata('csigv') == "true"){
