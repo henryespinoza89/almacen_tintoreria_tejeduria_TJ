@@ -341,7 +341,7 @@
   function editar_producto(id_pro){
     var urlMaq = '<?php echo base_url();?>comercial/editarproducto/'+id_pro;
     $("#mdlEditarProducto").load(urlMaq).dialog({
-      modal: true, position: 'center', width: 500, height: 368, draggable: false, resizable: false, closeOnEscape: false,
+      modal: true, position: 'center', width: 500, height: 378, draggable: false, resizable: false, closeOnEscape: false,
       buttons: {
         Actualizar: function() {
           var editnombreprod = $('#editnombreprod').val(); editcat = $('#editcat').val(); editunid_med = $('#editunid_med').val(); 

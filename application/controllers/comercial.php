@@ -542,8 +542,13 @@ class Comercial extends CI_Controller {
     }
 
     public function eliminar_ubicacion_producto(){
-        $id_ubicacion = $this->input->get('eliminar');
-        $this->model_comercial->eliminar_ubicacion_producto($id_ubicacion);
+        $id_ubicacion = $this->security->xss_clean($this->input->post('id_ubicacion'));
+        $result = $this->model_comercial->eliminar_ubicacion_producto($id_ubicacion);
+        if(!$result){
+            echo 'dont_delete';
+        }else{
+            echo 'ok';
+        }
     }
 
     public function update_ubicacion_producto(){
@@ -3138,7 +3143,67 @@ class Comercial extends CI_Controller {
         }
     }
 
-        public function agregarcarrito_otros(){
+    public function actualizar_carrito_descuento(){
+        $descuento_porcentaje = $this->input->post('descuento_porcentaje');
+        $valor_porcentaje = $descuento_porcentaje / 100;
+
+        $monto_total_factura = $this->cart->total();
+        $carrito = $this->cart->contents();
+        $data = array();
+        foreach ($carrito as $item) {
+            $no_producto = $item['name'];
+            $unidades = $item['qty'];
+            $precio = $item['price'];
+            // valor del descuento
+            $valor_descuento = $item['price'] * $valor_porcentaje;
+            // nuevo precio unitario
+            $new_precio_unitario = $item['price'] - $valor_descuento;
+
+            $this->db->select('id_detalle_producto');
+            $this->db->where('no_producto',$no_producto);
+            $query = $this->db->get('detalle_producto');
+            foreach($query->result() as $row){
+                $id_detalle_producto = $row->id_detalle_producto;
+            }
+
+            $this->db->select('id_pro');
+            $this->db->where('id_detalle_producto',$id_detalle_producto);
+            $query = $this->db->get('producto');
+            foreach($query->result() as $row){
+                $id_pro = $row->id_pro;
+            }
+
+            $array = array(
+                'id' => $id_pro,
+                'qty' => $unidades,
+                'price' => $new_precio_unitario,
+                'name'=> $no_producto
+            );
+            array_push($data, $array);
+            
+            /*
+            // Guardamos este nuevo registro en una array
+            $data_actualizada = array(
+                'id' => $cont_id,
+                'qty' => $unidades,
+                'price' => $new_precio_unitario,
+                'name'=> $no_producto
+            );
+            // $this->cart->insert($data_actualizada);
+            */
+        }
+        // Eliminas los datos de la libreria anterior
+        $this->cart->destroy();
+        // Cargamos nuevamente la libreria
+        $this->cart->insert($data);
+        /*
+        print_r($data);
+        die();
+        */
+        echo '1';
+    }
+
+    public function agregarcarrito_otros(){
         //print_r($_POST);
         $this->form_validation->set_rules('nomproducto', 'Nombre del Producto', 'trim|required|xss_clean');
         $this->form_validation->set_rules('cantidad', 'Cantidad', 'trim|required|xss_clean');
@@ -3200,7 +3265,7 @@ class Comercial extends CI_Controller {
     }
 
     function actualizar_carrito(){
-        //print_r($_POST);
+        // print_r($_POST);
         $data = $this->input->post();
         $this->cart->update($data);
         redirect('comercial/gestioningreso');
@@ -3235,6 +3300,12 @@ class Comercial extends CI_Controller {
         $this->cart->destroy();
         $this->session->unset_userdata('csigv');
         redirect('comercial/gestionsalida');
+    }
+
+    function vaciar_listado_ingresos(){
+        $this->cart->destroy();
+        $this->session->unset_userdata('csigv');
+        redirect('comercial/gestioningreso');
     }
 
     function vaciar_listado_otros(){

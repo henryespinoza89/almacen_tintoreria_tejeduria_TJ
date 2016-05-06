@@ -14,7 +14,7 @@
     });
   });
 </script>
-<div id="contenedor" style="width:450px; height:240px;">
+<div id="contenedor" style="width:450px; height:250px;">
 	<div id="tituloCont" style="margin-bottom: 10px;">Editar Producto</div>
 	<div id="formFiltro" style="width:500px;">
 		<?php 

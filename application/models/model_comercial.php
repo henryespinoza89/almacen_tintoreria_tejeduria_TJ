@@ -92,11 +92,20 @@ class Model_comercial extends CI_Model {
     }
 
     function eliminar_ubicacion_producto($id_ubicacion){
-    $sql = "DELETE FROM ubicacion WHERE id_ubicacion = " . $id_ubicacion . "";
-    $query = $this->db->query($sql); 
-    if($query->num_rows()>0)
-        {
-            return $query->result();
+        // verificar si la ubicacion del producto esta referenciada desde la tabla producto
+        $this->db->select('id_ubicacion');
+        $this->db->where('id_ubicacion',$id_ubicacion);
+        $query = $this->db->get('producto');
+        if($query->num_rows() <= 0){
+            $sql = "DELETE FROM ubicacion WHERE id_ubicacion = " . $id_ubicacion . "";
+            $query = $this->db->query($sql);
+            if($query == 'TRUE'){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
         }
     }
 

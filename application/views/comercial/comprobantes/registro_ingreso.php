@@ -1,32 +1,32 @@
 <?php
 	if ($this->input->post('fecharegistro')){
-		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:150px','readonly'=> 'readonly', 'class'=>'required');
+		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:158px','readonly'=> 'readonly', 'class'=>'required');
 	}else{
-		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:150px','readonly'=> 'readonly', 'class'=>'required');
+		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:158px','readonly'=> 'readonly', 'class'=>'required');
 	}
 	
 	if ($this->input->post('numcomprobante')){
-		$numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'12','value'=>$this->input->post('numcomprobante'), 'style'=>'width:108px', 'class'=>'required','onpaste'=>'return false');
+		$numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'12','value'=>$this->input->post('numcomprobante'), 'style'=>'width:73px', 'class'=>'required','onpaste'=>'return false');
 	}else{
-		$numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'12', 'style'=>'width:108px', 'class'=>'required','onpaste'=>'return false');
+		$numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'12', 'style'=>'width:73px', 'class'=>'required','onpaste'=>'return false');
 	}
 
 	if ($this->input->post('numcomprobante_enable')){
-		$numcomprobante_enable = array('name'=>'numcomprobante_enable','id'=>'numcomprobante_enable','maxlength'=>'10','value'=>$this->input->post('numcomprobante_enable'), 'style'=>'width:91px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
+		$numcomprobante_enable = array('name'=>'numcomprobante_enable','id'=>'numcomprobante_enable','maxlength'=>'10','value'=>$this->input->post('numcomprobante_enable'), 'style'=>'width:73px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
 	}else{
-		$numcomprobante_enable = array('name'=>'numcomprobante_enable','id'=>'numcomprobante_enable','maxlength'=>'10', 'style'=>'width:91px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
+		$numcomprobante_enable = array('name'=>'numcomprobante_enable','id'=>'numcomprobante_enable','maxlength'=>'10', 'style'=>'width:73px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
 	}
 
 	if ($this->input->post('seriecomprobante')){
-		$seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5','value'=>$this->input->post('seriecomprobante'), 'style'=>'width:30px', 'class'=>'required','onpaste'=>'return false');
+		$seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5','value'=>$this->input->post('seriecomprobante'), 'style'=>'width:73px', 'class'=>'required','onpaste'=>'return false');
 	}else{
-		$seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5', 'style'=>'width:30px', 'class'=>'required','onpaste'=>'return false');
+		$seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5', 'style'=>'width:73px', 'class'=>'required','onpaste'=>'return false');
 	}
 
 	if ($this->input->post('seriecomprobante_enable')){
-		$seriecomprobante_enable = array('name'=>'seriecomprobante_enable','id'=>'seriecomprobante_enable','maxlength'=>'3','value'=>$this->input->post('seriecomprobante_enable'), 'style'=>'width:30px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
+		$seriecomprobante_enable = array('name'=>'seriecomprobante_enable','id'=>'seriecomprobante_enable','maxlength'=>'3','value'=>$this->input->post('seriecomprobante_enable'), 'style'=>'width:73px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
 	}else{
-		$seriecomprobante_enable = array('name'=>'seriecomprobante_enable','id'=>'seriecomprobante_enable','maxlength'=>'3', 'style'=>'width:30px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
+		$seriecomprobante_enable = array('name'=>'seriecomprobante_enable','id'=>'seriecomprobante_enable','maxlength'=>'3', 'style'=>'width:73px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
 	}
 	
 	if ($this->input->post('id_agente')){
@@ -36,15 +36,21 @@
 	}
 
 	if ($this->input->post('cantidad')){
-		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10','value'=>$this->input->post('cantidad'), 'style'=>'width:70px', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
+		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10','value'=>$this->input->post('cantidad'), 'style'=>'width:123px', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
 	}else{
-		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10', 'style'=>'width:70px', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
+		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10', 'style'=>'width:123px', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
+	}
+
+	if ($this->input->post('descuento_porcentaje')){
+		$descuento_porcentaje = array('name'=>'descuento_porcentaje','id'=>'descuento_porcentaje','maxlength'=>'10','value'=>$this->input->post('descuento_porcentaje'), 'style'=>'width:123px;text-align: center;', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
+	}else{
+		$descuento_porcentaje = array('name'=>'descuento_porcentaje','id'=>'descuento_porcentaje','maxlength'=>'10', 'style'=>'width:123px;text-align: center;', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
 	}
 
 	if ($this->input->post('pu')){
-		$pu = array('name'=>'pu','id'=>'pu','maxlength'=>'10','value'=>$this->input->post('pu'),'style'=>'width:70px', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
+		$pu = array('name'=>'pu','id'=>'pu','maxlength'=>'10','value'=>$this->input->post('pu'),'style'=>'width:123px', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
 	}else{
-		$pu = array('name'=>'pu','id'=>'pu','maxlength'=>'10', 'style'=>'width:70px', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
+		$pu = array('name'=>'pu','id'=>'pu','maxlength'=>'10', 'style'=>'width:123px', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
 	}
 
 	if ($this->input->post('nombre_producto')){
@@ -66,15 +72,15 @@
 	}
 
 	if ($this->input->post('unidadmedida')){
-	    $unidadmedida = array('name'=>'unidadmedida','id'=>'unidadmedida','maxlength'=> '10', 'value' => $this->input->post('unidadmedida'), 'style'=>'width:100px','readonly'=> 'readonly');
+	    $unidadmedida = array('name'=>'unidadmedida','id'=>'unidadmedida','maxlength'=> '10', 'value' => $this->input->post('unidadmedida'), 'style'=>'width:123px','readonly'=> 'readonly','placeholder'=>' ::  Unid. Medida  ::');
 	}else{
-	    $unidadmedida = array('name'=>'unidadmedida','id'=>'unidadmedida','maxlength'=> '10', 'style'=>'width:100px','readonly'=> 'readonly');
+	    $unidadmedida = array('name'=>'unidadmedida','id'=>'unidadmedida','maxlength'=> '10', 'style'=>'width:123px','readonly'=> 'readonly','placeholder'=>' ::  Unid. Medida  ::');
 	}
 
 	if ($this->input->post('stockactual')){
-	    $stockactual = array('name'=>'stockactual','id'=>'stockactual','maxlength'=> '10', 'value' => $this->input->post('stockactual'), 'style'=>'width:100px','readonly'=> 'readonly');
+	    $stockactual = array('name'=>'stockactual','id'=>'stockactual','maxlength'=> '10', 'value' => $this->input->post('stockactual'), 'style'=>'width:123px','readonly'=> 'readonly','placeholder'=>' ::  Stock Actual  ::');
 	}else{
-	    $stockactual = array('name'=>'stockactual','id'=>'stockactual','maxlength'=> '10', 'style'=>'width:100px','readonly'=> 'readonly');
+	    $stockactual = array('name'=>'stockactual','id'=>'stockactual','maxlength'=> '10', 'style'=>'width:123px','readonly'=> 'readonly','placeholder'=>' ::  Stock Actual  ::');
 	}
 	
 	$igvpu = array('name'=>'igvpu','id'=>'igvpu', 'style'=>'width:40px','readonly'=> 'readonly'); 
@@ -146,6 +152,34 @@ $(function(){
         	$("#numcomprobante").focus();
       	}
     });
+
+    $("#aplicar_descuento_factura_porcentaje").on("click",function(){
+		var descuento_porcentaje = $("#descuento_porcentaje").val();
+		if(descuento_porcentaje == ''){
+	        sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
+	    }else{
+	    	var dataString = 'descuento_porcentaje='+descuento_porcentaje+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+	    	$.ajax({
+	            type: "POST",
+	            url: "<?php echo base_url(); ?>comercial/actualizar_carrito_descuento/",
+	          	data: dataString,
+	          	success: function(response){
+		            if(response == 1){
+		              	swal({
+		              		title: "Descuento realizado con Éxito!",
+		              		text: "",
+		              		type: "success",
+		              		confirmButtonText: "OK"
+		              	},function(isConfirm){
+	              			if (isConfirm) {
+	              				window.location.href="<?php echo base_url();?>comercial/gestioningreso";	
+	              			}
+		              	});
+		            }
+	            }
+	       	});
+	    }
+	});
 
     $("#gastosaduanero").keyup(function(){
       	var valor = $("#gastosaduanero").val();
@@ -573,16 +607,16 @@ $(function(){
 				          	<td width="370" height="30" style="padding-top: 4px;"><?php echo form_input($fecharegistro);?></td>
 				        </tr>
 				    </table>
-				    <table width="361" border="0" cellspacing="0" cellpadding="0">
+				    <table width="410" border="0" cellspacing="0" cellpadding="0">
 						<tr>
 							
 							<?php 
 								$existe = $this->cart->total_items();
 								if($existe <= 0){
 							?>
-								<td width="85" valign="middle" height="30">N° de Comprobante:</td>
+								<td width="129" valign="middle" height="30">N° de Comprobante:</td>
 								<td width="30" height="30"><?php echo form_input($seriecomprobante_enable);?></td>
-								<td width="61" height="30"><?php echo form_input($numcomprobante_enable);?></td>								
+								<td width="154" height="30"><?php echo form_input($numcomprobante_enable);?></td>								
 							<?php	
 								}else{
 							?>
@@ -671,11 +705,10 @@ $(function(){
           
            	 			</div>
 					</table>	
-					<table width="509" border="0" cellspacing="0" cellpadding="0">
+					<table width="450" border="0" cellspacing="0" cellpadding="0">
 						<tr>
-			            	<td width="127" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30">Unidad de Medida:</td>
-				          	<td width="128" height="30"><?php echo form_input($unidadmedida);?></td>
-							<td width="95" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30">Stock Actual:</td>
+			            	<td width="112" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30"></td>
+				          	<td width="97" height="30"><?php echo form_input($unidadmedida);?></td>
 				          	<td width="155" height="30"><?php echo form_input($stockactual);?></td>
 			            </tr>
 					</table>		
@@ -687,7 +720,7 @@ $(function(){
 					</table>
 					<table width="285" border="0" cellspacing="0" cellpadding="0">			        
 						<tr>
-						    <td width="122" valign="middle" height="30" style="width: 58px;">Precio Unitario:</td>
+						    <td width="104" valign="middle" height="30">Precio Unitario:</td>
 						    <td width="65" height="30"><?php echo form_input($pu);?></td>
 						</tr>
 					</table>
@@ -746,8 +779,7 @@ $(function(){
 				    </table>
 				</div>
 			<?php echo form_close() ?>
-			<!--Iniciar listar-->
-			<!---->
+			<!-- Iniciar listar -->
 			<div style="float: left;margin-right: 0px;margin-top: 5px;">
 				<?php 
 		            $existe = $this->cart->total_items();
@@ -758,16 +790,25 @@ $(function(){
 		            {
 		        ?>
 			</div>
+			<div style="margin-top: 20px;">
+				<table width="450" border="0" cellspacing="0" cellpadding="0">
+					<tr>
+		            	<td width="100" valign="middle" height="30" style="padding-bottom: 4px;font-weight: bold;width: 100px;">DESCUENTO %:</td>
+			          	<td width="97" height="30"><?php echo form_input($descuento_porcentaje);?></td>
+			          	<td width="117"><input name="submit" type="button" id="aplicar_descuento_factura_porcentaje" value="APLICAR DESCUENTO" style="padding-bottom:3px; padding-top:3px; margin-bottom: 6px; background-color: #FF5722; border-radius:6px; width: 150px;" /></td>
+		            </tr>
+				</table>
+			</div>
 	        <?php echo form_open("comercial/actualizar_carrito", 'id="actualizar" style="border-bottom: none; float: left;"') ?>
-		        <table border="0" cellspacing="0" cellpadding="0" id="listaProductos"> <!--style="margin-left: 90px;"-->
+		        <table border="0" cellspacing="0" cellpadding="0" id="listaProductos">
 			        <thead>
-			            <tr class="tituloTable">
-			              <td sort="idprod" width="80" height="25">Item</td>
-			              <td sort="idproducto" width="80" height="25">Cantidad</td>
-			              <td sort="nombreprod" width="380">Producto o Descripción</td>
-			              <td sort="catprod" width="120">ID Producto</td>
-			              <td sort="procprod" width="136">Precio Unitario</td>
-			              <td sort="procprod" width="136">Valor Total</td>
+			            <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
+			              <td sort="idprod" width="80" height="27">ITEM</td>
+			              <td sort="idproducto" width="90" height="27">CANTIDAD</td>
+			              <td sort="nombreprod" width="380">PRODUCTO O DESCRIPCIÓN</td>
+			              <td sort="catprod" width="120">ID PRODUCTO</td>
+			              <td sort="procprod" width="136">PRECIO UNITARIO</td>
+			              <td sort="procprod" width="136">VALOR TOTAL</td>
 			              <td sort="procprod" width="20">&nbsp;</td>
 			            </tr>
 			        </thead>
@@ -784,14 +825,9 @@ $(function(){
 				            </td>
 				            <td><?php echo $item['name']; ?></td>
 				            <td><?php echo $item['id']; ?></td>
-				            <td>
-				            	<!--<input type="text" name="<?php //echo $i; ?>[price]" value="<?php //echo $item['price']; ?>" style="border-style: inherit; color: #898989; margin-bottom: 0px; padding: 0px; font-size: 11px; font-family: verdana; width: 80px; text-align: center;" >-->
-				            	<?php echo number_format($item['price'],3,'.',','); ?>
-				            </td>
+				            <td><?php echo number_format($item['price'],3,'.',','); ?></td>
 				            <td><?php echo number_format($item['subtotal'],2,'.',','); ?></td>
-				            <td width="20" align="center">
-				            	<?php echo anchor('comercial/remove/'.$item['rowid'],'X',array('style'=>'text-decoration: none; color:#898989;')); ?>
-				            </td>
+				            <td width="20" align="center"><?php echo anchor('comercial/remove/'.$item['rowid'],'X',array('style'=>'text-decoration: none; color:#898989;')); ?></td>
 				        </tr>
 		            <?php 
 						$i++;
@@ -847,8 +883,8 @@ $(function(){
 		            	<td>&nbsp;</td>
 		            </tr>
 		            <tr>
-		            	<td><input name="actualizar" type="submit" id="submit" value="Actualizar" style="padding-bottom:3px; padding-top:3px; background-color: #005197; border-radius:6px;" /></td>
-		            	<td colspan="2"><?php echo anchor('comercial/vaciar_listado', 'Vaciar Listado de Productos', array('style'=>'text-decoration: none; background-color: #005197; color: white; font-family: tahoma; border-radius: 6px; padding: 3px 15px; font-size: 11px;')); ?></td>
+		            	<td><input name="actualizar" type="submit" id="submit" value="ACTUALIZAR" style="background-color: #FF5722;color: white;font-family: tahoma;border-radius: 6px;padding: 4px 15px 5px 15px;font-size: 11px;margin-left: 15px;font-size: 10px;" /></td>
+		            	<td colspan="2"><?php echo anchor('comercial/vaciar_listado_ingresos', 'VACIAR LISTADO', array('style'=>'text-decoration: none;background-color: #FF5722;color: white;font-family: tahoma;border-radius: 6px;padding: 6px 15px 6px 15px;font-size: 11px;margin-left: 15px;font-size: 10px;')); ?></td>
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>            	
 		            </tr>

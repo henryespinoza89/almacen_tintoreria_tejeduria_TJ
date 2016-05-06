@@ -54,46 +54,6 @@
     
     $('#listar_ubicacion_producto').DataTable();
 
-    // ELIMINAR REGISTRO
-    $('a.eliminar_ubicacion_producto').bind('click', function () {
-      var ruta = $('#direccionelim').text();
-        var id = $(this).attr('id').replace('elim_', '');
-        var parent = $(this).parent().parent();
-        $("#dialog-confirm").data({
-              'delid': id,
-              'parent': parent,
-              'ruta': ruta
-        }).dialog('open');
-        return false;
-    });
-    $("#dialog-confirm").dialog({
-      resizable: false,
-      bgiframe: true,
-      autoOpen: false,
-      width: 450,
-      height: "auto",
-      zindex: 9998,
-      modal: false,
-      buttons: {
-        'Eliminar': function () {
-          var parent = $(this).data('parent');
-          var id = $(this).data('delid');
-          var ruta = $(this).data('ruta');
-          $.ajax({
-            type: 'get',
-            url: ruta,
-            data: {
-              'eliminar' : id
-            }
-          });
-          $(this).dialog('close');
-          setTimeout('window.location.href="<?php echo base_url(); ?>comercial/gestion_ubicacion_productos"', 1200);
-        },
-        'Cancelar': function () {
-          $(this).dialog('close');
-        }
-      }
-    });
   });
   
   /* Funcion para recargar la pagina */
@@ -135,12 +95,41 @@
     });
   }
 
+  function delete_ubicacion_producto(id_ubicacion){
+    swal({   
+      title: "Estas seguro?",
+      text: "No se podrá recuperar esta información!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Si, eliminar!",
+      closeOnConfirm: false 
+    },
+    function(){
+      var dataString = 'id_ubicacion='+id_ubicacion+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/eliminar_ubicacion_producto/",
+        data: dataString,
+        success: function(msg){
+          if(msg == 'ok'){
+            swal("Eliminado!", "La ubicación de productos ha sido eliminada.", "success");
+          }else if(msg == 'dont_delete'){
+            sweetAlert("No se puede eliminar la ubicación", "Verificar que productos han sido registrados con esta ubicación.", "error");
+          }
+        }
+      });
+    });
+  }
+
+  
+
 </script>
 
 </head>
 <body>
   <div id="contenedor">
-    <div id="tituloCont">Ubicación del Producto</div>
+    <div id="tituloCont">Ubicación de Productos</div>
     <div id="formFiltro">
         <!--
         <form id="formulario" action="<?php // echo base_url('comercial/registrar_ubicacion_masiva');?>" enctype="multipart/form-data" method="post" style="padding-bottom: 13px;float: left;">
@@ -167,7 +156,7 @@
         </form>
         -->
         <div id="options_productos">
-          <div class="newprospect" style="width: 150px;">Nueva Ubicación</div>
+          <div class="newprospect" style="width: 150px;">NUEVA UBICACIÓN</div>
         </div>
     </div>
     <!--<div id="tituloCont" style="border-bottom-style:none;">Lista</div>-->
@@ -196,10 +185,14 @@
         <td height="27" style="vertical-align: middle;"><?php echo str_pad($i,4,0, STR_PAD_LEFT);?></td>
         <td style="vertical-align: middle;"><?php echo $data->nombre_ubicacion; ?></td>
         <td width="20" align="center"><img class="edit_ubicacion_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar Ubicación" onClick="edit_ubicacion_producto(<?php echo $data->id_ubicacion; ?>)" style="cursor: pointer;"/></td>
+        
+        <td width="20" align="center"><img class="delete_ubicacion_producto" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Ubicación" onClick="delete_ubicacion_producto(<?php echo $data->id_ubicacion; ?>)" style="cursor: pointer;"/></td>
+        <!--
         <td width="20" align="center">
           <a href="" class="eliminar_ubicacion_producto" id="elim_<?php echo $data->id_ubicacion; ?>">
           <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Ubicación"/></a>
         </td>
+        -->
       </tr>
       <?php
         $i++;
