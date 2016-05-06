@@ -3145,8 +3145,10 @@ class Comercial extends CI_Controller {
 
     public function actualizar_carrito_descuento(){
         $descuento_porcentaje = $this->input->post('descuento_porcentaje');
-        $valor_porcentaje = $descuento_porcentaje / 100;
-
+        $descuento_directo = $this->input->post('descuento_directo');
+        if($descuento_porcentaje != ""){
+            $valor_porcentaje = $descuento_porcentaje / 100;
+        }
         $monto_total_factura = $this->cart->total();
         $carrito = $this->cart->contents();
         $data = array();
@@ -3154,10 +3156,18 @@ class Comercial extends CI_Controller {
             $no_producto = $item['name'];
             $unidades = $item['qty'];
             $precio = $item['price'];
-            // valor del descuento
-            $valor_descuento = $item['price'] * $valor_porcentaje;
-            // nuevo precio unitario
-            $new_precio_unitario = $item['price'] - $valor_descuento;
+            if($descuento_porcentaje != ""){
+                // valor del descuento
+                $valor_descuento = $item['price'] * $valor_porcentaje;
+                // nuevo precio unitario
+                $new_precio_unitario = $item['price'] - $valor_descuento;
+            }else if($descuento_directo != ""){
+                // obtener el porcentaje del descuento
+                $porc = ($item['qty'] * $item['price']) / $monto_total_factura;
+                $monto = $descuento_directo * $porc;
+                $nuevo_ponderado = ($item['qty'] * $item['price']) - $monto;
+                $new_precio_unitario = $nuevo_ponderado / $item['qty'];
+            }
 
             $this->db->select('id_detalle_producto');
             $this->db->where('no_producto',$no_producto);

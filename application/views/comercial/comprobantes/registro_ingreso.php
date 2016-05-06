@@ -42,9 +42,15 @@
 	}
 
 	if ($this->input->post('descuento_porcentaje')){
-		$descuento_porcentaje = array('name'=>'descuento_porcentaje','id'=>'descuento_porcentaje','maxlength'=>'10','value'=>$this->input->post('descuento_porcentaje'), 'style'=>'width:123px;text-align: center;', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
+		$descuento_porcentaje = array('name'=>'descuento_porcentaje','id'=>'descuento_porcentaje','maxlength'=>'10','value'=>$this->input->post('descuento_porcentaje'), 'style'=>'width:123px;text-align: center;', 'class'=>'required','placeholder'=>': % Porcentaje :','onpaste'=>'return false');
 	}else{
-		$descuento_porcentaje = array('name'=>'descuento_porcentaje','id'=>'descuento_porcentaje','maxlength'=>'10', 'style'=>'width:123px;text-align: center;', 'class'=>'required', 'onkeyup'=>'calcular()','onpaste'=>'return false');
+		$descuento_porcentaje = array('name'=>'descuento_porcentaje','id'=>'descuento_porcentaje','maxlength'=>'10', 'style'=>'width:123px;text-align: center;', 'class'=>'required','placeholder'=>': % Porcentaje :','onpaste'=>'return false');
+	}
+
+	if ($this->input->post('descuento_directo')){
+		$descuento_directo = array('name'=>'descuento_directo','id'=>'descuento_directo','maxlength'=>'10','value'=>$this->input->post('descuento_directo'), 'style'=>'width:123px;text-align: center;', 'class'=>'required','placeholder'=>': Soles - Dolares :','onpaste'=>'return false');
+	}else{
+		$descuento_directo = array('name'=>'descuento_directo','id'=>'descuento_directo','maxlength'=>'10', 'style'=>'width:123px;text-align: center;', 'class'=>'required','placeholder'=>': Soles - Dolares :','onpaste'=>'return false');
 	}
 
 	if ($this->input->post('pu')){
@@ -146,6 +152,27 @@ $(function(){
 
 	$("#nombre_producto").focus();
 
+	$("#descuento_porcentaje").validCampoFranz('0123456789.');
+    $("#descuento_directo").validCampoFranz('0123456789.');
+
+    $("#descuento_porcentaje").keyup(function(){
+      var longitud = $("#descuento_porcentaje").val().length;
+      if(longitud > 0){
+        $("#descuento_directo").prop('disabled', true);
+      }else if(longitud == 0){
+        $("#descuento_directo").prop('disabled', false);
+      }
+    });
+
+    $("#descuento_directo").keyup(function(){
+      var longitud = $("#descuento_directo").val().length;
+      if(longitud > 0){
+        $("#descuento_porcentaje").prop('disabled', true);
+      }else if(longitud == 0){
+        $("#descuento_porcentaje").prop('disabled', false);
+      }
+    });
+
 	$("#seriecomprobante").keyup(function(){
       	var longitud = $("#seriecomprobante").val().length;
       	if(longitud == 3){
@@ -155,10 +182,11 @@ $(function(){
 
     $("#aplicar_descuento_factura_porcentaje").on("click",function(){
 		var descuento_porcentaje = $("#descuento_porcentaje").val();
-		if(descuento_porcentaje == ''){
+		var descuento_directo = $("#descuento_directo").val();
+		if(descuento_porcentaje == '' && descuento_directo == ''){
 	        sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
 	    }else{
-	    	var dataString = 'descuento_porcentaje='+descuento_porcentaje+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+	    	var dataString = 'descuento_porcentaje='+descuento_porcentaje+'&descuento_directo='+descuento_directo+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
 	    	$.ajax({
 	            type: "POST",
 	            url: "<?php echo base_url(); ?>comercial/actualizar_carrito_descuento/",
@@ -279,7 +307,7 @@ $(function(){
 	    });
 
 	    $("#mensaje_registro_correcto").html('<b>!La Factura se registro satisfactoriamente!</b>').dialog({
-	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Mensaje',
+	      modal: true,position: 'center',width: 400,height: 155,resizable: false, title: 'Mensaje',
 	      buttons: { Ok: function(){
 	      	$("#fecharegistro").val("");
 	      	$("#moneda").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
@@ -791,10 +819,11 @@ $(function(){
 		        ?>
 			</div>
 			<div style="margin-top: 20px;">
-				<table width="450" border="0" cellspacing="0" cellpadding="0">
+				<table width="600" border="0" cellspacing="0" cellpadding="0">
 					<tr>
-		            	<td width="100" valign="middle" height="30" style="padding-bottom: 4px;font-weight: bold;width: 100px;">DESCUENTO %:</td>
-			          	<td width="97" height="30"><?php echo form_input($descuento_porcentaje);?></td>
+		            	<td width="100" valign="middle" height="30" style="padding-bottom: 4px;font-weight: bold;width: 70px;">DESCUENTO:</td>
+			          	<td width="60" height="30"><?php echo form_input($descuento_porcentaje);?></td>
+			          	<td width="97" height="30"><?php echo form_input($descuento_directo);?></td>
 			          	<td width="117"><input name="submit" type="button" id="aplicar_descuento_factura_porcentaje" value="APLICAR DESCUENTO" style="padding-bottom:3px; padding-top:3px; margin-bottom: 6px; background-color: #FF5722; border-radius:6px; width: 150px;" /></td>
 		            </tr>
 				</table>
