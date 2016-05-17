@@ -18,7 +18,6 @@
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/lib/modernizr-2.6.2.min.js"></script>
     <script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.steps.js"></script>
     <!-- JQuery Validate -->
-    
     <script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jshashtable-3.0.js"></script>
     <script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery-validate.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jTPS.js"></script>
@@ -29,15 +28,7 @@
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jquery.dataTables.css">
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.dataTables.js"></script>
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/bootstrap.min.css">
-	<!--
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-	<script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
-	<link rel="stylesheet" href="/resources/demos/style.css">
-    <!--<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>-->
-    
-	<!--<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js'></script>-->
-	<!--<script language="JavaScript" type="text/javascript" src="<?php //echo base_url();?>assets/js/funciones_2.js"></script> <!-- Valida Contraseña -->
+
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.cookie.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.maskedinput.min.js"></script>
 
