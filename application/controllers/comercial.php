@@ -7856,9 +7856,9 @@ class Comercial extends CI_Controller {
         $objPHPExcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($style);
         $objPHPExcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($styleArray);
 
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
         $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(55);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
         $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
         $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
         $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
@@ -7874,7 +7874,7 @@ class Comercial extends CI_Controller {
         }
         $objWorkSheet->setCellValue('A2', 'ID PRODUCTO')
                      ->setCellValue('B2', 'NOMBRE O DESCRIPCION')
-                     ->setCellValue('C2', 'ESTADO')
+                     ->setCellValue('C2', 'UBICACIÓN')
                      ->setCellValue('D2', 'CATEGORIA')
                      ->setCellValue('E2', 'TIPO DE PRODUCTO')
                      ->setCellValue('F2', 'PROCEDENCIA')
@@ -7922,7 +7922,7 @@ class Comercial extends CI_Controller {
             if($almacen == 1){
                 $objWorkSheet->setCellValue('A'.$p, $reg->id_producto)
                              ->setCellValue('B'.$p, $reg->no_producto)
-                             ->setCellValue('C'.$p, $estado)
+                             ->setCellValue('C'.$p, $reg->nombre_ubicacion)
                              ->setCellValue('D'.$p, $reg->no_categoria)
                              ->setCellValue('E'.$p, $reg->no_tipo_producto)
                              ->setCellValue('F'.$p, $reg->no_procedencia)
@@ -7930,9 +7930,9 @@ class Comercial extends CI_Controller {
                              ->setCellValue('H'.$p, $reg->stock_sta_clara)
                              ->setCellValue('I'.$p, "");
             }else if($almacen == 2){
-                $objWorkSheet->setCellValue('A'.$p, $reg->id_pro)
+                $objWorkSheet->setCellValue('A'.$p, 'PRD'.$reg->id_pro)
                          ->setCellValue('B'.$p, $reg->no_producto)
-                         ->setCellValue('C'.$p, $estado)
+                         ->setCellValue('C'.$p, $reg->nombre_ubicacion)
                          ->setCellValue('D'.$p, $reg->no_categoria)
                          ->setCellValue('E'.$p, $reg->no_tipo_producto)
                          ->setCellValue('F'.$p, $reg->no_procedencia)

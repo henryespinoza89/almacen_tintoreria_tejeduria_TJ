@@ -3514,14 +3514,15 @@ class Model_comercial extends CI_Model {
     }
 
     function get_info_inventario_actual(){
-        $sql = "SELECT producto.id_pro,producto.estado,detalle_producto.no_producto,categoria.no_categoria,tipo_producto.no_tipo_producto,
-        procedencia.no_procedencia,unidad_medida.nom_uni_med,detalle_producto.stock,detalle_producto.precio_unitario
+        $sql = "SELECT producto.id_pro,producto.estado,detalle_producto.no_producto,detalle_producto.stock,detalle_producto.precio_unitario,
+        categoria.no_categoria,tipo_producto.no_tipo_producto,procedencia.no_procedencia,unidad_medida.nom_uni_med,ubicacion.nombre_ubicacion
         FROM producto
         INNER JOIN detalle_producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
         INNER JOIN categoria ON producto.id_categoria = categoria.id_categoria
         INNER JOIN tipo_producto ON producto.id_tipo_producto = tipo_producto.id_tipo_producto
         INNER JOIN procedencia ON producto.id_procedencia = procedencia.id_procedencia
         INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
+        INNER JOIN ubicacion ON producto.id_ubicacion = ubicacion.id_ubicacion
         WHERE producto.id_pro IS NOT NULL ORDER BY producto.estado ASC";
         $query = $this->db->query($sql);
         if($query->num_rows()>0)
