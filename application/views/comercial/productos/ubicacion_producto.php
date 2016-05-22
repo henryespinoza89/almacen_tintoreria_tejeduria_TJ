@@ -172,8 +172,8 @@
     <table border="0" cellspacing="0" cellpadding="0" id="listar_ubicacion_producto" style="float: left;width: 700px;" class="table table-hover table-striped">
       <thead>
         <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
-          <td sort="idproducto" width="60" height="27">Item</td>
-          <td sort="nombreprod" width="480">Ubicación del Producto</td>
+          <td sort="idproducto" width="60" height="27">ITEM</td>
+          <td sort="nombreprod" width="480">UBICACIÓN DEL PRODUCTO</td>
           <td width="20" style="background-image: none;">&nbsp;</td>
           <td width="20" style="background-image: none;">&nbsp;</td>
         </tr>

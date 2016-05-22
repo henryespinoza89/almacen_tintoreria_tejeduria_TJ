@@ -125,6 +125,22 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    function updateAgenteAduana($actualizar_data, $editnombreagente){
+        $id_agente = $this->security->xss_clean($this->uri->segment(3));
+        /* Validación de duplicidad */
+        $this->db->select('id_agente');
+        $this->db->where('no_agente',$editnombreagente);
+        $query = $this->db->get('agente_aduana');
+        if($query->num_rows() <= 0){
+            /* Actualización */
+            $this->db->where('id_agente',$id_agente);
+            $this->db->update('agente_aduana', $actualizar_data);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     function save_ubicacion_producto(){
         $ubicacion_producto_modal = strtoupper($this->security->xss_clean($this->input->post('ubicacion_producto_modal')));
         $this->db->select('nombre_ubicacion');
@@ -135,6 +151,65 @@ class Model_comercial extends CI_Model {
                 'nombre_ubicacion'=> $ubicacion_producto_modal
             );
             $this->db->insert('ubicacion', $registro);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function get_facturas_importadas_pendientes(){
+        $filtro = "";
+        $filtro .= " AND ingreso_producto.id_almacen =".(int)$this->security->xss_clean($this->session->userdata('almacen'));
+        $filtro .= " AND ingreso_producto.id_comprobante =".(int)4;
+        $sql = "SELECT ingreso_producto.id_ingreso_producto,ingreso_producto.nro_comprobante,ingreso_producto.fecha,ingreso_producto.total,
+        ingreso_producto.gastos,ingreso_producto.id_almacen,ingreso_producto.cs_igv,ingreso_producto.serie_comprobante,comprobante.no_comprobante,
+        moneda.no_moneda,agente_aduana.no_agente,proveedor.razon_social,ingreso_producto.id_comprobante
+        FROM
+        ingreso_producto
+        INNER JOIN comprobante ON ingreso_producto.id_comprobante = comprobante.id_comprobante
+        INNER JOIN agente_aduana ON ingreso_producto.id_agente = agente_aduana.id_agente
+        INNER JOIN moneda ON ingreso_producto.id_moneda = moneda.id_moneda
+        INNER JOIN proveedor ON ingreso_producto.id_proveedor = proveedor.id_proveedor
+        WHERE ingreso_producto.id_ingreso_producto IS NOT NULL".$filtro."ORDER BY ingreso_producto.fecha ASC";
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
+    function get_datos_detalle_pedido_fill_inputs($id_ingreso_producto){
+        try{
+            $filtro = $id_ingreso_producto;
+            $sql = "SELECT ingreso_producto.id_ingreso_producto,ingreso_producto.id_comprobante,ingreso_producto.nro_comprobante,ingreso_producto.fecha,
+                    ingreso_producto.id_moneda,ingreso_producto.id_proveedor,ingreso_producto.total,ingreso_producto.gastos,ingreso_producto.id_almacen,
+                    ingreso_producto.id_agente,ingreso_producto.cs_igv,ingreso_producto.serie_comprobante,proveedor.razon_social
+                    FROM
+                    ingreso_producto
+                    INNER JOIN proveedor ON ingreso_producto.id_proveedor = proveedor.id_proveedor
+                    WHERE ingreso_producto.id_ingreso_producto =".$filtro;
+            $query = $this->db->query($sql);
+            $a_data = $query->result_array();
+            return $a_data;
+        }catch (Exception $e) {
+            throw new Exception('Error Inesperado');
+            return false;
+        }
+    }
+
+    function save_agente_aduana(){
+        $agente_aduana_modal = strtoupper($this->security->xss_clean($this->input->post('agente_aduana_modal')));
+        $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+        $this->db->select('no_agente');
+        $this->db->where('no_agente',$agente_aduana_modal);
+        $this->db->where('id_almacen',$almacen);
+        $query = $this->db->get('agente_aduana');
+        if($query->num_rows() <= 0){
+            $registro = array(
+                'no_agente'=> $agente_aduana_modal,
+                'id_almacen'=> $almacen
+            );
+            $this->db->insert('agente_aduana', $registro);
             return true;
         }else{
             return false;
@@ -521,14 +596,12 @@ class Model_comercial extends CI_Model {
             $calculo_porcentaje = ($cantidad_ingreso*$precio_ingreso)/$suma_parciales_factura;
             $p_u_gastos = ($calculo_porcentaje * $total_factura_contabilidad)/$cantidad_ingreso;
             /* Traer datos del producto */
-            $this->db->select('stock,precio_unitario,stock_sta_clara,stock_referencial_sta_anita,stock_referencial_sta_clara,precio_unitario_referencial');
+            $this->db->select('stock,precio_unitario,stock_referencial_sta_anita,precio_unitario_referencial');
             $this->db->where('id_detalle_producto',$id_detalle_producto);
             $query = $this->db->get('detalle_producto');
             foreach($query->result() as $row){
                 $stock_sta_anita = $row->stock; /* Stock de Sta anita */
-                $stock_sta_clara = $row->stock_sta_clara; /* Stock de Sta clara */
                 $stock_referencial_sta_anita = $row->stock_referencial_sta_anita;
-                $stock_referencial_sta_clara = $row->stock_referencial_sta_clara;
                 $precio_unitario = $row->precio_unitario;
                 $precio_unitario_referencial = $row->precio_unitario_referencial;
             }
@@ -541,7 +614,7 @@ class Model_comercial extends CI_Model {
             }
 
             if($almacen == 2){ /* Sta. Anita */
-                $stock_referencial = $stock_referencial_sta_anita + $stock_referencial_sta_clara;
+                $stock_referencial = $stock_referencial_sta_anita;
             }
 
             /* Actualizar el precio unitario */
@@ -594,7 +667,8 @@ class Model_comercial extends CI_Model {
                         'p_u_salida'=> $nuevo_precio_unitario
                     );
                     $this->db->where('id_salida_producto',$num_comprobante);
-                    $this->db->update('salida_producto', $actualizar_precio_salida);
+                    $this->db->where('id_detalle_producto',$id_detalle_producto);
+                    $this->db->update('detalle_salida_producto', $actualizar_precio_salida);
                 }else if($descripcion == 'ORDEN INGRESO'){
                     // Actualizar el precio unitario en el kardex
                     $actualizar_precio_io_kardex = array(

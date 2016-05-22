@@ -1,51 +1,41 @@
-<?php
-  //$nombre = array('name'=>'nombre','id'=>'nombre','maxlength'=> '50','minlength'=>'1', 'style'=>'margin-bottom:0px' );
-
-  if ($this->input->post('nombre')){
-    $nombre = array('name'=>'nombre','id'=>'nombre','maxlength'=>'20','value'=>$this->input->post('nombre'), 'style'=>'width:150px', 'class'=>'required');
-
-  }else{
-    $nombre = array('name'=>'nombre','id'=>'nombre','maxlength'=>'20', 'style'=>'width:150px', 'class'=>'required');
-  }
-?>
-
 <script type="text/javascript">
   $(function(){
-      //Script para crear la tabla que será el contenedor de los productos registrados
-    $('#listaAgenteAduana').jTPS( {perPages:[10,15,20,'Todos'],scrollStep:1,scrollDelay:30,clickCallback:function () {     
-            // target table selector
-            var table = '#listaAgenteAduana';
-            // store pagination + sort in cookie 
-            document.cookie = 'jTPS=sortasc:' + $(table + ' .sortableHeader').index($(table + ' .sortAsc')) + ',' +
-                    'sortdesc:' + $(table + ' .sortableHeader').index($(table + ' .sortDesc')) + ',' +
-                    'page:' + $(table + ' .pageSelector').index($(table + ' .hilightPageSelector')) + ';';
+
+    $('#listaAgenteAduana').DataTable();
+
+    /* Ventana Modal para Registrar el Código de Hilado */
+    $(".newprospect").click(function() { //activacion de ventana modal
+      $("#mdlNuevoAgente" ).dialog({  //declaracion de ventana modal
+        modal: true,resizable: false,show: "blind",hide: "blind",position: 'center',width: 405,height: 220,draggable: false,closeOnEscape: false, //Aumenta el marco general
+        buttons: {
+        Registrar: function() {
+            var agente_aduana_modal = $('#agente_aduana_modal').val();
+            if(agente_aduana_modal == ''){
+              sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
+            }else{
+              var dataString = 'agente_aduana_modal='+agente_aduana_modal+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+              $.ajax({
+                type: "POST",
+                url: "<?php echo base_url(); ?>comercial/save_agente_aduana/",
+                data: dataString,
+                success: function(msg){
+                  if(msg == 1){
+                    swal({ title: "El Agente de Aduana ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                    $("#mdlNuevoAgente").dialog("close");
+                    $('#agente_aduana_modal').val('');
+                  }else{
+                    sweetAlert(msg, "", "error");
+                  }
+                }
+              });
             }
-        });
-    // reinstate sort and pagination if cookie exists
-    var cookies = document.cookie.split(';');
-    for (var ci = 0, cie = cookies.length; ci < cie; ci++) {
-            var cookie = cookies[ci].split('=');
-            if (cookie[0] == 'jTPS') {
-                    var commands = cookie[1].split(',');
-                    for (var cm = 0, cme = commands.length; cm < cme; cm++) {
-                            var command = commands[cm].split(':');
-                            if (command[0] == 'sortasc' && parseInt(command[1]) >= 0) {
-                                    $('#listaAgenteAduana .sortableHeader:eq(' + parseInt(command[1]) + ')').click();
-                            } else if (command[0] == 'sortdesc' && parseInt(command[1]) >= 0) {
-                                    $('#listaAgenteAduana .sortableHeader:eq(' + parseInt(command[1]) + ')').click().click();
-                            } else if (command[0] == 'page' && parseInt(command[1]) >= 0) {
-                                    $('#listaAgenteAduana .pageSelector:eq(' + parseInt(command[1]) + ')').click();
-                            }
-                    }
-            }
-    }
-    // bind mouseover for each tbody row and change cell (td) hover style
-    $('#listaAgenteAduana tbody tr:not(.stubCell)').bind('mouseover mouseout',
-            function (e) {
-                    // hilight the row
-                    e.type == 'mouseover' ? $(this).children('td').addClass('hilightRow') : $(this).children('td').removeClass('hilightRow');
-            }
-    );
+          },
+          Cancelar: function(){
+            $("#mdlNuevoAgente").dialog("close");
+          }
+          }
+      });
+    });
 
     // ELIMINAR REGISTRO
     $('a.eliminar_registro').bind('click', function () {
@@ -95,58 +85,29 @@
 
     
   });
-/*
-  function mostrar_errores(){
-    <?php if(!empty($error))
-    {
-    ?>
-    $("#errordatos").html('Hola').dialog({
-      modal: true,position: 'center',width: 400,height: 135,resizable: false, title: 'Falta Completar',
-      buttons: { Ok: function(){
-        $("#errordatos").dialog("close");
-      }}
-    });
-    <?php } ?>
-  }
-  */
 
   // Editar Máquina
   function editar_agente(id_agente){
         var urlMaq = '<?php echo base_url();?>comercial/editaragente/'+id_agente;
-        //alert(urlMaq);
         $("#mdlEditarAgenteAduana").load(urlMaq).dialog({
-          modal: true, position: 'center', width: 430, height: 190, draggable: false, resizable: false, closeOnEscape: false,
+          modal: true, position: 'center', width: 430, height: 220, draggable: false, resizable: false, closeOnEscape: false,
           buttons: {
             Actualizar: function() {
-            $(".ui-dialog-buttonpane button:contains('Actualizar')").button("disable");
-            $(".ui-dialog-buttonpane button:contains('Actualizar')").attr("disabled", true).addClass("ui-state-disabled");
-            //CONTROLO LAS VARIABLES
             var editnombreagente = $('#editnombreagente').val(); 
             if(editnombreagente == ''){
-              $("#modalerror").html('<b>ERROR:</b> Falta completar el campo del formulario, por favor verifique.').dialog({
-                modal: true,position: 'center',width: 450, height: 125,resizable: false,
-                buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
-              });
+              sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
             }else{
               var dataString = 'editnombreagente='+editnombreagente+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
               $.ajax({
                 type: "POST",
-                url: "<?php echo base_url(); ?>comercial/actualizaragente/"+id_agente,
+                url: "<?php echo base_url(); ?>comercial/update_agente_aduana/"+id_agente,
                 data: dataString,
                 success: function(msg){
                   if(msg == 1){
-                    $("#finregistro").html('!El Nombre del Agente Aduanero ha sido actualizado con éxito!.').dialog({
-                      modal: true,position: 'center',width: 400,height: 135,resizable: false, title: 'Fin de Actualización',
-                      buttons: { Ok: function(){
-                        window.location.href="<?php echo base_url();?>comercial/gestionaduana";
-                      }}
-                    });
+                    swal({ title: "El Agente de Aduanas ha sido actualizado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                    $("#mdlEditarAgenteAduana").dialog("close");
                   }else{
-                    $("#modalerror").empty().append(msg).dialog({
-                      modal: true,position: 'center',width: 500,height: 125,resizable: false,
-                      buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
-                    });
-                    $(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");
+                    sweetAlert(msg, "", "error");
                   }
                 }
               });
@@ -155,7 +116,7 @@
           Cancelar: function(){
             $("#mdlEditarAgenteAduana").dialog("close");
           }
-                }
+          }
         });
       }
 </script>
@@ -163,69 +124,51 @@
 </head>
 <body>
   <div id="contenedor">
-    <div id="tituloCont">Datos del Agente Aduanero</div>
+    <div id="tituloCont">Agente de Aduana</div>
     <div id="formFiltro">
-        <?php echo form_open(base_url()."comercial/registraraduana", 'id="registrar"') ?>
-          <table width="979" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td width="208">Nombre del Agente Aduanero:</td>
-              <td width="196" style="padding-top: 5px;"><?php echo form_input($nombre);?></td>
-              <td width="103" align="left"><input name="submit" type="submit" id="submit" value="Registrar"/></td>
-              <td width="472" ><?php if(!empty($error)){ echo $error;} if(!empty($respuesta)){ echo $respuesta;} ?></td>
-            </tr>
-          </table>
-        <?php echo form_close() ?>
-        <div id="tituloCont" style="border-bottom-style:none;">Lista de Agentes Aduanero</div>
-        <!--Iniciar listar-->
-        <?php 
-          $existe = count($aduana);
-          if($existe <= 0){
-            echo 'No existen Agentes Aduaneros registrados en el Sistema.';
-          }
-          else
-          {
-        ?>
-        <table border="0" cellspacing="0" cellpadding="0" id="listaAgenteAduana">
-          <thead>
-            <tr class="tituloTable">
-              <td sort="idproducto" width="130" height="25">ID Agente Aduana</td>
-              <td sort="nombreprod" width="220">Nombre de Agente de Aduana</td>
-              <td width="20">&nbsp;</td>
-              <td width="20">&nbsp;</td>
-            </tr>
-          </thead>
-          <?php 
-            $i = 1;
-            foreach($aduana as $listaagenteaduana){ 
-          ?>
-          <tr class="contentTable">
-            <!--<td><?php //echo str_pad($listaagenteaduana->id_agente, 5, 0, STR_PAD_LEFT); ?></td>-->
-            <td height="27"><?php echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>
-            <td><?php echo $listaagenteaduana->no_agente; ?></td>
-            <td width="20" align="center"><img class="editar_agente" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar Agente de Aduana" onClick="editar_agente(<?php echo $listaagenteaduana->id_agente; ?>)" /></td>
-            <td width="20" align="center">
-              <a href="" class="eliminar_registro" id="elim_<?php echo $listaagenteaduana->id_agente; ?>">
-              <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Agente de Aduana"/></a>
-            </td>
-          </tr>
-          <?php 
-            $i++;
-            } 
-          ?> 
-          <tfoot class="nav">
-            <tr>
-              <td colspan=8>
-                    <div class="pagination"></div>
-                    <div class="paginationTitle">Página</div>
-                    <div class="selectPerPage"></div>
-                </td>
-            </tr>                   
-          </tfoot>          
-        </table>
-        <?php 
-          }
-        ?>
+      <div id="options_productos">
+        <div class="newprospect" style="width: 150px;">NUEVO AGENTE</div>
+      </div>
     </div>
+    <!-- iniciar listar -->
+    <?php 
+      $existe = count($aduana);
+      if($existe <= 0){
+        echo 'No existen Agentes Aduaneros registrados en el Sistema.';
+      }
+      else
+      {
+    ?>
+    <table border="0" cellspacing="0" cellpadding="0" id="listaAgenteAduana" style="float: left;width: 700px;" class="table table-hover table-striped">
+      <thead>
+        <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
+          <td sort="idproducto" width="60" height="27">ITEM</td>
+          <td sort="nombreprod" width="480">AGENTE DE ADUANA</td>
+          <td width="20" style="background-image: none;">&nbsp;</td>
+          <td width="20" style="background-image: none;">&nbsp;</td>
+        </tr>
+      </thead>
+      <?php 
+        $i = 1;
+        foreach($aduana as $listaagenteaduana){
+      ?>
+      <tr class="contentTable" style="font-size: 12px;">
+        <td height="27" style="vertical-align: middle;"><?php echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>
+        <td style="vertical-align: middle;"><?php echo $listaagenteaduana->no_agente; ?></td>
+        <td width="20" align="center"><img class="editar_agente" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar Agente de Aduana" onClick="editar_agente(<?php echo $listaagenteaduana->id_agente; ?>)" style="cursor:pointer;"/></td>
+        <td width="20" align="center">
+          <a href="" class="eliminar_registro" id="elim_<?php echo $listaagenteaduana->id_agente; ?>">
+          <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Agente de Aduana"/></a>
+        </td>
+      </tr>
+      <?php 
+        $i++;
+        } 
+      ?>        
+    </table>
+    <?php 
+      }
+    ?>
   </div>
   <div id="mdlEditarAgenteAduana"></div>
   <div id="modalerror"></div>
@@ -239,4 +182,24 @@
       <span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
       ¿Está seguro que quiere eliminar el siguiente Agente Aduanero?<br /><strong>¡Esta acción no se puede revertir!</strong>
     </p>
+  </div>
+
+  <!---  Ventanas modales -->
+  <div id="mdlNuevoAgente" style="display:none">
+    <div id="contenedor" style="width:355px; height:90px;"> <!--Aumenta el marco interior-->
+    <div id="tituloCont">Nuevo Agente</div>
+    <div id="formFiltro" style="width:500px;">
+    <?php
+      $agente_aduana_modal = array('name'=>'agente_aduana_modal','id'=>'agente_aduana_modal','maxlength'=>'50', 'class'=>'required');
+    ?>  
+      <form method="post" id="nueva_maquina" style=" border-bottom:0px">
+      <table>
+        <tr>
+          <td width="152" height="30" style="width: 150px;">Agente de aduana:</td>
+          <td width="261" height="30"><?php echo form_input($agente_aduana_modal);?></td>
+        </tr>
+      </table>
+      </form>
+    </div>
+    </div>
   </div>

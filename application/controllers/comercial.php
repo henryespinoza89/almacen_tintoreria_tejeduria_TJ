@@ -200,6 +200,7 @@ class Comercial extends CI_Controller {
                 $data['listaproveedor']= $this->model_comercial->listaProveedor();
                 $data['listasimmon']= $this->model_comercial->listaSimMon();
                 $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                 $this->load->view('comercial/menu_script');
                 $this->load->view('comercial/menu_cabecera');
                 $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -257,6 +258,7 @@ class Comercial extends CI_Controller {
                         $data['listaproveedor']= $this->model_comercial->listaProveedor();
                         $data['listasimmon']= $this->model_comercial->listaSimMon();
                         $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                        $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                         $this->load->view('comercial/menu_script');
                         $this->load->view('comercial/menu_cabecera');
                         $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -291,6 +293,7 @@ class Comercial extends CI_Controller {
                     $data['listaproveedor']= $this->model_comercial->listaProveedor();
                     $data['listasimmon']= $this->model_comercial->listaSimMon();
                     $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                    $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                     $this->load->view('comercial/menu_script');
                     $this->load->view('comercial/menu_cabecera');
                     $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -334,6 +337,7 @@ class Comercial extends CI_Controller {
                                 $data['listaproveedor']= $this->model_comercial->listaProveedor();
                                 $data['listasimmon']= $this->model_comercial->listaSimMon();
                                 $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                                $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                                 $this->load->view('comercial/menu_script');
                                 $this->load->view('comercial/menu_cabecera');
                                 $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -353,6 +357,7 @@ class Comercial extends CI_Controller {
                         $data['listaproveedor']= $this->model_comercial->listaProveedor();
                         $data['listasimmon']= $this->model_comercial->listaSimMon();
                         $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                        $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                         $this->load->view('comercial/menu_script');
                         $this->load->view('comercial/menu_cabecera');
                         $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -410,6 +415,7 @@ class Comercial extends CI_Controller {
                             $data['listaproveedor']= $this->model_comercial->listaProveedor();
                             $data['listasimmon']= $this->model_comercial->listaSimMon();
                             $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                            $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                             $this->load->view('comercial/menu_script');
                             $this->load->view('comercial/menu_cabecera');
                             $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -467,6 +473,7 @@ class Comercial extends CI_Controller {
                             $data['listaproveedor']= $this->model_comercial->listaProveedor();
                             $data['listasimmon']= $this->model_comercial->listaSimMon();
                             $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                            $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                             $this->load->view('comercial/menu_script');
                             $this->load->view('comercial/menu_cabecera');
                             $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -474,7 +481,6 @@ class Comercial extends CI_Controller {
                     }
                 }
             }
-
             /* Fin del proceso - transacción */
             $this->db->trans_complete();
         }
@@ -536,6 +542,15 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function save_agente_aduana(){
+        $result = $this->model_comercial->save_agente_aduana();
+        if(!$result){
+            echo '!El Agente de Aduana ya se encuentra registrado. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
     public function editar_ubicacion_producto(){
         $data['ubicacion_producto_data']= $this->model_comercial->getUbicacionProducto();
         $this->load->view('comercial/productos/actualizar_ubicacion_producto', $data);
@@ -558,11 +573,44 @@ class Comercial extends CI_Controller {
         $result = $this->model_comercial->updateUbicacion($actualizar_data, $edit_ubicacion);
         // Verificamos que existan resultados
         if(!$result){
-            /* Enviamos parametro */
             echo '!La ubicacion del producto ya se encuentra registrada. Verificar!';
         }else{
-            /* Enviamos parametro */
             echo 'ok';
+        }
+    }
+
+    public function update_agente_aduana(){
+        $editnombreagente = strtoupper($this->security->xss_clean($this->input->post('editnombreagente')));
+        /* Creación del array con los datos del codigo del producto para insertarlo en la BD */
+        $actualizar_data = array('no_agente' => $editnombreagente,);
+        $result = $this->model_comercial->updateAgenteAduana($actualizar_data, $editnombreagente);
+        // Verificamos que existan resultados
+        if(!$result){
+            echo '!El Agente de Aduana ya se encuentra registrada. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
+    public function obtener_datos_importacion(){
+        $id_ingreso_producto = $this->input->post('id_ingreso_producto');
+        $resultado = $this->model_comercial->get_datos_detalle_pedido_fill_inputs($id_ingreso_producto);
+        if (count($resultado) > 0){
+            foreach ($resultado as $data) {
+                $array = array(
+                    "id_comprobante" => $data['id_comprobante'],
+                    "nro_comprobante" => $data['nro_comprobante'],
+                    "serie_comprobante" => $data['serie_comprobante'],
+                    "id_moneda" => $data['id_moneda'],
+                    "razon_social" => $data['razon_social'],
+                    "fecha" => $data['fecha'],
+                    "id_agente" => $data['id_agente'],
+                    "id_ingreso_producto" => $data['id_ingreso_producto'],
+                );
+            }
+            echo '' . json_encode($array) . '';
+        }else{
+            echo 'vacio';
         }
     }
 
@@ -576,6 +624,7 @@ class Comercial extends CI_Controller {
             $data['listaproveedor']= $this->model_comercial->listaProveedor();
             $data['listasimmon']= $this->model_comercial->listaSimMon();
             $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+            $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
             $this->load->view('comercial/menu_script');
             $this->load->view('comercial/menu_cabecera');
             $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
