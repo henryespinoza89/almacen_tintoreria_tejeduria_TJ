@@ -131,75 +131,49 @@
   <div id="contenedor">
     <div id="tituloCont">Ubicación de Productos</div>
     <div id="formFiltro">
-        <!--
-        <form id="formulario" action="<?php // echo base_url('comercial/registrar_ubicacion_masiva');?>" enctype="multipart/form-data" method="post" style="padding-bottom: 13px;float: left;">
-          <table width="625" border="0" cellspacing="0" cellpadding="0" style="margin-top: 4px;">
-            <tr>
-              <td width="187">Seleccione el Archivo a subir:</td>
-              <td width="194" style="padding-top: 5px;"><?php // echo form_input($file);?></td>
-              <td><input id="" name="<?php // echo $this->security->get_csrf_token_name(); ?>" value="<?php // echo $this->security->get_csrf_hash(); ?>" type="hidden" /></td>
-              <td width="134" align="left"><input name="submit" type="submit" id="submit" value="Subir Archivo" /></td>
-            </tr>
-          </table>
-        </form>
-        -->
-        <!--
-        <form id="formulario" action="<?php // echo base_url('comercial/registrar_productos_opcion_masiva');?>" enctype="multipart/form-data" method="post" style="padding-bottom: 13px;float: left;">
-          <table width="625" border="0" cellspacing="0" cellpadding="0" style="margin-top: 4px;">
-            <tr>
-              <td width="187">Seleccione el Archivo a subir:</td>
-              <td width="194" style="padding-top: 5px;"><?php // echo form_input($file);?></td>
-              <td><input id="" name="<?php // echo $this->security->get_csrf_token_name(); ?>" value="<?php // echo $this->security->get_csrf_hash(); ?>" type="hidden" /></td>
-              <td width="134" align="left"><input name="submit" type="submit" id="submit" value="Subir Archivo" /></td>
-            </tr>
-          </table>
-        </form>
-        -->
-        <div id="options_productos">
-          <div class="newprospect" style="width: 150px;">NUEVA UBICACIÓN</div>
-        </div>
-    </div>
-    <!--<div id="tituloCont" style="border-bottom-style:none;">Lista</div>-->
-    <!--Iniciar listar-->
-    <?php 
-      $existe = count($ubicacion_producto_data);
-      if($existe <= 0){
-        echo 'No existen Ubicaciones de Productos registrados en el Sistema.';
-      }
-      else
-      {
-    ?>
-    <table border="0" cellspacing="0" cellpadding="0" id="listar_ubicacion_producto" style="float: left;width: 700px;" class="table table-hover table-striped">
-      <thead>
-        <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
-          <td sort="idproducto" width="60" height="27">ITEM</td>
-          <td sort="nombreprod" width="480">UBICACIÓN DEL PRODUCTO</td>
-          <td width="20" style="background-image: none;">&nbsp;</td>
-          <td width="20" style="background-image: none;">&nbsp;</td>
-        </tr>
-      </thead>
+      <div id="options_productos">
+        <div class="newprospect" style="width: 150px;">NUEVA UBICACIÓN</div>
+      </div>
       <?php 
-        $i=1;
-        foreach($ubicacion_producto_data as $data){ ?>  
-      <tr class="contentTable" style="font-size: 12px;">
-        <td height="27" style="vertical-align: middle;"><?php echo str_pad($i,4,0, STR_PAD_LEFT);?></td>
-        <td style="vertical-align: middle;"><?php echo $data->nombre_ubicacion; ?></td>
-        <td width="20" align="center"><img class="edit_ubicacion_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar Ubicación" onClick="edit_ubicacion_producto(<?php echo $data->id_ubicacion; ?>)" style="cursor: pointer;"/></td>
-        
-        <td width="20" align="center"><img class="delete_ubicacion_producto" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Ubicación" onClick="delete_ubicacion_producto(<?php echo $data->id_ubicacion; ?>)" style="cursor: pointer;"/></td>
-        <!--
-        <td width="20" align="center">
-          <a href="" class="eliminar_ubicacion_producto" id="elim_<?php echo $data->id_ubicacion; ?>">
-          <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Ubicación"/></a>
-        </td>
-        -->
-      </tr>
-      <?php
-        $i++;
-        } 
-      ?>        
-    </table>
-    <?php }?>
+        $existe = count($ubicacion_producto_data);
+        if($existe <= 0){
+          echo 'No existen Ubicaciones de Productos registrados en el Sistema.';
+        }
+        else
+        {
+      ?>
+      <table border="0" cellspacing="0" cellpadding="0" id="listar_ubicacion_producto" style="float: left;width: 700px;" class="table table-hover table-striped">
+        <thead>
+          <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
+            <td sort="idproducto" width="60" height="27">ITEM</td>
+            <td sort="nombreprod" width="480">UBICACIÓN DEL PRODUCTO</td>
+            <td width="20" style="background-image: none;">&nbsp;</td>
+            <td width="20" style="background-image: none;">&nbsp;</td>
+          </tr>
+        </thead>
+        <?php 
+          $i=1;
+          foreach($ubicacion_producto_data as $data){ ?>  
+        <tr class="contentTable" style="font-size: 12px;">
+          <td height="27" style="vertical-align: middle;"><?php echo str_pad($i,4,0, STR_PAD_LEFT);?></td>
+          <td style="vertical-align: middle;"><?php echo $data->nombre_ubicacion; ?></td>
+          <td width="20" align="center"><img class="edit_ubicacion_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar Ubicación" onClick="edit_ubicacion_producto(<?php echo $data->id_ubicacion; ?>)" style="cursor: pointer;"/></td>
+          
+          <td width="20" align="center"><img class="delete_ubicacion_producto" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Ubicación" onClick="delete_ubicacion_producto(<?php echo $data->id_ubicacion; ?>)" style="cursor: pointer;"/></td>
+          <!--
+          <td width="20" align="center">
+            <a href="" class="eliminar_ubicacion_producto" id="elim_<?php echo $data->id_ubicacion; ?>">
+            <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Ubicación"/></a>
+          </td>
+          -->
+        </tr>
+        <?php
+          $i++;
+          } 
+        ?>        
+      </table>
+      <?php }?>
+    </div>
   </div>
   <div id="mdlEditarRendimiento"></div>
   <div id="finregistro"></div>
@@ -225,7 +199,7 @@
       <form method="post" id="nueva_maquina" style=" border-bottom:0px">
       <table>
         <tr>
-          <td width="152" height="30" style="width: 150px;">Ubicación del Producto:</td>
+          <td width="152" height="30" style="width: 150px;padding-bottom: 5px;">Ubicación del Producto:</td>
           <td width="261" height="30"><?php echo form_input($ubicacion_producto_modal);?></td>
         </tr>
       </table>

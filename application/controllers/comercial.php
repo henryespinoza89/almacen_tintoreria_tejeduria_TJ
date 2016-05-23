@@ -542,6 +542,24 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function save_categoria_producto(){
+        $result = $this->model_comercial->save_categoria_producto();
+        if(!$result){
+            echo '!La categoría del producto ya se encuentra registrada. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
+    public function save_tipo_producto(){
+        $result = $this->model_comercial->save_tipo_producto();
+        if(!$result){
+            echo '!El Tipo de producto ya se encuentra registrado. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
     public function save_agente_aduana(){
         $result = $this->model_comercial->save_agente_aduana();
         if(!$result){
@@ -566,16 +584,69 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function eliminar_producto(){
+        $id_pro = $this->security->xss_clean($this->input->post('id_pro'));
+        $result = $this->model_comercial->eliminar_producto($id_pro);
+        if(!$result){
+            echo 'dont_delete';
+        }else{
+            echo 'ok';
+        }
+    }
+
+    public function eliminar_tipo_producto(){
+        $id_tipo_producto = $this->security->xss_clean($this->input->post('id_tipo_producto'));
+        $result = $this->model_comercial->eliminar_tipo_producto($id_tipo_producto);
+        if(!$result){
+            echo 'dont_delete';
+        }else{
+            echo 'ok';
+        }
+    }
+
+    public function eliminar_categoria_producto(){
+        $id_categoria = $this->security->xss_clean($this->input->post('id_categoria'));
+        $result = $this->model_comercial->eliminar_categoria_producto($id_categoria);
+        if(!$result){
+            echo 'dont_delete';
+        }else{
+            echo 'ok';
+        }
+    }
+
     public function update_ubicacion_producto(){
         $edit_ubicacion = strtoupper($this->security->xss_clean($this->input->post('edit_ubicacion')));
-        /* Creación del array con los datos del codigo del producto para insertarlo en la BD */
+        // Creación del array con los datos del codigo del producto para insertarlo en la BD
         $actualizar_data = array('nombre_ubicacion' => $edit_ubicacion,);
         $result = $this->model_comercial->updateUbicacion($actualizar_data, $edit_ubicacion);
-        // Verificamos que existan resultados
         if(!$result){
             echo '!La ubicacion del producto ya se encuentra registrada. Verificar!';
         }else{
             echo 'ok';
+        }
+    }
+
+    public function update_tipo_producto(){
+        $edittipprod = strtoupper($this->security->xss_clean($this->input->post('edittipprod')));
+        // Creación del array con los datos del codigo del producto para insertarlo en la BD
+        $actualizar_data = array('no_tipo_producto' => $edittipprod,);
+        $result = $this->model_comercial->update_tipo_producto($actualizar_data, $edittipprod);
+        if(!$result){
+            echo '!El Tipo de producto ya se encuentra registrada. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
+    public function update_categoria_producto(){
+        $editcatprod = strtoupper($this->security->xss_clean($this->input->post('editcatprod')));
+        // Creación del array con los datos del codigo del producto para insertarlo en la BD
+        $actualizar_data = array('no_categoria' => $editcatprod,);
+        $result = $this->model_comercial->update_categoria_producto($actualizar_data, $editcatprod);
+        if(!$result){
+            echo '!La categoría del producto ya se encuentra registrada. Verificar!';
+        }else{
+            echo '1';
         }
     }
 
@@ -2860,7 +2931,9 @@ class Comercial extends CI_Controller {
         else{
             $result = $this->model_comercial->actualizaProducto();
             if($result == 'no_existe_ubicacion'){
-                echo '<span style="color:red"><b>ERROR:</b> No Existe la Ubicación del producto ingresada. Verificar!</span>';
+                echo '!La Ubicación del Producto ingresada no es correcta. Verificar!';
+            }else if($result == 'producto_duplicado'){
+                echo '!Este producto ya se encuentra registrado en el sistema. Verificar!';
             }else if($result == 'successfull'){
                 echo '1';
             }
