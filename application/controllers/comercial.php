@@ -3136,6 +3136,11 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function get_data_report_facturas_2016(){
+        $array = $this->model_comercial->get_data_report_facturas_2016();
+        echo json_encode($array, JSON_NUMERIC_CHECK);
+    }
+
     public function traerFacturasImportadas(){
         $resultado = $this->model_comercial->get_datos_factura_importada();
         if (count($resultado) == 0) {

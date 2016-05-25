@@ -7571,6 +7571,62 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    public function get_data_report_facturas_2016(){
+        $array_montos = [];
+
+        for ($i=1; $i <= 12; $i++) {
+
+            $anio = '2016';
+            $mes = $i;
+            $dia_inicial = '01';
+            // conocer el ultimo dia del mes
+            $dia_final = date("d",(mktime(0,0,0,$mes+1,1,$anio)-1));
+
+            //$dia_final = '31';
+
+            $array_inicial = array($anio, $mes, $dia_inicial);
+            $fecha_inicial = implode("-", $array_inicial);
+
+            $array_final = array($anio, $mes, $dia_final);
+            $fecha_final = implode("-", $array_final);
+
+            $filtro = "";
+            $filtro .= " AND DATE(ingreso_producto.fecha) BETWEEN'".$fecha_inicial."'AND'".$fecha_final."'";
+
+            $sql ="SELECT SUM(ingreso_producto.total) AS monto FROM ingreso_producto
+                   WHERE ingreso_producto.id_ingreso_producto IS NOT NULL".$filtro;
+
+            $query = $this->db->query($sql);
+
+            
+            foreach ($query->result() as $key) {
+                //echo $key->monto;
+                if($key->monto == null){$key->monto = 0;}
+                array_push($array_montos, $key->monto);
+            }
+            
+            
+
+        }
+        // echo $query->result();
+        return $array_montos;
+
+        /*
+        $filtro = $this->security->xss_clean($this->input->post('numcomprobante'));
+        $sql = "SELECT detalle_producto.id_detalle_producto,detalle_ingreso_producto.unidades,detalle_producto.no_producto,producto.id_producto,
+                detalle_producto.precio_unitario,listarProductodetalle_ingreso_producto.precio,detalle_ingreso_producto.id_ingreso_producto,detalle_ingreso_producto.id_detalle_ing_prod
+                FROM detalle_ingreso_producto
+                INNER JOIN detalle_producto ON detalle_ingreso_producto.id_detalle_producto = detalle_producto.id_detalle_producto
+                INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
+                WHERE detalle_ingreso_producto.id_ingreso_producto=".$filtro;
+        $query = $this->db->query($sql);
+        if($query->num_rows() > 0)
+        {
+            return $query->result();
+        }
+        */
+    }
+
     public function kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad, $almacen){
         // Actualización del Stock
         $this->db->select('stock,stock_sta_clara,precio_unitario');
