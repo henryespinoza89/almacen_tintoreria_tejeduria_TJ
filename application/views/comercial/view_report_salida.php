@@ -134,7 +134,7 @@
 			    labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"],
 			    datasets: [
 			        {
-			            label: "Total de consumos en S/. - Año 2016", // optional
+			            label: "Total de consumos en S/. - Año 2016   ", // optional
 			            backgroundColor: "#007CC1",
 			            borderColor: "#FFF",
 			            borderWidth: 1,

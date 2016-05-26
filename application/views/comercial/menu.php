@@ -232,7 +232,7 @@
 					<!--<li><a href='<?php //echo base_url();?>comercial/backup'><span>Backup de la BD</span></a></li>-->
 					<li><a href="" style="width: 193px;"><span>Gestión Reportes</span></a>
 						<ul>
-							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada' style="width: 150px;"><span>Reporte de Facturas</span></a>
+							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada'><span>Reporte de Facturas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportsalida'><span>Reporte de Salidas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestioninventarioalmacen'><span>Inventario Valorizado de Almacén</span></a>
 							<!--<li><a href='<?php //echo base_url();?>comercial/gestionreportmensual'><span>Reporte Mensual</span></a>-->
