@@ -3141,6 +3141,16 @@ class Comercial extends CI_Controller {
         echo json_encode($array, JSON_NUMERIC_CHECK);
     }
 
+    public function get_data_report_facturas_2015(){
+        $array = $this->model_comercial->get_data_report_facturas_2015();
+        echo json_encode($array, JSON_NUMERIC_CHECK);
+    }
+
+    public function get_data_report_consumos_2016(){
+        $array = $this->model_comercial->get_data_report_consumos_2016();
+        echo json_encode($array, JSON_NUMERIC_CHECK);
+    }
+
     public function traerFacturasImportadas(){
         $resultado = $this->model_comercial->get_datos_factura_importada();
         if (count($resultado) == 0) {
@@ -8678,26 +8688,20 @@ class Comercial extends CI_Controller {
                     $euro_venta_fecha = $row->euro_venta;
                 }
                 /* Obtener el monto total en soles */
-                if($data->id_agente == 2){
-                    if($data->no_moneda == 'DOLARES'){
-                        $convert_soles = $data->total * $dolar_venta_fecha;
-                        $suma_dolares = $suma_dolares + $data->total;
-                        $suma_total_soles = $suma_total_soles + $convert_soles;
-                    }else if($data->no_moneda == 'EURO'){
-                        $convert_soles = $data->total * $euro_venta_fecha;
-                        $suma_euro = $suma_euro + $data->total;
-                        $suma_total_soles = $suma_total_soles + $convert_soles;
-                    }else{
-                        $convert_soles = $data->total;
-                        $suma_soles = $suma_soles + $data->total;
-                        $suma_total_soles = $suma_total_soles + $data->total;
-                    }
+                if($data->no_moneda == 'DOLARES' && $data->id_agente == null){
+                    $convert_soles = $data->total * $dolar_venta_fecha;
+                    $suma_dolares = $suma_dolares + $data->total;
+                    $suma_total_soles = $suma_total_soles + $convert_soles;
+                }else if($data->no_moneda == 'EURO' && $data->id_agente == null){
+                    $convert_soles = $data->total * $euro_venta_fecha;
+                    $suma_euro = $suma_euro + $data->total;
+                    $suma_total_soles = $suma_total_soles + $convert_soles;
                 }else{
                     $convert_soles = $data->total;
                     $suma_soles = $suma_soles + $data->total;
                     $suma_total_soles = $suma_total_soles + $data->total;
                 }
-
+                
                 if($data->id_agente == ""){
                     $objWorkSheet->setCellValue('A'.$p, $i)
                                  ->setCellValue('B'.$p, $data->no_comprobante)
