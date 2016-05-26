@@ -7632,6 +7632,33 @@ class Model_comercial extends CI_Model {
         return $array_montos;
     }
 
+    public function get_data_inventario_almacen_categoria(){
+        $array_montos = [];
+
+        $sql ="SELECT categoria.id_categoria,categoria.no_categoria FROM categoria
+               WHERE categoria.id_categoria IS NOT NULL";
+        $query = $this->db->query($sql);
+        foreach ($query->result() as $key) {
+            $sumatoria_soles = 0;
+            $id_categoria = $key->id_categoria;
+            // obtener los productos registrados en cada categoria
+            $filtro = "";
+            $filtro .= " AND producto.id_categoria =".(int)$id_categoria;
+            $sql_2 ="SELECT detalle_producto.no_producto,detalle_producto.stock,detalle_producto.precio_unitario,producto.id_categoria,producto.id_pro FROM producto
+                   INNER JOIN detalle_producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
+                   WHERE producto.id_pro IS NOT NULL".$filtro;
+            $query_2 = $this->db->query($sql_2);
+            foreach ($query_2->result() as $row) {
+                $stock = $row->stock;
+                $precio_unitario = $row->precio_unitario;
+                $sumatoria_soles = $sumatoria_soles + ($stock*$precio_unitario);
+            }
+            array_push($array_montos, @number_format($sumatoria_soles, 2, '.', ''));
+        }
+        
+        return $array_montos;
+    }
+
     public function get_data_report_facturas_2016(){
         $array_montos = [];
         

@@ -87,7 +87,7 @@
 <style>
 	#mycanvas{
 		width: 1345px;
-		height: 460px !important;
+		height: 460px;
 	}
 
 	.chart{

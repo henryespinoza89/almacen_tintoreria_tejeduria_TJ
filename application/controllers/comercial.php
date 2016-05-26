@@ -3140,6 +3140,11 @@ class Comercial extends CI_Controller {
         $array = $this->model_comercial->get_data_report_facturas_2016();
         echo json_encode($array, JSON_NUMERIC_CHECK);
     }
+    
+    public function get_data_inventario_almacen_categoria(){
+        $array = $this->model_comercial->get_data_inventario_almacen_categoria();
+        echo json_encode($array, JSON_NUMERIC_CHECK);
+    }
 
     public function get_data_report_facturas_2015(){
         $array = $this->model_comercial->get_data_report_facturas_2015();
