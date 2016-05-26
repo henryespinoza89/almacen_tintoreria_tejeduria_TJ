@@ -109,6 +109,71 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    function eliminar_tipo_producto($id_tipo_producto){
+        $this->db->select('id_tipo_producto');
+        $this->db->where('id_tipo_producto',$id_tipo_producto);
+        $query = $this->db->get('producto');
+        if($query->num_rows() <= 0){
+            $sql = "DELETE FROM tipo_producto WHERE id_tipo_producto = " . $id_tipo_producto . "";
+            $query = $this->db->query($sql);
+            if($query == 'TRUE'){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+
+    function eliminar_producto($id_pro){
+        $this->db->select('id_detalle_producto');
+        $this->db->where('id_pro',$id_pro);
+        $query = $this->db->get('producto');
+        foreach($query->result() as $row){
+            $id_dp = $row->id_detalle_producto;
+        }
+
+        $this->db->select('id_detalle_producto');
+        $this->db->where('id_detalle_producto',$id_dp);
+        $query = $this->db->get('detalle_ingreso_producto');
+        if($query->num_rows() > 0){
+            return false;
+        }else{
+            $this->db->select('id_pro');
+            $this->db->where('id_pro',$id_pro);
+            $query = $this->db->get('saldos_iniciales');
+            if($query->num_rows()>0){
+                return false;
+            }else{
+                $sql = "DELETE FROM producto WHERE id_pro = " . $id_pro . "";
+                $query = $this->db->query($sql);
+
+                $sql = "DELETE FROM detalle_producto WHERE id_detalle_producto = " . $id_dp . "";
+                $query = $this->db->query($sql);
+                
+                return true;
+            }
+        }
+    }
+
+    function eliminar_categoria_producto($id_categoria){
+        $this->db->select('id_categoria');
+        $this->db->where('id_categoria',$id_categoria);
+        $query = $this->db->get('producto');
+        if($query->num_rows() <= 0){
+            $sql = "DELETE FROM categoria WHERE id_categoria = " . $id_categoria . "";
+            $query = $this->db->query($sql);
+            if($query == 'TRUE'){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+
     function updateUbicacion($actualizar_data, $edit_ubicacion){
         $id_ubicacion = $this->security->xss_clean($this->uri->segment(3));
         /* Validación de duplicidad */
@@ -125,6 +190,54 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    function update_tipo_producto($actualizar_data, $edittipprod){
+        $id_tipo_producto = $this->security->xss_clean($this->uri->segment(3));
+        // Validación de duplicidad
+        $this->db->select('id_tipo_producto');
+        $this->db->where('no_tipo_producto',$edittipprod);
+        $query = $this->db->get('tipo_producto');
+        if($query->num_rows() <= 0){
+            // Actualización
+            $this->db->where('id_tipo_producto',$id_tipo_producto);
+            $this->db->update('tipo_producto', $actualizar_data);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function update_categoria_producto($actualizar_data, $editcatprod){
+        $id_categoria = $this->security->xss_clean($this->uri->segment(3));
+        // Validación de duplicidad
+        $this->db->select('id_categoria');
+        $this->db->where('no_categoria',$editcatprod);
+        $query = $this->db->get('categoria');
+        if($query->num_rows() <= 0){
+            // Actualización
+            $this->db->where('id_categoria',$id_categoria);
+            $this->db->update('categoria', $actualizar_data);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function updateAgenteAduana($actualizar_data, $editnombreagente){
+        $id_agente = $this->security->xss_clean($this->uri->segment(3));
+        /* Validación de duplicidad */
+        $this->db->select('id_agente');
+        $this->db->where('no_agente',$editnombreagente);
+        $query = $this->db->get('agente_aduana');
+        if($query->num_rows() <= 0){
+            /* Actualización */
+            $this->db->where('id_agente',$id_agente);
+            $this->db->update('agente_aduana', $actualizar_data);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     function save_ubicacion_producto(){
         $ubicacion_producto_modal = strtoupper($this->security->xss_clean($this->input->post('ubicacion_producto_modal')));
         $this->db->select('nombre_ubicacion');
@@ -135,6 +248,97 @@ class Model_comercial extends CI_Model {
                 'nombre_ubicacion'=> $ubicacion_producto_modal
             );
             $this->db->insert('ubicacion', $registro);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function save_categoria_producto(){
+        $categoria_producto_modal = strtoupper($this->security->xss_clean($this->input->post('categoria_producto_modal')));
+        $this->db->select('no_categoria');
+        $this->db->where('no_categoria',$categoria_producto_modal);
+        $query = $this->db->get('categoria');
+        if($query->num_rows() <= 0){
+            $registro = array(
+                'no_categoria'=> $categoria_producto_modal
+            );
+            $this->db->insert('categoria', $registro);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function save_tipo_producto(){
+        $tipo_producto_modal = strtoupper($this->security->xss_clean($this->input->post('tipo_producto_modal')));
+        $this->db->select('no_tipo_producto');
+        $this->db->where('no_tipo_producto',$tipo_producto_modal);
+        $query = $this->db->get('tipo_producto');
+        if($query->num_rows() <= 0){
+            $registro = array(
+                'no_tipo_producto'=> $tipo_producto_modal
+            );
+            $this->db->insert('tipo_producto', $registro);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function get_facturas_importadas_pendientes(){
+        $filtro = "";
+        $filtro .= " AND ingreso_producto.id_almacen =".(int)$this->security->xss_clean($this->session->userdata('almacen'));
+        $filtro .= " AND ingreso_producto.id_comprobante =".(int)4;
+        $sql = "SELECT ingreso_producto.id_ingreso_producto,ingreso_producto.nro_comprobante,ingreso_producto.fecha,ingreso_producto.total,
+        ingreso_producto.gastos,ingreso_producto.id_almacen,ingreso_producto.cs_igv,ingreso_producto.serie_comprobante,comprobante.no_comprobante,
+        moneda.no_moneda,agente_aduana.no_agente,proveedor.razon_social,ingreso_producto.id_comprobante
+        FROM
+        ingreso_producto
+        INNER JOIN comprobante ON ingreso_producto.id_comprobante = comprobante.id_comprobante
+        INNER JOIN agente_aduana ON ingreso_producto.id_agente = agente_aduana.id_agente
+        INNER JOIN moneda ON ingreso_producto.id_moneda = moneda.id_moneda
+        INNER JOIN proveedor ON ingreso_producto.id_proveedor = proveedor.id_proveedor
+        WHERE ingreso_producto.id_ingreso_producto IS NOT NULL".$filtro."ORDER BY ingreso_producto.fecha ASC";
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
+    function get_datos_detalle_pedido_fill_inputs($id_ingreso_producto){
+        try{
+            $filtro = $id_ingreso_producto;
+            $sql = "SELECT ingreso_producto.id_ingreso_producto,ingreso_producto.id_comprobante,ingreso_producto.nro_comprobante,ingreso_producto.fecha,
+                    ingreso_producto.id_moneda,ingreso_producto.id_proveedor,ingreso_producto.total,ingreso_producto.gastos,ingreso_producto.id_almacen,
+                    ingreso_producto.id_agente,ingreso_producto.cs_igv,ingreso_producto.serie_comprobante,proveedor.razon_social
+                    FROM
+                    ingreso_producto
+                    INNER JOIN proveedor ON ingreso_producto.id_proveedor = proveedor.id_proveedor
+                    WHERE ingreso_producto.id_ingreso_producto =".$filtro;
+            $query = $this->db->query($sql);
+            $a_data = $query->result_array();
+            return $a_data;
+        }catch (Exception $e) {
+            throw new Exception('Error Inesperado');
+            return false;
+        }
+    }
+
+    function save_agente_aduana(){
+        $agente_aduana_modal = strtoupper($this->security->xss_clean($this->input->post('agente_aduana_modal')));
+        $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+        $this->db->select('no_agente');
+        $this->db->where('no_agente',$agente_aduana_modal);
+        $this->db->where('id_almacen',$almacen);
+        $query = $this->db->get('agente_aduana');
+        if($query->num_rows() <= 0){
+            $registro = array(
+                'no_agente'=> $agente_aduana_modal,
+                'id_almacen'=> $almacen
+            );
+            $this->db->insert('agente_aduana', $registro);
             return true;
         }else{
             return false;
@@ -521,14 +725,12 @@ class Model_comercial extends CI_Model {
             $calculo_porcentaje = ($cantidad_ingreso*$precio_ingreso)/$suma_parciales_factura;
             $p_u_gastos = ($calculo_porcentaje * $total_factura_contabilidad)/$cantidad_ingreso;
             /* Traer datos del producto */
-            $this->db->select('stock,precio_unitario,stock_sta_clara,stock_referencial_sta_anita,stock_referencial_sta_clara,precio_unitario_referencial');
+            $this->db->select('stock,precio_unitario,stock_referencial_sta_anita,precio_unitario_referencial');
             $this->db->where('id_detalle_producto',$id_detalle_producto);
             $query = $this->db->get('detalle_producto');
             foreach($query->result() as $row){
                 $stock_sta_anita = $row->stock; /* Stock de Sta anita */
-                $stock_sta_clara = $row->stock_sta_clara; /* Stock de Sta clara */
                 $stock_referencial_sta_anita = $row->stock_referencial_sta_anita;
-                $stock_referencial_sta_clara = $row->stock_referencial_sta_clara;
                 $precio_unitario = $row->precio_unitario;
                 $precio_unitario_referencial = $row->precio_unitario_referencial;
             }
@@ -541,7 +743,7 @@ class Model_comercial extends CI_Model {
             }
 
             if($almacen == 2){ /* Sta. Anita */
-                $stock_referencial = $stock_referencial_sta_anita + $stock_referencial_sta_clara;
+                $stock_referencial = $stock_referencial_sta_anita;
             }
 
             /* Actualizar el precio unitario */
@@ -594,7 +796,8 @@ class Model_comercial extends CI_Model {
                         'p_u_salida'=> $nuevo_precio_unitario
                     );
                     $this->db->where('id_salida_producto',$num_comprobante);
-                    $this->db->update('salida_producto', $actualizar_precio_salida);
+                    $this->db->where('id_detalle_producto',$id_detalle_producto);
+                    $this->db->update('detalle_salida_producto', $actualizar_precio_salida);
                 }else if($descripcion == 'ORDEN INGRESO'){
                     // Actualizar el precio unitario en el kardex
                     $actualizar_precio_io_kardex = array(
@@ -3514,14 +3717,15 @@ class Model_comercial extends CI_Model {
     }
 
     function get_info_inventario_actual(){
-        $sql = "SELECT producto.id_pro,producto.estado,detalle_producto.no_producto,categoria.no_categoria,tipo_producto.no_tipo_producto,
-        procedencia.no_procedencia,unidad_medida.nom_uni_med,detalle_producto.stock,detalle_producto.precio_unitario
+        $sql = "SELECT producto.id_pro,producto.estado,detalle_producto.no_producto,detalle_producto.stock,detalle_producto.precio_unitario,
+        categoria.no_categoria,tipo_producto.no_tipo_producto,procedencia.no_procedencia,unidad_medida.nom_uni_med,ubicacion.nombre_ubicacion
         FROM producto
         INNER JOIN detalle_producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
         INNER JOIN categoria ON producto.id_categoria = categoria.id_categoria
         INNER JOIN tipo_producto ON producto.id_tipo_producto = tipo_producto.id_tipo_producto
         INNER JOIN procedencia ON producto.id_procedencia = procedencia.id_procedencia
         INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
+        INNER JOIN ubicacion ON producto.id_ubicacion = ubicacion.id_ubicacion
         WHERE producto.id_pro IS NOT NULL ORDER BY producto.estado ASC";
         $query = $this->db->query($sql);
         if($query->num_rows()>0)
@@ -5818,11 +6022,11 @@ class Model_comercial extends CI_Model {
     }
 
     public function actualizaProducto(){
-        // Recuperamos el ID
         $id_ubicacion = 0;
+        $id_dp_act = null;
         $id_pro = $this->security->xss_clean($this->uri->segment(3));
 
-        $editnombreprod = $this->security->xss_clean($this->input->post('editnombreprod'));
+        $editnombreprod = strtoupper($this->security->xss_clean($this->input->post('editnombreprod')));
         $editcat = $this->security->xss_clean($this->input->post('editcat'));
         $edittipoprod = $this->security->xss_clean($this->input->post('edittipoprod'));
         $editprocedencia = $this->security->xss_clean($this->input->post('editprocedencia'));
@@ -5830,6 +6034,7 @@ class Model_comercial extends CI_Model {
         $id_uni_med = $this->security->xss_clean($this->input->post('editunid_med'));
         $nombre_ubicacion = $this->security->xss_clean($this->input->post('edit_ubicacion'));
 
+        // id_dp del producto inicial
         $this->db->select('id_detalle_producto');
         $this->db->where('id_pro',$id_pro);
         $query = $this->db->get('producto');
@@ -5844,28 +6049,40 @@ class Model_comercial extends CI_Model {
             $id_ubicacion = $row->id_ubicacion;
         }
 
-        if($id_ubicacion != 0){
-            $actualizardetalle = array(
-                'no_producto' => $editnombreprod
-            );
-            $this->db->where('id_detalle_producto',$id_dp);
-            $this->db->update('detalle_producto', $actualizardetalle);
-
-            $actualizar = array(
-                'id_categoria' => $editcat,
-                'id_tipo_producto' => $edittipoprod,
-                'id_procedencia'=>$editprocedencia,
-                'observacion'=>$editobser,
-                'id_unidad_medida'=>$id_uni_med,
-                'id_ubicacion'=>$id_ubicacion
-            );
-            $this->db->where('id_pro',$id_pro);
-            $this->db->update('producto', $actualizar);
-            return 'successfull';
-        }else{
-            return 'no_existe_ubicacion';
+        $this->db->select('id_detalle_producto');
+        $this->db->where('no_producto',$editnombreprod);
+        $query = $this->db->get('detalle_producto');
+        if($query->num_rows() > 0){
+            foreach($query->result() as $row){
+                $id_dp_act = $row->id_detalle_producto;
+            }
         }
 
+        if(($id_dp == $id_dp_act) || $id_dp_act == null){
+            if($id_ubicacion != 0){
+                $actualizardetalle = array(
+                    'no_producto' => $editnombreprod
+                );
+                $this->db->where('id_detalle_producto',$id_dp);
+                $this->db->update('detalle_producto', $actualizardetalle);
+
+                $actualizar = array(
+                    'id_categoria' => $editcat,
+                    'id_tipo_producto' => $edittipoprod,
+                    'id_procedencia'=>$editprocedencia,
+                    'observacion'=>$editobser,
+                    'id_unidad_medida'=>$id_uni_med,
+                    'id_ubicacion'=>$id_ubicacion
+                );
+                $this->db->where('id_pro',$id_pro);
+                $this->db->update('producto', $actualizar);
+                return 'successfull';
+            }else{
+                return 'no_existe_ubicacion';
+            }
+        }else{
+            return 'producto_duplicado';
+        }
     }
 
     function eliminarRegistroIngreso($id_registro_ingreso,$almacen){
@@ -7352,6 +7569,62 @@ class Model_comercial extends CI_Model {
             return $query->result();
             }
         }
+    }
+
+    public function get_data_report_facturas_2016(){
+        $array_montos = [];
+
+        for ($i=1; $i <= 12; $i++) {
+
+            $anio = '2016';
+            $mes = $i;
+            $dia_inicial = '01';
+            // conocer el ultimo dia del mes
+            $dia_final = date("d",(mktime(0,0,0,$mes+1,1,$anio)-1));
+
+            //$dia_final = '31';
+
+            $array_inicial = array($anio, $mes, $dia_inicial);
+            $fecha_inicial = implode("-", $array_inicial);
+
+            $array_final = array($anio, $mes, $dia_final);
+            $fecha_final = implode("-", $array_final);
+
+            $filtro = "";
+            $filtro .= " AND DATE(ingreso_producto.fecha) BETWEEN'".$fecha_inicial."'AND'".$fecha_final."'";
+
+            $sql ="SELECT SUM(ingreso_producto.total) AS monto FROM ingreso_producto
+                   WHERE ingreso_producto.id_ingreso_producto IS NOT NULL".$filtro;
+
+            $query = $this->db->query($sql);
+
+            
+            foreach ($query->result() as $key) {
+                //echo $key->monto;
+                if($key->monto == null){$key->monto = 0;}
+                array_push($array_montos, $key->monto);
+            }
+            
+            
+
+        }
+        // echo $query->result();
+        return $array_montos;
+
+        /*
+        $filtro = $this->security->xss_clean($this->input->post('numcomprobante'));
+        $sql = "SELECT detalle_producto.id_detalle_producto,detalle_ingreso_producto.unidades,detalle_producto.no_producto,producto.id_producto,
+                detalle_producto.precio_unitario,listarProductodetalle_ingreso_producto.precio,detalle_ingreso_producto.id_ingreso_producto,detalle_ingreso_producto.id_detalle_ing_prod
+                FROM detalle_ingreso_producto
+                INNER JOIN detalle_producto ON detalle_ingreso_producto.id_detalle_producto = detalle_producto.id_detalle_producto
+                INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
+                WHERE detalle_ingreso_producto.id_ingreso_producto=".$filtro;
+        $query = $this->db->query($sql);
+        if($query->num_rows() > 0)
+        {
+            return $query->result();
+        }
+        */
     }
 
     public function kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad, $almacen){

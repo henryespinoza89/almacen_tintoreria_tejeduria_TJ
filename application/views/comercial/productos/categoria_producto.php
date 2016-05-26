@@ -12,6 +12,39 @@
 
     $('#listaCategoriaProductos').DataTable();
 
+    $(".newprospect").click(function() {
+      $("#mdlNuevaCategoria" ).dialog({
+        modal: true,resizable: false,show: "blind",hide: "blind",position: 'center',width: 405,height: 220,draggable: false,closeOnEscape: false, //Aumenta el marco general
+        buttons: {
+        Registrar: function() {
+            var categoria_producto_modal = $('#categoria_producto_modal').val();
+            if(categoria_producto_modal == ''){
+              sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
+            }else{
+              var dataString = 'categoria_producto_modal='+categoria_producto_modal+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+              $.ajax({
+                type: "POST",
+                url: "<?php echo base_url(); ?>comercial/save_categoria_producto/",
+                data: dataString,
+                success: function(msg){
+                  if(msg == 1){
+                    swal({ title: "La Categoría del Producto ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                    $("#mdlNuevaCategoria").dialog("close");
+                    $('#categoria_producto_modal').val('');
+                  }else{
+                    sweetAlert(msg, "", "error");
+                  }
+                }
+              });
+            }
+          },
+          Cancelar: function(){
+            $("#mdlNuevaCategoria").dialog("close");
+          }
+          }
+      });
+    });
+
     // ELIMINAR REGISTRO
     $('a.eliminar_registro').bind('click', function () {
       var ruta = $('#direccionelim').text();
@@ -60,44 +93,27 @@
 
   });
 
-
-  // Editar Máquina
   function editar_categoria_producto(id_categoria){
     var urlMaq = '<?php echo base_url();?>comercial/editarcategoriaproducto/'+id_categoria;
-    //alert(urlMaq);
     $("#mdlEditarCategoriaProducto").load(urlMaq).dialog({
       modal: true, position: 'center', width: 400, height: 220, draggable: false, resizable: false, closeOnEscape: false,
       buttons: {
         Actualizar: function() {
-        $(".ui-dialog-buttonpane button:contains('Actualizar')").button("disable");
-        $(".ui-dialog-buttonpane button:contains('Actualizar')").attr("disabled", true).addClass("ui-state-disabled");
-        //CONTROLO LAS VARIABLES
         var editcatprod = $('#editcatprod').val(); 
         if(editcatprod == ''){
-          $("#modalerror").html('<b>ERROR:</b> Faltan completar el campos del formulario, por favor verifique.').dialog({
-            modal: true,position: 'center',width: 450, height: 145,resizable: false,
-            buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
-          });
+          sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
         }else{
           var dataString = 'editcatprod='+editcatprod+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
           $.ajax({
             type: "POST",
-            url: "<?php echo base_url(); ?>comercial/actualizarcategoriaproducto/"+id_categoria,
+            url: "<?php echo base_url(); ?>comercial/update_categoria_producto/"+id_categoria,
             data: dataString,
             success: function(msg){
               if(msg == 1){
-                $("#finregistro").html('!La Categoría de Producto ha sido actualizada con éxito!.').dialog({
-                  modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Fin de Registro',
-                  buttons: { Ok: function(){
-                    window.location.href="<?php echo base_url();?>comercial/gestioncategoriaproductos";
-                  }}
-                });
+                swal({ title: "La Categoría del Producto ha sido actualizado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                $("#mdlEditarCategoriaProducto").dialog("close");
               }else{
-                $("#modalerror").empty().append(msg).dialog({
-                  modal: true,position: 'center',width: 500,height: 125,resizable: false,
-                  buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
-                });
-                $(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");
+                sweetAlert(msg, "", "error");
               }
             }
           });
@@ -110,60 +126,76 @@
     });
   }
 
+  function delete_categoria_producto(id_categoria){
+    swal({   
+      title: "Estas seguro?",
+      text: "No se podrá recuperar esta información!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Si, eliminar!",
+      closeOnConfirm: false 
+    },
+    function(){
+      var dataString = 'id_categoria='+id_categoria+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/eliminar_categoria_producto/",
+        data: dataString,
+        success: function(msg){
+          if(msg == 'ok'){
+            swal("Eliminado!", "La categoría del producto ha sido eliminado.", "success");
+          }else if(msg == 'dont_delete'){
+            sweetAlert("No se puede eliminar la categoría del producto", "Verificar que productos han sido registrados con esta categoría.", "error");
+          }
+        }
+      });
+    });
+  }
+
 </script>
 
 </head>
 <body>
   <div id="contenedor">
-    <div id="tituloCont" style="margin-bottom: 10px;">Registrar Categoría de Producto</div>
+    <div id="tituloCont">Categoría de Productos</div>
     <div id="formFiltro">
-        <?php echo form_open(base_url()."comercial/registrarcategoriaproducto", 'id="registrar"') ?>
-          <table width="800" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td width="208" style="width: 270px;">Nombre de la Categoría de Producto:</td>
-              <td width="196" style="padding-top: 5px;"><?php echo form_input($nombre);?></td>
-              <td width="103" align="left"><input name="submit" type="submit" id="submit" value="Registrar" /></td>
-              <td width="472" ><?php echo validation_errors(); if(!empty($respuesta)){ echo $respuesta;} ?></td>
-            </tr>
-          </table>
-        <?php echo form_close() ?>
-        <!--<div id="tituloCont" style="border-bottom-style:none;">Lista de Categorías de Productos</div>-->
-        <!--Iniciar listar-->
-        <?php 
-          $existe = count($categoriaproducto);
-          if($existe <= 0){
-            echo 'No existen Categorías de Productos registradas en el Sistema.';
-          }
-          else
-          {
-        ?>
-        <table border="0" cellspacing="0" cellpadding="0" id="listaCategoriaProductos" style="float: left;width: 700px;" class="table table-hover table-striped">
-          <thead>
-            <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
-              <td sort="idproducto" width="60" height="27">ITEM</td>
-              <td sort="nombreprod" width="480">CATEGORÍA DE PRODUCTO</td>
-              <td width="20" style="background-image: none;">&nbsp;</td>
-              <td width="20" style="background-image: none;">&nbsp;</td>
-            </tr>
-          </thead>
-          <?php 
-            $i=1;
-            foreach($categoriaproducto as $data){ ?>  
-          <tr class="contentTable" style="font-size: 12px;">
-            <td height="27" style="vertical-align: middle;"><?php echo str_pad($i,4,0, STR_PAD_LEFT);?></td>
-            <td style="vertical-align: middle;"><?php echo $data->no_categoria; ?></td>
-            <td width="20" align="center"><img class="editar_categoria_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar Categoría de Producto" onClick="editar_categoria_producto(<?php echo $data->id_categoria; ?>)" style="cursor: pointer;"/></td>
-            <td width="20" align="center">
-              <a href="" class="eliminar_registro" id="elim_<?php echo $data->id_categoria; ?>">
-              <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Categoría de Producto"/></a>
-            </td>
+      <div id="options_productos">
+        <div class="newprospect" style="width: 250px;">NUEVA CATEGORIA DE PRODUCTO</div>
+      </div>
+      <!--Iniciar listar-->
+      <?php 
+        $existe = count($categoriaproducto);
+        if($existe <= 0){
+          echo 'No existen Categorías de Productos registradas en el Sistema.';
+        }
+        else
+        {
+      ?>
+      <table border="0" cellspacing="0" cellpadding="0" id="listaCategoriaProductos" style="float: left;width: 700px;" class="table table-hover table-striped">
+        <thead>
+          <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
+            <td sort="idproducto" width="60" height="27">ITEM</td>
+            <td sort="nombreprod" width="480">CATEGORÍA DE PRODUCTO</td>
+            <td width="20" style="background-image: none;">&nbsp;</td>
+            <td width="20" style="background-image: none;">&nbsp;</td>
           </tr>
-          <?php
-            $i++;
-            } 
-          ?>         
-        </table>
-        <?php }?>
+        </thead>
+        <?php 
+          $i=1;
+          foreach($categoriaproducto as $data){ ?>  
+        <tr class="contentTable" style="font-size: 12px;">
+          <td height="27" style="vertical-align: middle;"><?php echo str_pad($i,4,0, STR_PAD_LEFT);?></td>
+          <td style="vertical-align: middle;"><?php echo $data->no_categoria; ?></td>
+          <td width="20" align="center"><img class="editar_categoria_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar Categoría de Producto" onClick="editar_categoria_producto(<?php echo $data->id_categoria; ?>)" style="cursor: pointer;"/></td>
+          <td width="20" align="center"><img class="delete_categoria_producto" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Tipo de Producto" onClick="delete_categoria_producto(<?php echo $data->id_categoria; ?>)" style="cursor: pointer;"/></td>
+        </tr>
+        <?php
+          $i++;
+          } 
+        ?>         
+      </table>
+      <?php }?>
     </div>
   </div>
   <div id="mdlEditarCategoriaProducto"></div>
@@ -177,4 +209,24 @@
       <span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
       ¿Está seguro que quiere eliminar esta Categoría de Producto?<br /><strong>¡Esta acción no se puede revertir!</strong>
     </p>
+  </div>
+
+  <!---  Ventanas modales -->
+  <div id="mdlNuevaCategoria" style="display:none">
+    <div id="contenedor" style="width:355px; height:90px;"> <!--Aumenta el marco interior-->
+    <div id="tituloCont">Nueva Categoría</div>
+    <div id="formFiltro" style="width:500px;">
+    <?php
+      $categoria_producto_modal = array('name'=>'categoria_producto_modal','id'=>'categoria_producto_modal','maxlength'=>'50', 'class'=>'required');
+    ?>  
+      <form method="post" id="nueva_maquina" style=" border-bottom:0px">
+      <table>
+        <tr>
+          <td width="152" height="30" style="width: 150px;padding-bottom: 5px;">Categoría del Producto:</td>
+          <td width="261" height="30"><?php echo form_input($categoria_producto_modal);?></td>
+        </tr>
+      </table>
+      </form>
+    </div>
+    </div>
   </div>

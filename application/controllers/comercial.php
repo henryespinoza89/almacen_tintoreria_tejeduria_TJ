@@ -200,6 +200,7 @@ class Comercial extends CI_Controller {
                 $data['listaproveedor']= $this->model_comercial->listaProveedor();
                 $data['listasimmon']= $this->model_comercial->listaSimMon();
                 $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                 $this->load->view('comercial/menu_script');
                 $this->load->view('comercial/menu_cabecera');
                 $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -257,6 +258,7 @@ class Comercial extends CI_Controller {
                         $data['listaproveedor']= $this->model_comercial->listaProveedor();
                         $data['listasimmon']= $this->model_comercial->listaSimMon();
                         $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                        $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                         $this->load->view('comercial/menu_script');
                         $this->load->view('comercial/menu_cabecera');
                         $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -291,6 +293,7 @@ class Comercial extends CI_Controller {
                     $data['listaproveedor']= $this->model_comercial->listaProveedor();
                     $data['listasimmon']= $this->model_comercial->listaSimMon();
                     $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                    $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                     $this->load->view('comercial/menu_script');
                     $this->load->view('comercial/menu_cabecera');
                     $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -334,6 +337,7 @@ class Comercial extends CI_Controller {
                                 $data['listaproveedor']= $this->model_comercial->listaProveedor();
                                 $data['listasimmon']= $this->model_comercial->listaSimMon();
                                 $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                                $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                                 $this->load->view('comercial/menu_script');
                                 $this->load->view('comercial/menu_cabecera');
                                 $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -353,6 +357,7 @@ class Comercial extends CI_Controller {
                         $data['listaproveedor']= $this->model_comercial->listaProveedor();
                         $data['listasimmon']= $this->model_comercial->listaSimMon();
                         $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                        $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                         $this->load->view('comercial/menu_script');
                         $this->load->view('comercial/menu_cabecera');
                         $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -410,6 +415,7 @@ class Comercial extends CI_Controller {
                             $data['listaproveedor']= $this->model_comercial->listaProveedor();
                             $data['listasimmon']= $this->model_comercial->listaSimMon();
                             $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                            $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                             $this->load->view('comercial/menu_script');
                             $this->load->view('comercial/menu_cabecera');
                             $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -467,6 +473,7 @@ class Comercial extends CI_Controller {
                             $data['listaproveedor']= $this->model_comercial->listaProveedor();
                             $data['listasimmon']= $this->model_comercial->listaSimMon();
                             $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+                            $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
                             $this->load->view('comercial/menu_script');
                             $this->load->view('comercial/menu_cabecera');
                             $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -474,7 +481,6 @@ class Comercial extends CI_Controller {
                     }
                 }
             }
-
             /* Fin del proceso - transacción */
             $this->db->trans_complete();
         }
@@ -536,6 +542,33 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function save_categoria_producto(){
+        $result = $this->model_comercial->save_categoria_producto();
+        if(!$result){
+            echo '!La categoría del producto ya se encuentra registrada. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
+    public function save_tipo_producto(){
+        $result = $this->model_comercial->save_tipo_producto();
+        if(!$result){
+            echo '!El Tipo de producto ya se encuentra registrado. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
+    public function save_agente_aduana(){
+        $result = $this->model_comercial->save_agente_aduana();
+        if(!$result){
+            echo '!El Agente de Aduana ya se encuentra registrado. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
     public function editar_ubicacion_producto(){
         $data['ubicacion_producto_data']= $this->model_comercial->getUbicacionProducto();
         $this->load->view('comercial/productos/actualizar_ubicacion_producto', $data);
@@ -551,18 +584,104 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function eliminar_producto(){
+        $id_pro = $this->security->xss_clean($this->input->post('id_pro'));
+        $result = $this->model_comercial->eliminar_producto($id_pro);
+        if(!$result){
+            echo 'dont_delete';
+        }else{
+            echo 'ok';
+        }
+    }
+
+    public function eliminar_tipo_producto(){
+        $id_tipo_producto = $this->security->xss_clean($this->input->post('id_tipo_producto'));
+        $result = $this->model_comercial->eliminar_tipo_producto($id_tipo_producto);
+        if(!$result){
+            echo 'dont_delete';
+        }else{
+            echo 'ok';
+        }
+    }
+
+    public function eliminar_categoria_producto(){
+        $id_categoria = $this->security->xss_clean($this->input->post('id_categoria'));
+        $result = $this->model_comercial->eliminar_categoria_producto($id_categoria);
+        if(!$result){
+            echo 'dont_delete';
+        }else{
+            echo 'ok';
+        }
+    }
+
     public function update_ubicacion_producto(){
         $edit_ubicacion = strtoupper($this->security->xss_clean($this->input->post('edit_ubicacion')));
-        /* Creación del array con los datos del codigo del producto para insertarlo en la BD */
+        // Creación del array con los datos del codigo del producto para insertarlo en la BD
         $actualizar_data = array('nombre_ubicacion' => $edit_ubicacion,);
         $result = $this->model_comercial->updateUbicacion($actualizar_data, $edit_ubicacion);
-        // Verificamos que existan resultados
         if(!$result){
-            /* Enviamos parametro */
             echo '!La ubicacion del producto ya se encuentra registrada. Verificar!';
         }else{
-            /* Enviamos parametro */
             echo 'ok';
+        }
+    }
+
+    public function update_tipo_producto(){
+        $edittipprod = strtoupper($this->security->xss_clean($this->input->post('edittipprod')));
+        // Creación del array con los datos del codigo del producto para insertarlo en la BD
+        $actualizar_data = array('no_tipo_producto' => $edittipprod,);
+        $result = $this->model_comercial->update_tipo_producto($actualizar_data, $edittipprod);
+        if(!$result){
+            echo '!El Tipo de producto ya se encuentra registrada. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
+    public function update_categoria_producto(){
+        $editcatprod = strtoupper($this->security->xss_clean($this->input->post('editcatprod')));
+        // Creación del array con los datos del codigo del producto para insertarlo en la BD
+        $actualizar_data = array('no_categoria' => $editcatprod,);
+        $result = $this->model_comercial->update_categoria_producto($actualizar_data, $editcatprod);
+        if(!$result){
+            echo '!La categoría del producto ya se encuentra registrada. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
+    public function update_agente_aduana(){
+        $editnombreagente = strtoupper($this->security->xss_clean($this->input->post('editnombreagente')));
+        /* Creación del array con los datos del codigo del producto para insertarlo en la BD */
+        $actualizar_data = array('no_agente' => $editnombreagente,);
+        $result = $this->model_comercial->updateAgenteAduana($actualizar_data, $editnombreagente);
+        // Verificamos que existan resultados
+        if(!$result){
+            echo '!El Agente de Aduana ya se encuentra registrada. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
+    public function obtener_datos_importacion(){
+        $id_ingreso_producto = $this->input->post('id_ingreso_producto');
+        $resultado = $this->model_comercial->get_datos_detalle_pedido_fill_inputs($id_ingreso_producto);
+        if (count($resultado) > 0){
+            foreach ($resultado as $data) {
+                $array = array(
+                    "id_comprobante" => $data['id_comprobante'],
+                    "nro_comprobante" => $data['nro_comprobante'],
+                    "serie_comprobante" => $data['serie_comprobante'],
+                    "id_moneda" => $data['id_moneda'],
+                    "razon_social" => $data['razon_social'],
+                    "fecha" => $data['fecha'],
+                    "id_agente" => $data['id_agente'],
+                    "id_ingreso_producto" => $data['id_ingreso_producto'],
+                );
+            }
+            echo '' . json_encode($array) . '';
+        }else{
+            echo 'vacio';
         }
     }
 
@@ -576,6 +695,7 @@ class Comercial extends CI_Controller {
             $data['listaproveedor']= $this->model_comercial->listaProveedor();
             $data['listasimmon']= $this->model_comercial->listaSimMon();
             $data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+            $data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
             $this->load->view('comercial/menu_script');
             $this->load->view('comercial/menu_cabecera');
             $this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -2811,7 +2931,9 @@ class Comercial extends CI_Controller {
         else{
             $result = $this->model_comercial->actualizaProducto();
             if($result == 'no_existe_ubicacion'){
-                echo '<span style="color:red"><b>ERROR:</b> No Existe la Ubicación del producto ingresada. Verificar!</span>';
+                echo '!La Ubicación del Producto ingresada no es correcta. Verificar!';
+            }else if($result == 'producto_duplicado'){
+                echo '!Este producto ya se encuentra registrado en el sistema. Verificar!';
             }else if($result == 'successfull'){
                 echo '1';
             }
@@ -3012,6 +3134,11 @@ class Comercial extends CI_Controller {
                 echo '1';
             }
         }
+    }
+
+    public function get_data_report_facturas_2016(){
+        $array = $this->model_comercial->get_data_report_facturas_2016();
+        echo json_encode($array, JSON_NUMERIC_CHECK);
     }
 
     public function traerFacturasImportadas(){
@@ -7856,9 +7983,9 @@ class Comercial extends CI_Controller {
         $objPHPExcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($style);
         $objPHPExcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($styleArray);
 
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
         $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(55);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
         $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
         $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
         $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
@@ -7874,7 +8001,7 @@ class Comercial extends CI_Controller {
         }
         $objWorkSheet->setCellValue('A2', 'ID PRODUCTO')
                      ->setCellValue('B2', 'NOMBRE O DESCRIPCION')
-                     ->setCellValue('C2', 'ESTADO')
+                     ->setCellValue('C2', 'UBICACIÓN')
                      ->setCellValue('D2', 'CATEGORIA')
                      ->setCellValue('E2', 'TIPO DE PRODUCTO')
                      ->setCellValue('F2', 'PROCEDENCIA')
@@ -7922,7 +8049,7 @@ class Comercial extends CI_Controller {
             if($almacen == 1){
                 $objWorkSheet->setCellValue('A'.$p, $reg->id_producto)
                              ->setCellValue('B'.$p, $reg->no_producto)
-                             ->setCellValue('C'.$p, $estado)
+                             ->setCellValue('C'.$p, $reg->nombre_ubicacion)
                              ->setCellValue('D'.$p, $reg->no_categoria)
                              ->setCellValue('E'.$p, $reg->no_tipo_producto)
                              ->setCellValue('F'.$p, $reg->no_procedencia)
@@ -7930,9 +8057,9 @@ class Comercial extends CI_Controller {
                              ->setCellValue('H'.$p, $reg->stock_sta_clara)
                              ->setCellValue('I'.$p, "");
             }else if($almacen == 2){
-                $objWorkSheet->setCellValue('A'.$p, $reg->id_pro)
+                $objWorkSheet->setCellValue('A'.$p, 'PRD'.$reg->id_pro)
                          ->setCellValue('B'.$p, $reg->no_producto)
-                         ->setCellValue('C'.$p, $estado)
+                         ->setCellValue('C'.$p, $reg->nombre_ubicacion)
                          ->setCellValue('D'.$p, $reg->no_categoria)
                          ->setCellValue('E'.$p, $reg->no_tipo_producto)
                          ->setCellValue('F'.$p, $reg->no_procedencia)

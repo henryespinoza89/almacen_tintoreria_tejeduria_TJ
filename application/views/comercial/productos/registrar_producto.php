@@ -271,66 +271,7 @@
       $(location).attr('href',url);  
     });
 
-    // Eliminar Producto
-    //$('a.eliminar_producto').bind('click', function () {
-    $("a.eliminar_producto").on("click",function(){
-      alert('entro funcion');      
-      var ruta = $('#direccionelim').text();
-      var id = $(this).attr('id').replace('elim_', '');
-      var parent = $(this).parent().parent();
-      /*
-      $("#dialog-confirm").data({
-        'delid': id,
-        'parent': parent,
-        'ruta': ruta
-      }).dialog('open');
-      return false;
-      */
-    });
-        
-        $("#dialog-confirm").dialog({
-            resizable: false,
-            bgiframe: true,
-            autoOpen: false,
-            width: 400,
-            height: "auto",
-            zindex: 9998,
-            modal: false,
-            buttons: {
-              'Eliminar': function () {
-                var parent = $(this).data('parent');
-                var id = $(this).data('delid');
-                var ruta = $(this).data('ruta');
-                $.ajax({
-                  type: 'get',
-                  url: ruta,
-                  data: {
-                    'eliminar' : id
-                  },
-                  success: function(msg){
-                    if(msg == 1){
-                      swal({ title: "El Producto ha sido eliminado correctamente!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
-                      $("#dialog-confirm").dialog("close");
-                      window.location.href="<?php echo base_url();?>comercial/gestionproductos";
-                    }else{
-                      $("#modalerror").empty().append(msg).dialog({
-                        modal: true,position: 'center',width: 500,height: 125,resizable: false,title: '!No se puede eliminar el Producto!',
-                        buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-                      });
-                      $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-                    }
-                  }
-                });
-                $(this).dialog('close');
-              },
-              'Cancelar': function () {
-                    $(this).dialog('close');
-              }
-            }
-        });
-        // FIN DE ELIMINAR
-
-        
+   
   });
 
   function resetear(){
@@ -360,7 +301,7 @@
                   swal({ title: "El Producto ha sido Actualizado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
                   $("#mdlEditarProducto").dialog("close");
                 }else{
-                  sweetAlert("!La Ubicación del Producto ingresada no es Correcta. Verificar!", "", "error");
+                  sweetAlert(msg, "", "error");
                 }
               }
             });
@@ -370,6 +311,33 @@
           $("#mdlEditarProducto").dialog("close");
         }
       }
+    });
+  }
+
+  function delete_producto(id_pro){
+    swal({   
+      title: "Estas seguro?",
+      text: "No se podrá recuperar esta información!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Si, eliminar!",
+      closeOnConfirm: false 
+    },
+    function(){
+      var dataString = 'id_pro='+id_pro+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/eliminar_producto/",
+        data: dataString,
+        success: function(msg){
+          if(msg == 'ok'){
+            swal("Eliminado!", "El producto ha sido eliminado.", "success");
+          }else if(msg == 'dont_delete'){
+            sweetAlert("No se puede eliminar el producto", "El producto debe estar asociado a una factura, salida o cierre de almacén.", "error");
+          }
+        }
+      });
     });
   }
 
@@ -482,10 +450,7 @@
               <td width="20" align="center">
                 <img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listaproductos->id_pro;?>)" style="cursor: pointer;" />
               </td>
-              <td width="20" align="center">
-                <a href="" class="eliminar_producto" id="elim_<?php echo $listaproductos->id_pro; ?>">
-                <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto"/></a>
-              </td>
+              <td width="20" align="center"><img class="delete_producto" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Ubicación" onClick="delete_producto(<?php echo $listaproductos->id_pro; ?>)" style="cursor: pointer;"/></td>
             </tr>
           <?php
             $i++;

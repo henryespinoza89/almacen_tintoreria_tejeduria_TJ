@@ -25,6 +25,7 @@
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/validador.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/funciones.js"></script>	 <!--Valida Contraseña-->
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/sweetalert.min.js"></script>
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/chart.js"></script>
 	<!--
 		Este archivo validador.js permite validar los caracteres de los campos, por ejemplo para que sólo sean númericos.
 	-->

@@ -65,6 +65,14 @@ footer{
 	margin-right: 660px;
 }
 
+#listaAgenteAduana_paginate{
+	margin-right: 650px;
+}
+
+#listaAgenteAduana_filter{
+	margin-right: 660px;
+}
+
 #imprimir_traslado{
 	padding-bottom:6px;
 	padding-top:5px;
@@ -1045,7 +1053,7 @@ nav a {
 	float: left;
 	cursor: pointer;
 	color: #898989;
-	margin-left: 10px;
+	/*margin-left: 10px;*/
 }
 
 #options .newconsult a {

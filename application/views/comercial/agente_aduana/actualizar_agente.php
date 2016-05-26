@@ -1,4 +1,4 @@
-<div id="contenedor" style="width:380px; height:60px;">
+<div id="contenedor" style="width:380px; height:90px;">
 	<div id="tituloCont">Editar Datos del Agente Aduanero</div>
 	<div id="formFiltro">
 		<?php 
