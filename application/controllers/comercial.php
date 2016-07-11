@@ -4144,10 +4144,10 @@ class Comercial extends CI_Controller {
                 }
             }
             // salida_producto
-            $this->db->select('id_salida_producto,cantidad_salida,fecha');
+            $this->db->select('id_salida_producto,cantidad_salida');
             $this->db->where('id_detalle_producto',$id_detalle_producto);
-            $this->db->order_by("id_salida_producto", "asc");
-            $query = $this->db->get('salida_producto');
+            $this->db->order_by("id_detalle_salida_producto", "asc");
+            $query = $this->db->get('detalle_salida_producto');
             if(count($query->result()) > 0){
                 foreach($query->result() as $row){
                     $auxiliar_last_salida = $row->id_salida_producto;
