@@ -424,7 +424,6 @@
               <td sort="catprod" width="110">UBICACIÓN</td>
               <td sort="catprod" width="125">CATEGORIA</td>
               <td sort="catprod" width="150">TIPO PRODUCTO</td>
-              <!--<td sort="procprod" width="125">Procedencia</td>-->
               <td sort="procprod" width="95">MEDIDA</td>
               <td sort="procprod" width="90">STOCK</td>
               <td width="20" style="background-image: none;">&nbsp;</td>

@@ -2935,7 +2935,7 @@ class Model_comercial extends CI_Model {
             $filtro .= " AND area.id_area =".(int)$this->security->xss_clean($this->input->post('area')); 
         }
         $filtro .= " ORDER BY area.no_area ASC";
-        $filtro .= " LIMIT 100";
+        // $filtro .= " LIMIT 100";
         $sql = "SELECT salida_producto.id_salida_producto,salida_producto.solicitante,salida_producto.fecha,detalle_salida_producto.cantidad_salida,detalle_producto.no_producto,
         area.no_area,maquina.nombre_maquina,parte_maquina.nombre_parte_maquina,salida_producto.observacion,detalle_salida_producto.id_detalle_producto
         FROM salida_producto
@@ -7571,18 +7571,15 @@ class Model_comercial extends CI_Model {
         }
     }
 
-    public function get_data_report_facturas_2016(){
+    public function get_data_report_facturas_2015(){
         $array_montos = [];
-
+        
         for ($i=1; $i <= 12; $i++) {
-
-            $anio = '2016';
+            $sumatoria_soles = 0;
+            $anio = '2015';
             $mes = $i;
             $dia_inicial = '01';
-            // conocer el ultimo dia del mes
-            $dia_final = date("d",(mktime(0,0,0,$mes+1,1,$anio)-1));
-
-            //$dia_final = '31';
+            $dia_final = date("d",(mktime(0,0,0,$mes+1,1,$anio)-1));// conocer el ultimo dia del mes
 
             $array_inicial = array($anio, $mes, $dia_inicial);
             $fecha_inicial = implode("-", $array_inicial);
@@ -7593,38 +7590,173 @@ class Model_comercial extends CI_Model {
             $filtro = "";
             $filtro .= " AND DATE(ingreso_producto.fecha) BETWEEN'".$fecha_inicial."'AND'".$fecha_final."'";
 
-            $sql ="SELECT SUM(ingreso_producto.total) AS monto FROM ingreso_producto
+            $sql ="SELECT ingreso_producto.id_ingreso_producto,ingreso_producto.fecha,ingreso_producto.total,
+                   ingreso_producto.id_agente,ingreso_producto.cs_igv,ingreso_producto.id_moneda FROM ingreso_producto
                    WHERE ingreso_producto.id_ingreso_producto IS NOT NULL".$filtro;
 
             $query = $this->db->query($sql);
 
-            
             foreach ($query->result() as $key) {
-                //echo $key->monto;
-                if($key->monto == null){$key->monto = 0;}
-                array_push($array_montos, $key->monto);
+                $valor_total = $key->total;
+                $fecha_registro = $key->fecha;
+                $id_moneda = $key->id_moneda;
+                $id_agente = $key->id_agente;
+
+                $this->db->select('dolar_venta,euro_venta');
+                $this->db->where('fecha_actual',$fecha_registro);
+                $query3 = $this->db->get('tipo_cambio');
+                foreach($query3->result() as $row3){
+                    $dolar_venta = $row3->dolar_venta;
+                    $euro_venta = $row3->euro_venta;
+                }
+
+                $this->db->select('no_moneda');
+                $this->db->where('id_moneda',$id_moneda);
+                $query2 = $this->db->get('moneda');
+                foreach($query2->result() as $row){
+                    $no_moneda = $row->no_moneda;
+                }
+
+                if($no_moneda == 'DOLARES' && $id_agente == null){
+                    $conversion_valor_total = $valor_total * $dolar_venta; 
+                }else if($no_moneda == 'EURO' && $id_agente == null){
+                    $conversion_valor_total = $valor_total * $euro_venta; 
+                }else{
+                    $conversion_valor_total = $valor_total;
+                }
+
+                $sumatoria_soles = $sumatoria_soles + $conversion_valor_total;
             }
-            
-            
-
+            array_push($array_montos, @number_format($sumatoria_soles, 2, '.', ''));
         }
-        // echo $query->result();
         return $array_montos;
+    }
 
-        /*
-        $filtro = $this->security->xss_clean($this->input->post('numcomprobante'));
-        $sql = "SELECT detalle_producto.id_detalle_producto,detalle_ingreso_producto.unidades,detalle_producto.no_producto,producto.id_producto,
-                detalle_producto.precio_unitario,listarProductodetalle_ingreso_producto.precio,detalle_ingreso_producto.id_ingreso_producto,detalle_ingreso_producto.id_detalle_ing_prod
-                FROM detalle_ingreso_producto
-                INNER JOIN detalle_producto ON detalle_ingreso_producto.id_detalle_producto = detalle_producto.id_detalle_producto
-                INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
-                WHERE detalle_ingreso_producto.id_ingreso_producto=".$filtro;
+    public function get_data_inventario_almacen_categoria(){
+        $array_montos = [];
+
+        $sql ="SELECT categoria.id_categoria,categoria.no_categoria FROM categoria
+               WHERE categoria.id_categoria IS NOT NULL";
         $query = $this->db->query($sql);
-        if($query->num_rows() > 0)
-        {
-            return $query->result();
+        foreach ($query->result() as $key) {
+            $sumatoria_soles = 0;
+            $id_categoria = $key->id_categoria;
+            // obtener los productos registrados en cada categoria
+            $filtro = "";
+            $filtro .= " AND producto.id_categoria =".(int)$id_categoria;
+            $sql_2 ="SELECT detalle_producto.no_producto,detalle_producto.stock,detalle_producto.precio_unitario,producto.id_categoria,producto.id_pro FROM producto
+                   INNER JOIN detalle_producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
+                   WHERE producto.id_pro IS NOT NULL".$filtro;
+            $query_2 = $this->db->query($sql_2);
+            foreach ($query_2->result() as $row) {
+                $stock = $row->stock;
+                $precio_unitario = $row->precio_unitario;
+                $sumatoria_soles = $sumatoria_soles + ($stock*$precio_unitario);
+            }
+            array_push($array_montos, @number_format($sumatoria_soles, 2, '.', ''));
         }
-        */
+        
+        return $array_montos;
+    }
+
+    public function get_data_report_facturas_2016(){
+        $array_montos = [];
+        
+        for ($i=1; $i <= 12; $i++) {
+            $sumatoria_soles = 0;
+            $anio = '2016';
+            $mes = $i;
+            $dia_inicial = '01';
+            $dia_final = date("d",(mktime(0,0,0,$mes+1,1,$anio)-1));// conocer el ultimo dia del mes
+
+            $array_inicial = array($anio, $mes, $dia_inicial);
+            $fecha_inicial = implode("-", $array_inicial);
+
+            $array_final = array($anio, $mes, $dia_final);
+            $fecha_final = implode("-", $array_final);
+
+            $filtro = "";
+            $filtro .= " AND DATE(ingreso_producto.fecha) BETWEEN'".$fecha_inicial."'AND'".$fecha_final."'";
+
+            $sql ="SELECT ingreso_producto.id_ingreso_producto,ingreso_producto.fecha,ingreso_producto.total,
+                   ingreso_producto.id_agente,ingreso_producto.cs_igv,ingreso_producto.id_moneda FROM ingreso_producto
+                   WHERE ingreso_producto.id_ingreso_producto IS NOT NULL".$filtro;
+
+            $query = $this->db->query($sql);
+
+            foreach ($query->result() as $key) {
+                $valor_total = $key->total;
+                $fecha_registro = $key->fecha;
+                $id_moneda = $key->id_moneda;
+                $id_agente = $key->id_agente;
+
+                $this->db->select('dolar_venta,euro_venta');
+                $this->db->where('fecha_actual',$fecha_registro);
+                $query3 = $this->db->get('tipo_cambio');
+                foreach($query3->result() as $row3){
+                    $dolar_venta = $row3->dolar_venta;
+                    $euro_venta = $row3->euro_venta;
+                }
+
+                $this->db->select('no_moneda');
+                $this->db->where('id_moneda',$id_moneda);
+                $query2 = $this->db->get('moneda');
+                foreach($query2->result() as $row){
+                    $no_moneda = $row->no_moneda;
+                }
+
+                if($no_moneda == 'DOLARES' && $id_agente == null){
+                    $conversion_valor_total = $valor_total * $dolar_venta; 
+                }else if($no_moneda == 'EURO' && $id_agente == null){
+                    $conversion_valor_total = $valor_total * $euro_venta; 
+                }else{
+                    $conversion_valor_total = $valor_total;
+                }
+
+                $sumatoria_soles = $sumatoria_soles + $conversion_valor_total;
+            }
+            array_push($array_montos, @number_format($sumatoria_soles, 2, '.', ''));
+        }
+        return $array_montos;
+    }
+
+    public function get_data_report_consumos_2016(){
+        $array_montos = [];
+        
+        for ($i=1; $i <= 12; $i++) {
+            $sumatoria_soles = 0;
+            $anio = '2016';
+            $mes = $i;
+            $dia_inicial = '01';
+            $dia_final = date("d",(mktime(0,0,0,$mes+1,1,$anio)-1));// conocer el ultimo dia del mes
+
+            $array_inicial = array($anio, $mes, $dia_inicial);
+            $fecha_inicial = implode("-", $array_inicial);
+
+            $array_final = array($anio, $mes, $dia_final);
+            $fecha_final = implode("-", $array_final);
+
+            $filtro = "";
+            $filtro .= " AND DATE(salida_producto.fecha) BETWEEN'".$fecha_inicial."'AND'".$fecha_final."'";
+
+            $sql ="SELECT salida_producto.fecha,salida_producto.id_area,detalle_producto.no_producto,salida_producto.id_salida_producto,
+                    detalle_salida_producto.cantidad_salida,detalle_salida_producto.p_u_salida FROM salida_producto
+                    INNER JOIN detalle_salida_producto ON detalle_salida_producto.id_salida_producto = salida_producto.id_salida_producto
+                    INNER JOIN detalle_producto ON detalle_salida_producto.id_detalle_producto = detalle_producto.id_detalle_producto
+                    WHERE salida_producto.id_salida_producto IS NOT NULL".$filtro;
+
+            $query = $this->db->query($sql);
+
+            foreach ($query->result() as $key) {
+                $no_producto = $key->no_producto;
+                $cantidad_salida = $key->cantidad_salida;
+                $p_u_salida = $key->p_u_salida;
+
+                $sumatoria_soles = $sumatoria_soles + ($cantidad_salida*$p_u_salida);
+            }
+            array_push($array_montos, @number_format($sumatoria_soles, 2, '.', ''));
+        }
+        return $array_montos;
     }
 
     public function kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad, $almacen){

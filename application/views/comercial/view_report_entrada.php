@@ -87,7 +87,7 @@
 <style>
 	#mycanvas{
 		width: 1345px;
-		height: 538px !important;
+		height: 460px;
 	}
 
 	.chart{
@@ -97,7 +97,7 @@
 
 </head>
 <body>
-    <div id="contenedor" style="">
+    <div id="contenedor">
     	<div id="tituloCont" style="margin-bottom:0px;width: 1380px;">Gestión de Reporte de Facturas</div>
     	<div id="formFiltro" style="background: whitesmoke;padding-top: 5px;padding-left: 15px;padding-bottom: 15px;border-bottom: 1px solid #000;">
 			<table width="703" border="0" cellspacing="0" cellpadding="0" style="margin-top: 25px;margin-bottom: 20px;">
@@ -117,42 +117,32 @@
     <div id="modalerror"></div>
 
     <script type="text/javascript">
-    	
     	var chrt = document.getElementById("mycanvas").getContext("2d");
-
     	$.ajax({
-          type: "POST",
-          url: "<?php echo base_url(); ?>comercial/get_data_report_facturas_2016/",
-          success: function(msg){
-          	var variable = JSON.parse(msg);
-          	// console.log(msg);
-          	console.log(variable);
-			var data = {
-			    labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"],
-			    datasets: [
-			        {
-			            label: "Total de compras en S/. - Año 2016", // optional
-			            backgroundColor: "#007CC1",
-			            borderColor: "#FFF",
-			            borderWidth: 1,
-			            pointHoverBorderColor: "rgba(255,99,132,1)",
-			            pointRadius: 0,
-			            pointHitRadius: 0,
-			            pointHoverBackgroundColor: "#303F9F",
-			            //pointHoverBorderColor: "rgba(220,220,220,1)",
-			            pointHoverBorderWidth: 2,
-			            data: variable // y-axis
-			        }
-			    ]
-			};
-			// data: [21538.62, 78301.88, 21251.11, 38574.62, 7684.43, 0, 0, 0, 0, 0, 0, 0] // y-axis
-
-			var myFirstChart = new Chart(
-										chrt,{
-									    	type: 'bar',
-									    	data: data
-										});
-          }
+          	type: "POST",
+          	url: "<?php echo base_url(); ?>comercial/get_data_report_facturas_2016/",
+          	success: function(msg_1){
+	          	var variable_1 = JSON.parse(msg_1);
+	          	console.log(variable_1);
+				var data = {
+				    labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"],
+				    datasets: [
+				        {
+				            label: "Total de compras en S/. - Año 2016   ", // optional
+				            backgroundColor: "#007CC1",
+				            borderColor: "#FFF",
+				            borderWidth: 1,
+				            pointHoverBorderColor: "rgba(255,99,132,1)",
+				            pointRadius: 0,
+				            pointHitRadius: 0,
+				            pointHoverBackgroundColor: "#303F9F",
+				            pointHoverBorderWidth: 2,
+				            data: variable_1 // y-axis
+				        }
+				    ]
+				};
+				var myFirstChart = new Chart(chrt,{ type: 'bar', data: data});
+          	}
         });
 	
     </script>

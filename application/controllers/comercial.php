@@ -19,21 +19,13 @@ class Comercial extends CI_Controller {
      */
 
     public function __construct(){
-        parent::__construct();  
-        //Se controla la variable de Session
+        parent::__construct();
+        ob_start();
         $this->load->model('model_usuario');        
         $this->load->model('model_comercial');
         $this->load->library('session');
         $this->load->library('table');
-        //$this->cart->validar_caracteres();
-        $this->load->helper(array('form', 'url'));
-        /*
-        if($this->session->userdata('session') == 1 ){
-            if (!($this->session->userdata('tipo') == 1)){redirect($this->session->userdata('ruta'));}
-        }else{
-            redirect('login');
-        }
-        */          
+        $this->load->helper(array('form', 'url'));         
     }
 
     public function index(){
@@ -1244,7 +1236,6 @@ class Comercial extends CI_Controller {
             }else{
                 $data['tipocambio'] = 1;
             }
-            $data['listaarea']= $this->model_comercial->listarArea();
             $data['listanombreproducto']= $this->model_comercial->listaNombreProducto();
             $this->load->view('comercial/menu_script');
             $this->load->view('comercial/menu_cabecera');
@@ -3140,6 +3131,21 @@ class Comercial extends CI_Controller {
         $array = $this->model_comercial->get_data_report_facturas_2016();
         echo json_encode($array, JSON_NUMERIC_CHECK);
     }
+    
+    public function get_data_inventario_almacen_categoria(){
+        $array = $this->model_comercial->get_data_inventario_almacen_categoria();
+        echo json_encode($array, JSON_NUMERIC_CHECK);
+    }
+
+    public function get_data_report_facturas_2015(){
+        $array = $this->model_comercial->get_data_report_facturas_2015();
+        echo json_encode($array, JSON_NUMERIC_CHECK);
+    }
+
+    public function get_data_report_consumos_2016(){
+        $array = $this->model_comercial->get_data_report_consumos_2016();
+        echo json_encode($array, JSON_NUMERIC_CHECK);
+    }
 
     public function traerFacturasImportadas(){
         $resultado = $this->model_comercial->get_datos_factura_importada();
@@ -4535,8 +4541,8 @@ class Comercial extends CI_Controller {
         }
         
         if($auxiliar == ''){
-            $this->cart->destroy();
             echo '1';
+            $this->cart->destroy();
         }else {
             echo $auxiliar;
             die();
@@ -8678,26 +8684,20 @@ class Comercial extends CI_Controller {
                     $euro_venta_fecha = $row->euro_venta;
                 }
                 /* Obtener el monto total en soles */
-                if($data->id_agente == 2){
-                    if($data->no_moneda == 'DOLARES'){
-                        $convert_soles = $data->total * $dolar_venta_fecha;
-                        $suma_dolares = $suma_dolares + $data->total;
-                        $suma_total_soles = $suma_total_soles + $convert_soles;
-                    }else if($data->no_moneda == 'EURO'){
-                        $convert_soles = $data->total * $euro_venta_fecha;
-                        $suma_euro = $suma_euro + $data->total;
-                        $suma_total_soles = $suma_total_soles + $convert_soles;
-                    }else{
-                        $convert_soles = $data->total;
-                        $suma_soles = $suma_soles + $data->total;
-                        $suma_total_soles = $suma_total_soles + $data->total;
-                    }
+                if($data->no_moneda == 'DOLARES' && $data->id_agente == null){
+                    $convert_soles = $data->total * $dolar_venta_fecha;
+                    $suma_dolares = $suma_dolares + $data->total;
+                    $suma_total_soles = $suma_total_soles + $convert_soles;
+                }else if($data->no_moneda == 'EURO' && $data->id_agente == null){
+                    $convert_soles = $data->total * $euro_venta_fecha;
+                    $suma_euro = $suma_euro + $data->total;
+                    $suma_total_soles = $suma_total_soles + $convert_soles;
                 }else{
                     $convert_soles = $data->total;
                     $suma_soles = $suma_soles + $data->total;
                     $suma_total_soles = $suma_total_soles + $data->total;
                 }
-
+                
                 if($data->id_agente == ""){
                     $objWorkSheet->setCellValue('A'.$p, $i)
                                  ->setCellValue('B'.$p, $data->no_comprobante)

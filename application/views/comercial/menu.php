@@ -193,14 +193,13 @@
 				<ul class="nav">
 					<li><a href='<?php echo base_url();?>comercial/gestionmaquinas'><span>Gestión de Maquinarias</span></a></li>
 					<li class='has-sub'><a href='<?php echo base_url();?>comercial/gestionproductos'><span>Gestión de Productos</span></a>
-						<!-- <ul> -->
+						<ul>
 							<!--<li><a href='<?php //echo base_url();?>comercial/gestionreporteproducto'><span>Gestionar Reportes</span></a></li>-->
 							<!--<li><a href=""><span>Actualizar</span></a></li>-->
 							<!--<li style="width: 146px;"><a href='<?php // echo base_url();?>comercial/gestiontraslados'><span>Traslados</span></a></li>-->
-						<!--	
-							<li style="width: 146px;"><a href='<?php //echo base_url();?>comercial/gestioncuadreinventario'><span>Cuadre de Inventario</span></a></li>
+							<li style="width: 146px;"><a href='<?php echo base_url();?>comercial/gestioncuadreinventario'><span>Cuadre de Inventario</span></a></li>
+						
 						</ul>
-						-->
 					</li>
 					<li><a href='<?php echo base_url();?>comercial/gestionproveedores'><span>Gestión de Proveedores</span></a>
 						<!--
@@ -232,7 +231,7 @@
 					<!--<li><a href='<?php //echo base_url();?>comercial/backup'><span>Backup de la BD</span></a></li>-->
 					<li><a href="" style="width: 193px;"><span>Gestión Reportes</span></a>
 						<ul>
-							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada' style="width: 150px;"><span>Reporte de Facturas</span></a>
+							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada'><span>Reporte de Facturas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportsalida'><span>Reporte de Salidas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestioninventarioalmacen'><span>Inventario Valorizado de Almacén</span></a>
 							<!--<li><a href='<?php //echo base_url();?>comercial/gestionreportmensual'><span>Reporte Mensual</span></a>-->
