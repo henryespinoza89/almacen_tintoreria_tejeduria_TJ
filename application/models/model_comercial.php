@@ -1681,8 +1681,7 @@ class Model_comercial extends CI_Model {
         $filtro .= " AND detalle_producto.no_producto ='".$nombre_producto."'";
         $filtro .= " LIMIT 1";
         
-        $sql = "SELECT detalle_producto.id_detalle_producto,detalle_producto.no_producto,detalle_producto.stock,detalle_producto.precio_unitario,
-                detalle_producto.stock_sta_clara
+        $sql = "SELECT detalle_producto.id_detalle_producto,detalle_producto.no_producto,detalle_producto.stock,detalle_producto.precio_unitario
                 FROM detalle_producto
                 WHERE detalle_producto.id_detalle_producto IS NOT NULL".$filtro;
         $query = $this->db->query($sql);
@@ -7761,31 +7760,22 @@ class Model_comercial extends CI_Model {
 
     public function kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad, $almacen){
         // Actualización del Stock
-        $this->db->select('stock,stock_sta_clara,precio_unitario');
+        $this->db->select('stock,precio_unitario');
         $this->db->where('id_detalle_producto',$id_detalle_producto);
         $query = $this->db->get('detalle_producto');
         foreach($query->result() as $row){
-            $stock_sta_clara = $row->stock_sta_clara;
             $stock_sta_anita = $row->stock;
             $precio_unitario = $row->precio_unitario;
         }
-
-        $stock_actual = $stock_sta_clara + $stock_sta_anita;
+        $stock_actual = $stock_sta_anita;
         $new_stock = $stock_actual + $cantidad;
-        if($almacen == 1){ /* Sta. Clara */
-            $stock_actualizado = $stock_sta_clara + $cantidad;
-            $actualizar = array(
-                'stock_sta_clara'=> $stock_actualizado,
-            );
-        }else if($almacen == 2){ /* Sta. Anita */
-            $stock_actualizado = $stock_sta_anita + $cantidad;
-            $actualizar = array(
-                'stock'=> $stock_actualizado,
-            );
-        }
+
+        $stock_actualizado = $stock_sta_anita + $cantidad;
+        $actualizar = array(
+            'stock'=> $stock_actualizado,
+        );
         $this->db->where('id_detalle_producto',$id_detalle_producto);
         $this->db->update('detalle_producto', $actualizar);
-
         // Kardex del producto
         $a_data_kardex = array('fecha_registro' => date('Y-m-d'),
                         'descripcion' => "ORDEN INGRESO",
@@ -7800,10 +7790,7 @@ class Model_comercial extends CI_Model {
                         'serie_comprobante' => "001",
                         );
         $this->db->insert('kardex_producto', $a_data_kardex);
-
-
         return 'registro_correcto';
-
     }
 
     

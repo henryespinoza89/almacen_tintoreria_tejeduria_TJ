@@ -192,13 +192,12 @@
 			<div id="cssmenu">
 				<ul class="nav">
 					<li><a href='<?php echo base_url();?>comercial/gestionmaquinas'><span>Gestión de Maquinarias</span></a></li>
-					<li class='has-sub'><a href='<?php echo base_url();?>comercial/gestionproductos'><span>Gestión de Productos</span></a>
+					<li style="width: 191px;" class='has-sub'><a href='<?php echo base_url();?>comercial/gestionproductos'><span>Gestión de Productos</span></a>
 						<ul>
 							<!--<li><a href='<?php //echo base_url();?>comercial/gestionreporteproducto'><span>Gestionar Reportes</span></a></li>-->
 							<!--<li><a href=""><span>Actualizar</span></a></li>-->
 							<!--<li style="width: 146px;"><a href='<?php // echo base_url();?>comercial/gestiontraslados'><span>Traslados</span></a></li>-->
-							<li style="width: 146px;"><a href='<?php echo base_url();?>comercial/gestioncuadreinventario'><span>Cuadre de Inventario</span></a></li>
-						
+							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestioncuadreinventario'><span style="padding-left: 28px;">Cuadre de Inventario</span></a></li>
 						</ul>
 					</li>
 					<li><a href='<?php echo base_url();?>comercial/gestionproveedores'><span>Gestión de Proveedores</span></a>

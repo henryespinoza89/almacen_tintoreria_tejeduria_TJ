@@ -1,53 +1,24 @@
 <?php
 	if ($this->input->post('cantidad')){
-		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10','value'=>$this->input->post('cantidad'), 'style'=>'width:70px;visibility: visible;height: 25px;', 'class'=>'required', 'onpaste'=>'return false');
+		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10','value'=>$this->input->post('cantidad'), 'style'=>'width:100px;visibility: visible;height: 24px;', 'class'=>'required', 'onpaste'=>'return false');
 	}else{
-		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10', 'style'=>'width:70px;visibility: visible;height: 25px;', 'class'=>'required', 'onpaste'=>'return false');
+		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10', 'style'=>'width:100px;visibility: visible;height: 24px;', 'class'=>'required', 'onpaste'=>'return false');
 	}
 
 	if ($this->input->post('nombre_producto')){
-	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto','value'=>$this->input->post('nombre_producto'), 'style'=>'width:265px;font-family: verdana;visibility: visible;margin-bottom: 7px;height: 28px;','placeholder'=>' :: Nombre del Producto ::');
+	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto','value'=>$this->input->post('nombre_producto'), 'style'=>'width:300px;font-family: verdana;visibility: visible;height: 24px;','placeholder'=>' :: Nombre del Producto ::');
 	}else{
-	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto', 'style'=>'width:265px;font-family: verdana;visibility: visible;margin-bottom: 7px;height: 28px;','placeholder'=>' :: Nombre del Producto ::'); 
-	}
-
-	if ($this->input->post('stockactual')){
-	    $stockactual = array('name'=>'stockactual','id'=>'stockactual','maxlength'=> '10', 'value' => $this->input->post('stockactual'), 'style'=>'width:100px;visibility: visible;','readonly'=> 'readonly');
-	}else{
-	    $stockactual = array('name'=>'stockactual','id'=>'stockactual','maxlength'=> '10', 'style'=>'width:100px;visibility: visible;','readonly'=> 'readonly');
+	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto', 'style'=>'width:300px;font-family: verdana;visibility: visible;height: 24px;','placeholder'=>' :: Nombre del Producto ::'); 
 	}
 
 	if ($this->input->post('stockactual_general')){
-	    $stockactual_general = array('name'=>'stockactual_general','id'=>'stockactual_general','maxlength'=> '10', 'value' => $this->input->post('stockactual_general'), 'style'=>'width:100px;visibility: visible;height: 25px;margin-bottom: 9px;','readonly'=> 'readonly');
+	    $stockactual_general = array('name'=>'stockactual_general','id'=>'stockactual_general','maxlength'=> '10', 'value' => $this->input->post('stockactual_general'), 'style'=>'width:100px;visibility: visible;height: 24px;','readonly'=> 'readonly');
 	}else{
-	    $stockactual_general = array('name'=>'stockactual_general','id'=>'stockactual_general','maxlength'=> '10', 'style'=>'width:100px;visibility: visible;height: 25px;margin-bottom: 9px;','readonly'=> 'readonly');
+	    $stockactual_general = array('name'=>'stockactual_general','id'=>'stockactual_general','maxlength'=> '10', 'style'=>'width:100px;visibility: visible;height: 24px;','readonly'=> 'readonly');
 	}
 ?>
 
 <script type="text/javascript">
-
-var formatNumber = {
-	separador: ",", // separador para los miles
-	sepDecimal: '.', // separador para los decimales
-    formatear:function (num){
-	    num =  Math.round(num*100)/100; // permite redondear el valor a dos decimales
-	    num +='';
-	    var splitStr = num.split('.');
-	    var splitLeft = splitStr[0];
-	    var splitRight = splitStr.length > 1 ? this.sepDecimal + splitStr[1] : '';
-	    var regx = /(\d+)(\d{3})/;
-	    while (regx.test(splitLeft)) {
-	        splitLeft = splitLeft.replace(regx, '$1' + this.separador + '$2');
-	    }
-	    return this.simbol + splitLeft  +splitRight;
-	    //return Math.round((this.simbol + splitLeft  +splitRight)*100)/100;
-	    //return parseFloat(this.simbol + splitLeft  +splitRight).toFixed(2);
-    },
-	    new:function(num, simbol){
-	        this.simbol = simbol ||'';
-	      	return this.formatear(num);
-	    }
-	}
 
 $(function(){
 
@@ -55,7 +26,7 @@ $(function(){
 
 	$("#nombre_producto").autocomplete({
         source: function (request, respond) {
-        	$.post("<?php echo base_url('comercial/traer_producto_autocomplete'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term, a: id_area},
+        	$.post("<?php echo base_url('comercial/traer_producto_autocomplete'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term},
 	        function (response) {
 	            respond(response);
 	        }, 'json');
@@ -68,20 +39,6 @@ $(function(){
 	        $("#nombre_producto").val(nombre_producto);
 	        nombre_producto = $("#nombre_producto").val();
 
-	        // Traer stock por area del producto
-	        var ruta = $('#direccion_traer_stock').text();
-	        $.ajax({
-	          	type: 'get',
-	          	url: ruta,
-	          	data: {
-	            	'nombre_producto' : nombre_producto,
-	            	'id_area' : id_area
-	          	},
-	          	success: function(response){
-	            	$("#stockactual").val(response);
-	          	}
-	        });
-
 	        // Traer stock general del producto
 	        $.ajax({
 	          	type: 'get',
@@ -93,7 +50,6 @@ $(function(){
 	            	$("#stockactual_general").val(response);
 	          	}
 	        });
-
 	        $("#cantidad").focus();
         }
     });
@@ -102,14 +58,13 @@ $(function(){
 		var nombre_producto = $("#nombre_producto").val();
 		var stockactual = $("#stockactual").val();
 		var cantidad = $("#cantidad").val();
-		var area = $("#area").val();
-		if(nombre_producto == '' || cantidad == '' || area == ''){
+		if(nombre_producto == '' || cantidad == ''){
 			$("#modalerror").html('<strong>!Todos los Campos del Formulario son Obligatorios. Verificar!</strong>').dialog({
 	            modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
 	          	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
 	        });
 		}else{
-			var dataString = 'nombre_producto='+nombre_producto+'&stockactual='+stockactual+'&cantidad='+cantidad+'&area='+area+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+			var dataString = 'nombre_producto='+nombre_producto+'&stockactual='+stockactual+'&cantidad='+cantidad+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
 	    	$.ajax({
 	            type: "POST",
 	            url: "<?php echo base_url(); ?>comercial/cuadrar_producto_area_almacen/",
@@ -190,32 +145,27 @@ $(function(){
 <div id="contenedor">
 	<div id="tituloCont" style="margin-bottom: 0;">Cuadre de Inventario</div>
 	<div id="formFiltro">
-		<!--Contenedor-->
-		<div id="datos_factura_importada" style="background: whitesmoke;width: 1370px;border-bottom: 1px solid #000;padding-left: 10px;margin-bottom: 15px;height: 170px;">
-		    <div id="content" style="min-height: 14em;">			    	
-				<div id="data_general" style="opacity: inherit;padding: 0.1em;width: 400px;float: left;">
-					<table width="520" border="0" cellspacing="0" cellpadding="0" style="margin-top: 20px;">			        
-				        <tr>
-			                <td width="145" valign="middle" height="30" style="padding-bottom: 4px;">Nombre del Producto:</td>
-			                <td width="228" height="30" colspan="5"><?php echo form_input($nombre_producto);?></td>
-			            </tr>
-			            <tr>
-							<td width="127" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30">Stock Actual:</td>
-				          	<td width="228" height="30"><?php echo form_input($stockactual_general);?></td>
-				        </tr>	
-						<tr>
-							<td width="127" valign="middle" height="30" style="padding-bottom: 4px;">Stock Físico de Inventario:</td>
-				          	<td width="228" height="30"><?php echo form_input($cantidad);?></td>
-						</tr>						        
-					</table>
-				    <table width="614" border="0" cellspacing="0" cellpadding="0" style="margin-top: 3px;">			        
-					    <tr>
-					       	<td width="117" style="padding-top: 3px;" colspan="6"><input type="submit" id="cuadre_almacen" name="cuadre_almacen" value="Cuadrar Inventario" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; margin-left: 300px; width: 150px;visibility: visible;height: 20px;" /></td>
-					    </tr>						        
-					</table>
-				</div>
+		<div id="datos_factura_importada" style="background: whitesmoke;border-bottom: 1px solid #000;height: 160px;padding-top: 25px;padding-left: 25px;color: #000;">
+				<table width="520" border="0" cellspacing="0" cellpadding="0">			        
+			        <tr>
+		                <td width="145" valign="middle" height="30" style="padding-bottom: 4px;">Nombre del Producto:</td>
+		                <td width="228" height="30" colspan="5"><?php echo form_input($nombre_producto);?></td>
+		            </tr>
+		            <tr>
+						<td width="127" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30">Stock Actual sistema:</td>
+			          	<td width="228" height="30"><?php echo form_input($stockactual_general);?></td>
+			        </tr>
+					<tr>
+						<td width="127" valign="middle" height="30" style="padding-bottom: 4px;">Stock Físico de Inventario:</td>
+			          	<td width="228" height="30"><?php echo form_input($cantidad);?></td>
+					</tr>						        
+				</table>
+			    <table width="614" border="0" cellspacing="0" cellpadding="0" style="margin-top: 3px;">			        
+				    <tr>
+				       	<td width="117" style="padding-top: 3px;" colspan="6"><input type="submit" id="cuadre_almacen" name="cuadre_almacen" value="CUADRAR INVENTARIO" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #FF5722; border-radius:6px; margin-left: 318px; width: 150px;visibility: visible;height: 20px;" /></td>
+				    </tr>						        
+				</table>
 			</div>
-		</div>
 	</div>
 </div>
 <div id="finregistro"></div>
