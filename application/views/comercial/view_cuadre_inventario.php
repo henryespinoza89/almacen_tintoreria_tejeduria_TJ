@@ -71,13 +71,10 @@ $(function(){
 	          	data: dataString,
 	          	success: function(response){
 		            if(response == 1){
-		              	$("#modalerror").empty().append('<span style="color:black"><b>!El Cuadre del Producto en Almacén se realizó con Éxito!</b></span>').dialog({
-		                	modal: true,position: 'center',width: 500,height: 125,resizable: false,title: 'Registro de Salidas',hide: 'blind',show: 'blind',
-		                	buttons: { Ok: function() {
-		                		window.location.href="<?php echo base_url();?>comercial/gestioncuadreinventario";
-		                	}}
-		              	});
-		              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+		              	swal({ title: "El Cuadre del Producto se realizó con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+		              	$('#nombre_producto').val('');
+	                    $('#stockactual_general').val('');
+	                    $('#cantidad').val('');
 		            }else if(response == "no_existe_salida_disponible"){
 		              	$("#modalerror").empty().append('<span style="color:red"><b>!No existen Salidas disponibles para realizar el cuadre del producto!</b><br><b>Verificar Kardex del Producto.</b></span>').dialog({
 		                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
