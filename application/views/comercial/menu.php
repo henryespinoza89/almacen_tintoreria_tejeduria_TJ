@@ -198,6 +198,7 @@
 							<!--<li><a href=""><span>Actualizar</span></a></li>-->
 							<!--<li style="width: 146px;"><a href='<?php // echo base_url();?>comercial/gestiontraslados'><span>Traslados</span></a></li>-->
 							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestioncuadreinventario'><span style="padding-left: 28px;">Cuadre de Inventario</span></a></li>
+							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestionordeningreso'><span style="padding-left: 28px;">Ordenes de Ingreso</span></a></li>
 						</ul>
 					</li>
 					<li><a href='<?php echo base_url();?>comercial/gestionproveedores'><span>Gestión de Proveedores</span></a>
@@ -212,8 +213,8 @@
 					<li style="width: 191px;">
 						<a href='<?php echo base_url();?>comercial/gestioningreso'><span>Gestión Ingreso de Facturas</span></a>
 						<ul>
-							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestioncierrealmacen'><span style="padding-left: 6px;">Cierre de Almacén</span></a></li>
-							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestion_cierre_saldos_iniciales'><span style="padding-left: 6px;">Cierre de Saldos Iniciales</span></a></li>
+							<!--<li style="width: 191px;"><a href='<?php // echo base_url();?>comercial/gestioncierrealmacen'><span style="padding-left: 6px;">Cierre de Almacén</span></a></li>-->
+							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestion_cierre_saldos_iniciales'><span style="padding-left: 12px;">Cierre de Almacén</span></a></li>
 						</ul>
 					</li>
 					<li><a href='<?php echo base_url();?>comercial/gestionsalida'><span>Gestión Salida de Almacén</span></a></li>
@@ -221,7 +222,7 @@
 					<li><a href="" style="width: 140px;"><span>Gestión Kardex</span></a>
 						<ul>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportkardexproducto'><span>Kardex por Producto</span></a>
-							<li><a href='<?php echo base_url();?>comercial/gestionreportkardexgeneral'><span>Kardex General</span></a>
+							<!--<li><a href='<?php // echo base_url();?>comercial/gestionreportkardexgeneral'><span>Kardex General</span></a>-->
 							<li><a href='<?php echo base_url();?>comercial/gestionreportsunat'><span>Reporte SUNAT</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestioninventario'><span>Inventario de Cierre</span></a>
 						</ul>
@@ -233,6 +234,7 @@
 							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada'><span>Reporte de Facturas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportsalida'><span>Reporte de Salidas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestioninventarioalmacen'><span>Inventario Valorizado de Almacén</span></a>
+							<!--<li><a href='<?php // echo base_url();?>comercial/gestionreportconsumopormaquina'><span>Consumos por máquina</span></a>-->
 							<!--<li><a href='<?php //echo base_url();?>comercial/gestionreportmensual'><span>Reporte Mensual</span></a>-->
 						</ul>
 					</li>

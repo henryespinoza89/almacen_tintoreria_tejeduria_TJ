@@ -60,7 +60,7 @@ $db['default']['database'] = 'tejidosj_almacen_tintoreria_tejeduria';
 $db['default']['hostname'] = 'localhost';
 $db['default']['username'] = 'postgres';
 $db['default']['password'] = '120492';
-$db['default']['database'] = 'almacen_tintoreria_tejeduria_2';
+$db['default']['database'] = 'almacen_tintoreria_tejeduria';
 
 $db['default']['dbdriver'] = 'postgre';
 $db['default']['port'] = '5432';

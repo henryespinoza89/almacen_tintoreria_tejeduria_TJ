@@ -301,6 +301,44 @@
     $("#table_button_finalizar_salida").css('display','none');
   }
 
+  function delete_factura(id_ingreso_producto){
+    swal({   
+      title: "Estas seguro?",
+      text: "No se podrá recuperar esta información!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Si, eliminar!",
+      closeOnConfirm: false 
+    },
+    function(){
+      var dataString = 'id_ingreso_producto='+id_ingreso_producto+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/eliminarregistroingreso/",
+        data: dataString,
+        success: function(msg){
+          if(msg == 'eliminacion_correcta'){
+            swal({
+              title: "La factura ha sido eliminada con Éxito!",
+              text: "",
+              type: "success",
+              confirmButtonText: "OK"
+            },function(isConfirm){
+              if (isConfirm) {
+                window.location.href="<?php echo base_url();?>comercial/gestionfacturasmasivas";  
+              }
+            });
+          }else if(msg == 'periodo_cerrado'){
+            sweetAlert("No se puede eliminar la factura", "No puede eliminar facturas de un periodo donde ya realizo el Cierre Mensual de Almacén. Verificar!", "error");
+          }else if(msg == 'valores_negativos_producto'){
+            sweetAlert("No se puede eliminar la factura", "Se produce valores negativos en el stock o precio unitario de los productos asociados a la factura. Existen salidas posteriores a la fecha de factura. Verificar!", "error");
+          }
+        }
+      });
+    });
+  }
+
 
 </script>
 </head>
@@ -399,6 +437,7 @@
           <td sort="idproducto" width="220">AGENTE ADUANA</td>
           <td sort="idproducto" width="120">MONEDA</td>
           <td width="20" style="background-image: none;">&nbsp;</td>
+          <td width="20" style="background-image: none;">&nbsp;</td>
         </tr>
       </thead>
       <?php 
@@ -413,10 +452,14 @@
             <td style="vertical-align: middle;"><?php echo $data->no_agente; ?></td>
             <td style="vertical-align: middle;"><?php echo $data->no_moneda; ?></td>
             <td width="20" align="center"><input type="radio" name="newsletter" onClick="fill_inputs(<?php echo $data->id_ingreso_producto; ?>)" style="cursor: pointer;" title="Finalizar Registro"/></td>
-              <!--<td width="20" align="center">
-                  <a href="" class="eliminar_salida" id="elim_<?php //echo $listasalidaproductos->id_salida_producto; ?>">
-                  <img src="<?php //echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Registro"/></a>
-              </td>-->
+            <!--<td width="20" align="center">
+                <a href="" class="eliminar_salida" id="elim_<?php //echo $listasalidaproductos->id_salida_producto; ?>">
+                <img src="<?php //echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Registro"/></a>
+            </td>-->
+            <td width="20" align="center">
+              <img class="delete_factura" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Factura" onClick="delete_factura(<?php echo $data->id_ingreso_producto; ?>)" style="cursor: pointer;"/>
+            </td>
+
             </tr>
         <?php 
           $i++;

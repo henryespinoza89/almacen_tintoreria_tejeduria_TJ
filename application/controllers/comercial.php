@@ -912,6 +912,23 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function gestionordeningreso(){
+        $nombre = $this->security->xss_clean($this->session->userdata('nombre'));
+        $apellido = $this->security->xss_clean($this->session->userdata('apaterno'));
+        if($nombre == "" AND $apellido == ""){
+            $this->load->view('login');
+        }else{
+            if($this->model_comercial->existeTipoCambio() == TRUE){
+                $data['tipocambio'] = 0;
+            }else{
+                $data['tipocambio'] = 1;
+            }
+            $data['ordeningreso']= $this->model_comercial->listarOrdenIngreso();
+            $this->load->view('comercial/menu');
+            $this->load->view('comercial/comprobantes/gestionar_orden_ingreso',$data);
+        }
+    }
+
     public function gestionsalida(){
         $nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
         $apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
@@ -1016,6 +1033,7 @@ class Comercial extends CI_Controller {
             $data['listamaquina']= $this->model_comercial->listarMaquinas();
             $data['lista_parte_maquina']= $this->model_comercial->listar_parte_Maquinas();
             // $data['salidaproducto']= $this->model_comercial->listaSalidaProducto_2013();
+            $data['anios_registros_salidas']= $this->model_comercial->lista_anios_registros_salida();
             $data['areas_salidas']= $this->model_comercial->listar_areas_salidas();
             $data['salidaproducto']= $this->model_comercial->listaSalidaProducto();
             /*
@@ -1322,9 +1340,28 @@ class Comercial extends CI_Controller {
             }else{
                 $data['tipocambio'] = 1;
             }
+            $data['listamaquina']= $this->model_comercial->listarMaquinas();
             $this->load->view('comercial/menu_script');
             $this->load->view('comercial/menu_cabecera');
-            $this->load->view('comercial/view_report_salida');
+            $this->load->view('comercial/view_report_salida',$data);
+        }
+    }
+
+    public function gestionreportconsumopormaquina(){
+        $nombre = $this->security->xss_clean($this->session->userdata('nombre'));
+        $apellido = $this->security->xss_clean($this->session->userdata('apaterno'));
+        if($nombre == "" AND $apellido == ""){
+            $this->load->view('login');
+        }else{
+            if($this->model_comercial->existeTipoCambio() == TRUE){
+            $data['tipocambio'] = 0;
+            }else{
+                $data['tipocambio'] = 1;
+            }
+            $data['listamaquina']= $this->model_comercial->listarMaquinas();
+            $this->load->view('comercial/menu_script');
+            $this->load->view('comercial/menu_cabecera');
+            $this->load->view('comercial/reportes/view_report_consumo_maquina',$data);
         }
     }
 
@@ -1699,7 +1736,7 @@ class Comercial extends CI_Controller {
 
     public function gestionconsultarRegistros_optionsAdvanced(){
         $data['registros']= $this->model_comercial->listaRegistros();
-        $data['listaproveedor']= $this->model_comercial->listaProveedor();
+        $data['anios_registros']= $this->model_comercial->lista_anios_registros();
         $this->load->view('comercial/menu');
         $this->load->view('comercial/comprobantes/consulta_registros_ingreso_optionsAdvanced', $data);
     }
@@ -2447,6 +2484,12 @@ class Comercial extends CI_Controller {
         $this->load->view('comercial/productos/actualizar_producto', $data);
     }
 
+    public function editarordeningreso(){
+        $id_kardex_producto = $this->security->xss_clean($this->uri->segment(3));
+        $data['ordeningreso']= $this->model_comercial->listarOrdenIngreso_filtro($id_kardex_producto);
+        $this->load->view('comercial/comprobantes/actualizar_orden_ingreso', $data);
+    }
+
     public function editartipocambio(){
         $data['datosTC']= $this->model_comercial->getTCEditar();
         $this->load->view('comercial/tipo_cambio/actualizar_tipo_cambio', $data);   
@@ -2902,6 +2945,62 @@ class Comercial extends CI_Controller {
                 echo '<span style="color:red"><b>ERROR:</b> Este Tipo de Moneda ya se encuentra registrado.</span>';
             }else{
                 //Registramos la sesion del usuario
+                echo '1';
+            }
+        }
+    }
+
+    public function actualizar_orden_ingreso(){
+        $stock_saldo_final = 0;
+        $precio_unitario_saldo_final = 0;
+        $contador_kardex = 0;
+        $id_kardex_producto = $this->security->xss_clean($this->uri->segment(3));
+        $precio_unitario = $this->security->xss_clean($this->input->post('edit_precio_unitario'));
+        // conseguir datos del producto del registro en el kardex
+        $result_kardex = $this->model_comercial->get_kardex_data($id_kardex_producto);
+        foreach ($result_kardex as $key) {
+            $id_detalle_producto = $key->id_detalle_producto;
+        }
+        // actualizar tabla del kardex
+        $result_kardex = $this->model_comercial->actualizar_kardex_orden($id_kardex_producto,$precio_unitario);
+        if(!$result_kardex){
+            echo 'error';
+        }else{
+            // actualizar en la tabla del producto su stock y precio unitario de acuerdo al kardex
+            $detalle_movimientos_kardex_v = $this->model_comercial->traer_movimientos_kardex_eliminar($id_detalle_producto);
+            $existe_v = count($detalle_movimientos_kardex_v);
+            if($existe_v > 0){
+                foreach ($detalle_movimientos_kardex_v as $data) {
+                    if($data->descripcion == "ENTRADA" || $data->descripcion == "IMPORTACION"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = $data->precio_unitario_actual;
+                            $contador_kardex++;
+                        }else{
+                            $stock_antes_actualizar = $stock_saldo_final;
+                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                        }
+                    }else if($data->descripcion == "SALIDA"){
+                        $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+                        $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                    }else if($data->descripcion == "ORDEN INGRESO"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = $data->precio_unitario_actual;
+                            $contador_kardex++;
+                        }else{
+                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                        }
+                    }
+                }
+                $actualizar_p_u_2 = array(
+                    'precio_unitario'=> $precio_unitario_saldo_final,
+                    'stock' => $stock_saldo_final
+                );
+                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                $this->db->update('detalle_producto', $actualizar_p_u_2);
                 echo '1';
             }
         }
@@ -4096,138 +4195,148 @@ class Comercial extends CI_Controller {
         $cantidad = $this->security->xss_clean($this->input->post('cantidad'));
         $id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
         // Obtengo los datos del producto
-        $this->db->select('id_detalle_producto');
+        $this->db->select('id_detalle_producto,stock,precio_unitario');
         $this->db->where('no_producto',$nombre_producto);
         $query = $this->db->get('detalle_producto');
         foreach($query->result() as $row){
             $id_detalle_producto = $row->id_detalle_producto;
+            $stockactual = $row->stock; // Sta. anita
+            $precio_unitario = $row->precio_unitario;
         }
-        // echo $id_detalle_producto;
-        // Obtengo los datos del producto
-        $this->db->select('id_pro');
-        $this->db->where('id_detalle_producto',$id_detalle_producto);
-        $query = $this->db->get('producto');
-        foreach($query->result() as $row){
-            $id_pro = $row->id_pro;
-        }
-        // Generar el ciclo
-        do{
-            // Obtener stock del general del producto - de acuerdo al almacen
-            $this->db->select('stock,precio_unitario');
+        // validar si tiene movimientos en el kardex
+        $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex_eliminar($id_detalle_producto);
+        $existe = count($detalle_movimientos_kardex);
+
+        if(($stockactual == 0 && $precio_unitario == 0) && ($existe == 0)){
+            echo 'stock_precio_cero';
+            
+        }else{
+            // Obtengo los datos del producto
+            $this->db->select('id_pro');
             $this->db->where('id_detalle_producto',$id_detalle_producto);
-            $query = $this->db->get('detalle_producto');
+            $query = $this->db->get('producto');
             foreach($query->result() as $row){
-                $stockactual = $row->stock; // Sta. anita
-                $precio_unitario = $row->precio_unitario;
+                $id_pro = $row->id_pro;
             }
-            // Obtener la ultima salida del producto de la tabla salida_producto y kardex_producto
-            // kardex_producto
-            $this->db->select('id_kardex_producto,cantidad_salida,descripcion,fecha_registro');
-            $this->db->where('id_detalle_producto',$id_detalle_producto);
-            $this->db->order_by("id_kardex_producto", "asc");
-            $query = $this->db->get('kardex_producto');
-            if(count($query->result()) > 0){
-                foreach($query->result() as $row){
-                    $auxiliar_last_kardex = $row->id_kardex_producto;
-                    $cantidad_salida_kardex = $row->cantidad_salida;
-                    $descripcion = $row->descripcion;
-                    $fecha_registro = $row->fecha_registro;
-                }
-            }
-            // salida_producto
-            $this->db->select('id_salida_producto,cantidad_salida');
-            $this->db->where('id_detalle_producto',$id_detalle_producto);
-            $this->db->order_by("id_detalle_salida_producto", "asc");
-            $query = $this->db->get('detalle_salida_producto');
-            if(count($query->result()) > 0){
-                foreach($query->result() as $row){
-                    $auxiliar_last_salida = $row->id_salida_producto;
-                    $cantidad_salida_table_salida = $row->cantidad_salida;
-                }
-            }else{
-                $auxiliar_last_salida = "";
-                $cantidad_salida_table_salida = "";
-            }
-            // El stock del sistema supera al stock fisico
-            if($stockactual == $cantidad){
-                $aux_parametro_cuadre = 1;
-                echo '1';
-            }else if($stockactual > $cantidad){
-                $unidad_base_salida = $stockactual - $cantidad;
-                // Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
-                // tabla salida_producto - registrar cabecera y detalle
-                $a_data = array('id_area' => 32,
-                                'fecha' => date('Y-m-d'),
-                                'id_almacen' => $id_almacen,
-                                'solicitante' => 'CUADRE',
-                                );
-                $result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
-                // guardar detalle de salida
-                $a_data_detalle = array('id_detalle_producto' => $id_detalle_producto,
-                                'cantidad_salida' => $unidad_base_salida,
-                                'p_u_salida' => $precio_unitario,
-                                'id_salida_producto' => $result_insert,
-                                'id_maquina' => null,
-                                'id_parte_maquina' => null,
-                                );
-                $result_insert = $this->model_comercial->save_salida_detalle_producto($a_data_detalle,true);
-                // tabla kardex
-                $new_stock = $stockactual - $unidad_base_salida;
-                $stock_general = $stockactual;
-                $a_data_kardex = array('fecha_registro' => date('Y-m-d'),
-                                        'descripcion' => "SALIDA",
-                                        'id_detalle_producto' => $id_detalle_producto,
-                                        'stock_anterior' => $stock_general,
-                                        'precio_unitario_anterior' => $precio_unitario,
-                                        'cantidad_salida' => $unidad_base_salida,
-                                        'stock_actual' => $new_stock,
-                                        'precio_unitario_actual' => $precio_unitario,
-                                        'num_comprobante' => $result_insert,
-                                        );
-                $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-                // Actualizar stock de acuerdo al cuadre
-                // Vuelvo a traer el stock porque lineas arriba ya lo actualice
-                $this->db->select('stock');
+            // Generar el ciclo
+            do{
+                // Obtener stock del general del producto - de acuerdo al almacen
+                $this->db->select('stock,precio_unitario');
                 $this->db->where('id_detalle_producto',$id_detalle_producto);
                 $query = $this->db->get('detalle_producto');
                 foreach($query->result() as $row){
-                    $stock_final = $row->stock;
+                    $stockactual = $row->stock; // Sta. anita
+                    $precio_unitario = $row->precio_unitario;
                 }
-                // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
-                $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
-                // Enviar parametro para terminar bucle
-                $aux_parametro_cuadre = 1;
-                echo '1';
-            }else if($stockactual < $cantidad){
-                $cantidad_ingreso = $cantidad - $stockactual;
-                if($cantidad_ingreso > 0){
-                    $datos = array(
-                        "id_detalle_producto" => $id_detalle_producto,
-                        "cantidad_ingreso" => $cantidad_ingreso,
-                        "fecha_registro" => date('Y-m-d'),
-                        "id_almacen" => $id_almacen
-                    );
-                    $id_ingreso_producto = $this->model_comercial->insert_orden_ingreso($datos);
-                    if($id_ingreso_producto == 'error_inesperado'){
-                        echo 'error_inesperado';
-                        $aux_parametro_cuadre = 1;
-                    }else{
-                        // Agregamos el detalle del comprobante
-                        $result = $this->model_comercial->kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad_ingreso, $id_almacen);
-                        if($result == 'registro_correcto'){
-                            $aux_parametro_cuadre = 1;
-                            echo '1';
-                        }else{
-                            echo 'error_kardex';
-                            $aux_parametro_cuadre = 1;
-                        }
+                // Obtener la ultima salida del producto de la tabla salida_producto y kardex_producto
+                // kardex_producto
+                $this->db->select('id_kardex_producto,cantidad_salida,descripcion,fecha_registro');
+                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                $this->db->order_by("id_kardex_producto", "asc");
+                $query = $this->db->get('kardex_producto');
+                if(count($query->result()) > 0){
+                    foreach($query->result() as $row){
+                        $auxiliar_last_kardex = $row->id_kardex_producto;
+                        $cantidad_salida_kardex = $row->cantidad_salida;
+                        $descripcion = $row->descripcion;
+                        $fecha_registro = $row->fecha_registro;
+                    }
+                }
+                // salida_producto
+                $this->db->select('id_salida_producto,cantidad_salida');
+                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                $this->db->order_by("id_detalle_salida_producto", "asc");
+                $query = $this->db->get('detalle_salida_producto');
+                if(count($query->result()) > 0){
+                    foreach($query->result() as $row){
+                        $auxiliar_last_salida = $row->id_salida_producto;
+                        $cantidad_salida_table_salida = $row->cantidad_salida;
                     }
                 }else{
-                    echo 'cantidad_negativa';
-                    $aux_parametro_cuadre = 1;
+                    $auxiliar_last_salida = "";
+                    $cantidad_salida_table_salida = "";
                 }
-            }
-        }while($aux_parametro_cuadre == 0);
+                // El stock del sistema supera al stock fisico
+                if($stockactual == $cantidad){
+                    $aux_parametro_cuadre = 1;
+                    echo '1';
+                }else if($stockactual > $cantidad){
+                    $unidad_base_salida = $stockactual - $cantidad;
+                    // Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
+                    // tabla salida_producto - registrar cabecera y detalle
+                    $a_data = array('id_area' => 32,
+                                    'fecha' => date('Y-m-d'),
+                                    'id_almacen' => $id_almacen,
+                                    'solicitante' => 'CUADRE',
+                                    );
+                    $result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
+                    // guardar detalle de salida
+                    $a_data_detalle = array('id_detalle_producto' => $id_detalle_producto,
+                                    'cantidad_salida' => $unidad_base_salida,
+                                    'p_u_salida' => $precio_unitario,
+                                    'id_salida_producto' => $result_insert,
+                                    'id_maquina' => null,
+                                    'id_parte_maquina' => null,
+                                    );
+                    $result_insert = $this->model_comercial->save_salida_detalle_producto($a_data_detalle,true);
+                    // tabla kardex
+                    $new_stock = $stockactual - $unidad_base_salida;
+                    $stock_general = $stockactual;
+                    $a_data_kardex = array('fecha_registro' => date('Y-m-d'),
+                                            'descripcion' => "SALIDA",
+                                            'id_detalle_producto' => $id_detalle_producto,
+                                            'stock_anterior' => $stock_general,
+                                            'precio_unitario_anterior' => $precio_unitario,
+                                            'cantidad_salida' => $unidad_base_salida,
+                                            'stock_actual' => $new_stock,
+                                            'precio_unitario_actual' => $precio_unitario,
+                                            'num_comprobante' => $result_insert,
+                                            );
+                    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+                    // Actualizar stock de acuerdo al cuadre
+                    // Vuelvo a traer el stock porque lineas arriba ya lo actualice
+                    $this->db->select('stock');
+                    $this->db->where('id_detalle_producto',$id_detalle_producto);
+                    $query = $this->db->get('detalle_producto');
+                    foreach($query->result() as $row){
+                        $stock_final = $row->stock;
+                    }
+                    // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
+                    $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
+                    // Enviar parametro para terminar bucle
+                    $aux_parametro_cuadre = 1;
+                    echo '1';
+                }else if($stockactual < $cantidad){
+                    $cantidad_ingreso = $cantidad - $stockactual;
+                    if($cantidad_ingreso > 0){
+                        $datos = array(
+                            "id_detalle_producto" => $id_detalle_producto,
+                            "cantidad_ingreso" => $cantidad_ingreso,
+                            "fecha_registro" => date('Y-m-d'),
+                            "id_almacen" => $id_almacen
+                        );
+                        $id_orden_ingreso = $this->model_comercial->insert_orden_ingreso($datos);
+                        if($id_orden_ingreso == 'error_inesperado'){
+                            echo 'error_inesperado';
+                            $aux_parametro_cuadre = 1;
+                        }else{
+                            // Agregamos el detalle del comprobante
+                            $result = $this->model_comercial->kardex_orden_ingreso($id_orden_ingreso, $id_detalle_producto, $cantidad_ingreso, $id_almacen);
+                            if($result == 'registro_correcto'){
+                                $aux_parametro_cuadre = 1;
+                                echo '1';
+                            }else{
+                                echo 'error_kardex';
+                                $aux_parametro_cuadre = 1;
+                            }
+                        }
+                    }else{
+                        echo 'cantidad_negativa';
+                        $aux_parametro_cuadre = 1;
+                    }
+                }
+            }while($aux_parametro_cuadre == 0);
+        }
     }
 
     function actualizar_tabla_detalle_salida(){
@@ -6307,16 +6416,163 @@ class Comercial extends CI_Controller {
     }
 
     public function eliminarregistroingreso()
-    {
+    {   
+        $this->db->trans_begin();
+        $contador_kardex_v = 0;
+        $contador_kardex = 0;
+        $aux = 0;
         $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
-        $id_registro_ingreso = $this->input->get('eliminar');
-        $result = $this->model_comercial->eliminarRegistroIngreso_aleatorio($id_registro_ingreso,$almacen);
-        if(!$result){
-            echo '<b>--> No puede eliminar Registros de un periodo donde se ya realizo el Cierre Mensual de Almacén.</b>';
-        }else{
-            echo '1';
+        $id_registro_ingreso = $this->security->xss_clean($this->input->post('id_ingreso_producto'));
+        // validar que la factura a eliminar no corresponde a una fecha en la que ya se realizo un cierre
+        $result_fecha_factura = $this->model_comercial->get_fecha_factura_eliminar($id_registro_ingreso);
+        foreach ($result_fecha_factura as $row_fecha){
+            $fecha_registro = $row_fecha->fecha;
+            // formato de fecha para la comparacion
+            $elementos = explode("-", $fecha_registro);
+            $anio = $elementos[0];
+            $mes = $elementos[1];
+            $dia = $elementos[2];
+            // Validar si el mes es diciembre 12 : sino sale fuera de rango
+            if($mes == 12){
+                $anio = $anio + 1;
+                $mes_siguiente = 1;
+                $dia = 1;
+            }else if($mes <= 11 ){
+                $mes_siguiente = $mes + 1;
+                $dia = 1;
+            }
+            $array = array($anio, $mes_siguiente, $dia);
+            $fecha_formateada = implode("-", $array);
+            // consulta si la factura corresponde a un periodo que ya cerro
+            $this->db->select('id_saldos_iniciales');
+            $this->db->where('fecha_cierre',$fecha_formateada);
+            $query = $this->db->get('saldos_iniciales');
+            if($query->num_rows() > 0){
+                echo 'periodo_cerrado';
+            }else{
+                // Proceso de validacion de resultados
+                // Eliminar el kardex de cada producto asociado a la factura e ir actualizando el stock y su precio unitario
+                $result_mov_kardex_v = $this->model_comercial->get_kardex_producto_eliminar($id_registro_ingreso); // trae los productos asociados a la factura
+                foreach ($result_mov_kardex_v as $row_mov_v){
+                    // iniciar valores
+                    $stock_saldo_final = 0;
+                    $precio_unitario_saldo_final = 0;
+                    // obtener valores de la consulta
+                    $id_detalle_producto = $row_mov_v->id_detalle_producto;
+                    $fecha_registro = $row_mov_v->fecha;
+                    $nro_comprobante = $row_mov_v->nro_comprobante;
+                    // actualizacion del stock y precio unitario del podructo en funcion del kardex // para lo cual necesitamos obtener el ultimo registro en el kardex de ese producto
+                    $detalle_movimientos_kardex_v = $this->model_comercial->traer_movimientos_kardex_eliminar($id_detalle_producto);
+                    $existe_v = count($detalle_movimientos_kardex_v);
+                    if($existe_v > 0){
+                        foreach ($detalle_movimientos_kardex_v as $data_v) {
+                            $numero_comprobante_kardex_v = $data_v->num_comprobante;
+                            if($nro_comprobante != $numero_comprobante_kardex_v){
+                                if($data_v->descripcion == "ENTRADA" || $data_v->descripcion == "IMPORTACION"){
+                                    if($contador_kardex_v == 0){
+                                        $stock_saldo_final = $data_v->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = $data_v->precio_unitario_actual;
+                                        $contador_kardex_v++;
+                                    }else{
+                                        $stock_antes_actualizar = $stock_saldo_final;
+                                        $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = (($data_v->cantidad_ingreso*$data_v->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data_v->cantidad_ingreso + $stock_antes_actualizar);
+                                    }
+                                }else if($data_v->descripcion == "SALIDA"){
+                                    $stock_saldo_final = $stock_saldo_final - $data_v->cantidad_salida;
+                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                }else if($data_v->descripcion == "ORDEN INGRESO"){
+                                    $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                }
+                            }
+                        }
+                    }else{
+                        $stock_saldo_final = 0;
+                        $precio_unitario_saldo_final = 0;
+                    }
+
+                    if($stock_saldo_final < 0 || $precio_unitario_saldo_final < 0){
+                        // echo 'valores_negativos_producto '.$stock_saldo_final." ".$precio_unitario_saldo_final." ";
+                        $aux++;
+                    }
+                }
+
+                if($aux == 0){
+                    // Eliminar el kardex de cada producto asociado a la factura e ir actualizando el stock y su precio unitario
+                    $result_mov_kardex = $this->model_comercial->get_kardex_producto_eliminar($id_registro_ingreso); // trae los productos asociados a la factura
+                    foreach ($result_mov_kardex as $row_mov){
+                        // iniciar valores
+                        $stock_saldo_final = 0;
+                        $precio_unitario_saldo_final = 0;
+                        // obtener valores de la consulta
+                        $id_detalle_producto = $row_mov->id_detalle_producto;
+                        $fecha_registro = $row_mov->fecha;
+                        $nro_comprobante = $row_mov->nro_comprobante;
+                        // eliminacion del kardex del producto
+                        $sql = "DELETE FROM kardex_producto WHERE id_detalle_producto = " . $id_detalle_producto . " AND DATE(fecha_registro) = '" .$fecha_registro."' AND num_comprobante = '" .$nro_comprobante."'";
+                        $query = $this->db->query($sql);
+                        // actualizacion del stock y precio unitario del podructo en funcion del kardex // para lo cual necesitamos obtener el ultimo registro en el kardex de ese producto
+                        $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex_eliminar($id_detalle_producto);
+                        $existe = count($detalle_movimientos_kardex);
+                        if($existe > 0){
+                            foreach ($detalle_movimientos_kardex as $data) {
+                                if($data->descripcion == "ENTRADA" || $data->descripcion == "IMPORTACION"){
+                                    if($contador_kardex == 0){
+                                        $stock_saldo_final = $data->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = $data->precio_unitario_actual;
+                                        $contador_kardex++;
+                                    }else{
+                                        $stock_antes_actualizar = $stock_saldo_final;
+                                        $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                                    }
+                                }else if($data->descripcion == "SALIDA"){
+                                    $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                }else if($data->descripcion == "ORDEN INGRESO"){
+                                    $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                }
+                            }
+                        }else{
+                            $stock_saldo_final = 0;
+                            $precio_unitario_saldo_final = 0;
+                        }
+
+                        $actualizar_p_u_2 = array(
+                            'precio_unitario'=> $precio_unitario_saldo_final,
+                            'stock' => $stock_saldo_final
+                        );
+                        $this->db->where('id_detalle_producto',$id_detalle_producto);
+                        $this->db->update('detalle_producto', $actualizar_p_u_2);
+                    }
+                    // ELIMINAR REGISTROS
+                    $sql = "DELETE FROM detalle_ingreso_producto WHERE id_ingreso_producto = " . $id_registro_ingreso . "";
+                    $query = $this->db->query($sql);
+
+                    $sql = "DELETE FROM ingreso_producto WHERE id_ingreso_producto = " . $id_registro_ingreso . "";
+                    $query = $this->db->query($sql);
+
+                    echo 'eliminacion_correcta';
+                    $this->db->trans_complete();
+                }else{
+                    echo 'valores_negativos_producto';
+                }
+            }
         }
     }
+
+    /*
+    $result = $this->model_comercial->eliminarRegistroIngreso_aleatorio_v2($id_registro_ingreso,$almacen);
+    if($result == 'periodo_cerrado'){
+        echo 'periodo_cerrado';
+    }else if($result == 'valores_negativos_producto'){
+        echo 'valores_negativos_producto';
+    }else if($result == 'eliminacion_correcta'){
+        echo '1';
+    }
+    */
 
     public function eliminarsalidaproducto()
     {
@@ -6835,22 +7091,23 @@ class Comercial extends CI_Controller {
         $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
         $fecha_inicial = $this->security->xss_clean($this->input->post("fecha_inicial"));
         $fecha_final = $this->security->xss_clean($this->input->post("fecha_final"));
-        // Formato de la fecha anterior
+        // Formato de la fecha de cierre anterior
         $elementos = explode("-", $fecha_inicial);
         $anio = $elementos[0];
         $mes = $elementos[1];
         $dia = $elementos[2];
-        if($mes == 12){
-            $anio = $anio + 1;
-            $mes_siguiente = 1;
+        if($mes == 1){
+            $anio = $anio - 1;
+            $mes_siguiente = 12;
             $dia = 1;
-        }else if($mes <= 11 ){
-            $mes_siguiente = $mes;
+        }else if($mes > 1 ){
+            $mes_siguiente = $mes - 1;
             $dia = 1;
         }
         $array = array($anio, $mes_siguiente, $dia);
         $fecha_formateada_anterior = implode("-", $array);
-        // Formato a la fecha posterior
+        $fecha_formateada_anterior = date("Y-m-d", strtotime($fecha_formateada_anterior));
+        // Formato a la fecha de cierre posterior posterior
         $elementos = explode("-", $fecha_inicial);
         $anio = $elementos[0];
         $mes = $elementos[1];
@@ -6865,37 +7122,64 @@ class Comercial extends CI_Controller {
         }
         $array = array($anio, $mes_siguiente, $dia);
         $fecha_formateada_posterior = implode("-", $array);
-        // Realizar un consulta de todos los productos registrados en el sistema
-        // para verificar los movimientos de esos productos en el kardex y seleccionar el ultimo movimiento de ese mes
-        // para obtener el stock y el precio final para el cierre del mes
-        $data_product = $this->model_comercial->get_all_productos_v2();
-        foreach ($data_product as $row){
-            $id_detalle_producto = $row->id_detalle_producto;
-            $id_pro = $row->id_pro;
-            // validacion si existe un registro de este producto en kardex dentro del periodo seleccionado
-            $validacion = $this->model_comercial->validar_registros_producto_periodo($fecha_inicial, $fecha_final, $id_detalle_producto);
-            if($validacion == 'no_existe_movimiento'){
-                // Verificar si existe saldos iniciales del mes anterior para colocarlos en el saldo inicial actual
-                $this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
-                $this->db->where('fecha_cierre',date($fecha_formateada_anterior));
-                $this->db->where('id_pro',$id_pro);
-                $query = $this->db->get('saldos_iniciales');
-                if(count($query->result()) > 0){
-                    // Obtengo los saldos iniciales del mes anterior
-                    // osea del mes actual que se esta trabajando
-                    foreach($query->result() as $row){
-                        $id_saldos_iniciales_anterior = $row->id_saldos_iniciales;
-                        $stock_inicial_anterior = $row->stock_inicial;
-                        $stock_inicial_sta_clara_anterior = $row->stock_inicial_sta_clara;
-                        $precio_uni_inicial_anterior = $row->precio_uni_inicial;
+        $fecha_formateada_posterior = date("Y-m-d", strtotime($fecha_formateada_posterior));
+        // validar si ya se realizo un cierre de ese mes
+        $validacion_cierre = $this->model_comercial->validar_cierre_duplicado($fecha_formateada_posterior);
+        if($validacion_cierre == 'validacion_conforme'){
+            // Realizar un consulta de todos los productos registrados en el sistema
+            // para verificar los movimientos de esos productos en el kardex y seleccionar el ultimo movimiento de ese mes
+            // para obtener el stock y el precio final para el cierre del mes
+            $data_product = $this->model_comercial->get_all_productos_v2();
+            foreach ($data_product as $row){
+                $id_detalle_producto = $row->id_detalle_producto;
+                $id_pro = $row->id_pro;
+                // obtener los registros del kardex hasta la fecha en consulta para registrar en la tabla saldos_iniciales
+                $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex_saldos_iniciales($id_detalle_producto,$fecha_final);
+                $existe = count($detalle_movimientos_kardex);
+                $contador_kardex = 0;
+                if($existe > 0){
+                    foreach ($detalle_movimientos_kardex as $data) {
+                        if($data->descripcion == "ENTRADA"){
+                            if($contador_kardex == 0){
+                                $stock_saldo_final = $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = $data->precio_unitario_actual;
+                                $contador_kardex++;
+                            }else{
+                                $stock_antes_actualizar = $stock_saldo_final;
+                                $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                            }
+                        }else if($data->descripcion == "SALIDA"){
+                            $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                        }else if($data->descripcion == "IMPORTACION"){
+                            if($contador_kardex == 0){
+                                $stock_saldo_final = $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = $data->precio_unitario_actual;
+                                $contador_kardex++;
+                            }else{
+                                $stock_antes_actualizar = $stock_saldo_final;
+                                $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                            }
+                        }else if($data->descripcion == "ORDEN INGRESO"){
+                            if($contador_kardex == 0){
+                                $stock_saldo_final = $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = $data->precio_unitario_actual;;
+                                $contador_kardex++;
+                            }else{
+                                $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                            }
+                        }
                     }
-                    // Actualizar los saldos iniciales del mes que se selecciono
+                    // insertar valores a la tabla saldos_iniciales
                     $datos = array(
                         'id_pro'=> $id_pro,
                         'fecha_cierre'=> $fecha_formateada_posterior,
-                        'precio_uni_inicial'=> $precio_uni_inicial_anterior,
-                        'stock_inicial' => $stock_inicial_anterior,
-                        'stock_inicial_sta_clara' => $stock_inicial_sta_clara_anterior
+                        'precio_uni_inicial'=> $precio_unitario_saldo_final,
+                        'stock_inicial' => $stock_saldo_final,
+                        'stock_inicial_sta_clara' => 0
                     );
                     $this->model_comercial->insert_saldos_iniciales($datos);
                 }else{
@@ -6908,37 +7192,132 @@ class Comercial extends CI_Controller {
                     );
                     $this->model_comercial->insert_saldos_iniciales($datos);
                 }
-            }else{
-                // Obtener los ultimos datos nececesarios del kardex para la actualizacion del saldos inicial del producto en el periodo que corresponde
-                $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual,fecha_registro');
-                $this->db->where('id_kardex_producto',(int)$validacion);
-                $query = $this->db->get('kardex_producto');
-                foreach($query->result() as $row){
-                    $stock_actual = $row->stock_actual;
-                    $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
-                    $precio_unitario_anterior = $row->precio_unitario_anterior;
-                    $descripcion = $row->descripcion;
-                    $precio_unitario_actual = $row->precio_unitario_actual;
-                    $fecha_registro = $row->fecha_registro;
+                // Actualizar el stock y precio unitario de los productos de acuerdo al kardex actual
+                $detalle_movimientos_kardex_sin_fecha = $this->model_comercial->traer_movimientos_kardex_saldos_iniciales_sin_filtro_fecha($id_detalle_producto);
+                $existe_sin_fecha = count($detalle_movimientos_kardex_sin_fecha);
+                $contador_kardex_2 = 0;
+                if($existe_sin_fecha > 0){
+                    foreach ($detalle_movimientos_kardex_sin_fecha as $data_2) {
+                        if($data_2->descripcion == "ENTRADA"){
+                            if($contador_kardex_2 == 0){
+                                $stock_saldo_final_2 = $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = $data_2->precio_unitario_actual;
+                                $contador_kardex_2++;
+                            }else{
+                                $stock_antes_actualizar = $stock_saldo_final_2;
+                                $stock_saldo_final_2 = $stock_saldo_final_2 + $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = (($data_2->cantidad_ingreso*$data_2->precio_unitario_actual) + ($precio_unitario_saldo_final_2 * $stock_antes_actualizar))/($data_2->cantidad_ingreso + $stock_antes_actualizar);
+                            }
+                        }else if($data_2->descripcion == "SALIDA"){
+                            $stock_saldo_final_2 = $stock_saldo_final_2 - $data_2->cantidad_salida;
+                            $precio_unitario_saldo_final_2 = $precio_unitario_saldo_final_2;
+                        }else if($data_2->descripcion == "IMPORTACION"){
+                            if($contador_kardex_2 == 0){
+                                $stock_saldo_final_2 = $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = $data_2->precio_unitario_actual;
+                                $contador_kardex_2++;
+                            }else{
+                                $stock_antes_actualizar = $stock_saldo_final_2;
+                                $stock_saldo_final_2 = $stock_saldo_final_2 + $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = (($data_2->cantidad_ingreso*$data_2->precio_unitario_actual) + ($precio_unitario_saldo_final_2 * $stock_antes_actualizar))/($data_2->cantidad_ingreso + $stock_antes_actualizar);
+                            }
+                        }else if($data_2->descripcion == "ORDEN INGRESO"){
+                            if($contador_kardex_2 == 0){
+                                $stock_saldo_final_2 = $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = $data_2->precio_unitario_actual;;
+                                $contador_kardex_2++;
+                            }else{
+                                $stock_saldo_final_2 = $stock_saldo_final_2 + $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = $precio_unitario_saldo_final_2;
+                            }
+                        }
+                    }
+                    $actualizar_p_u_2 = array(
+                        'precio_unitario'=> $precio_unitario_saldo_final_2,
+                        'stock' => $stock_saldo_final_2
+                    );
+                    $this->db->where('id_detalle_producto',$id_detalle_producto);
+                    $this->db->update('detalle_producto', $actualizar_p_u_2);
+                }else{
+                    $actualizar_p_u_2 = array(
+                        'precio_unitario'=> 0,
+                        'stock' => 0
+                    );
+                    $this->db->where('id_detalle_producto',$id_detalle_producto);
+                    $this->db->update('detalle_producto', $actualizar_p_u_2);
                 }
-                // Considerar el ultimo precio que se manejo dependiente del tipo de movimiento
-                if($descripcion == 'SALIDA'){
-                    $precio_unitario_anterior_especial = $precio_unitario_anterior;
-                }else if($descripcion == 'ENTRADA'  || $descripcion == 'ORDEN INGRESO'){
-                    $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
+                /*
+                // validacion si existe un registro de este producto en kardex dentro del periodo seleccionado
+                $validacion = $this->model_comercial->validar_registros_producto_periodo($fecha_inicial, $fecha_final, $id_detalle_producto);
+                if($validacion == 'no_existe_movimiento'){
+                    // Verificar si existe saldos iniciales del mes anterior para colocarlos en el saldo inicial actual
+                    $this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
+                    $this->db->where('fecha_cierre',date($fecha_formateada_anterior));
+                    $this->db->where('id_pro',$id_pro);
+                    $query = $this->db->get('saldos_iniciales');
+                    if(count($query->result()) > 0){
+                        // Obtengo los saldos iniciales del mes anterior
+                        // osea del mes actual que se esta trabajando
+                        foreach($query->result() as $row){
+                            $id_saldos_iniciales_anterior = $row->id_saldos_iniciales;
+                            $stock_inicial_anterior = $row->stock_inicial;
+                            $stock_inicial_sta_clara_anterior = $row->stock_inicial_sta_clara;
+                            $precio_uni_inicial_anterior = $row->precio_uni_inicial;
+                        }
+                        // Actualizar los saldos iniciales del mes que se selecciono
+                        $datos = array(
+                            'id_pro'=> $id_pro,
+                            'fecha_cierre'=> $fecha_formateada_posterior,
+                            'precio_uni_inicial'=> $precio_uni_inicial_anterior,
+                            'stock_inicial' => $stock_inicial_anterior,
+                            'stock_inicial_sta_clara' => $stock_inicial_sta_clara_anterior
+                        );
+                        $this->model_comercial->insert_saldos_iniciales($datos);
+                    }else{
+                        $datos = array(
+                            'id_pro'=> $id_pro,
+                            'fecha_cierre'=> $fecha_formateada_posterior,
+                            'precio_uni_inicial'=> 0,
+                            'stock_inicial' => 0,
+                            'stock_inicial_sta_clara' => 0
+                        );
+                        $this->model_comercial->insert_saldos_iniciales($datos);
+                    }
+                }else{
+                    // Obtener los ultimos datos nececesarios del kardex para la actualizacion del saldos inicial del producto en el periodo que corresponde
+                    $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual,fecha_registro');
+                    $this->db->where('id_kardex_producto',(int)$validacion);
+                    $query = $this->db->get('kardex_producto');
+                    foreach($query->result() as $row){
+                        $stock_actual = $row->stock_actual;
+                        $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
+                        $precio_unitario_anterior = $row->precio_unitario_anterior;
+                        $descripcion = $row->descripcion;
+                        $precio_unitario_actual = $row->precio_unitario_actual;
+                        $fecha_registro = $row->fecha_registro;
+                    }
+                    // Considerar el ultimo precio que se manejo dependiente del tipo de movimiento
+                    if($descripcion == 'SALIDA'){
+                        $precio_unitario_anterior_especial = $precio_unitario_anterior;
+                    }else if($descripcion == 'ENTRADA'  || $descripcion == 'ORDEN INGRESO'){
+                        $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
+                    }
+                    // datos los saldos iniciales del mes que se selecciono
+                    $datos = array(
+                        'id_pro'=> $id_pro,
+                        'fecha_cierre'=> $fecha_formateada_posterior,
+                        'precio_uni_inicial'=> $precio_unitario_anterior_especial,
+                        'stock_inicial' => $stock_actual,
+                        'stock_inicial_sta_clara' => 0
+                    );
+                    $this->model_comercial->insert_saldos_iniciales($datos);
                 }
-                // datos los saldos iniciales del mes que se selecciono
-                $datos = array(
-                    'id_pro'=> $id_pro,
-                    'fecha_cierre'=> $fecha_formateada_posterior,
-                    'precio_uni_inicial'=> $precio_unitario_anterior_especial,
-                    'stock_inicial' => $stock_actual,
-                    'stock_inicial_sta_clara' => 0
-                );
-                $this->model_comercial->insert_saldos_iniciales($datos);
+                */
             }
+            echo '1';
+        }else if($validacion_cierre == 'cierre_duplicado'){
+            echo 'cierre_duplicado';
         }
-        echo '1';
     }
 
     public function registrar_cierre_mes(){
@@ -6986,20 +7365,27 @@ class Comercial extends CI_Controller {
         }
         $array = array($anio, $mes_siguiente, $dia);
         $fecha_formateada = implode("-", $array);
-        // Procedimiento de validación
-        $this->db->select('id_monto_cierre');
-        $this->db->where('nombre_mes',$nombre_mes);
-        $this->db->where('fecha_auxiliar',$fecha_formateada);
-        $query = $this->db->get('monto_cierre');
-        if(count($query->result()) > 0){
-            echo 'error_validacion';
-        }else{
-            $result_monto = $this->model_comercial->cierre_almacen_montos_2016($fecha_formateada,$nombre_mes); // guarda el monto de cierre del mes en la tabla monto_cierre
-            if(!$result_monto){
-                echo 'error_validacion_monto';
+        $fecha_formateada = date("Y-m-d", strtotime($fecha_formateada));
+        // validar que existen saldos iniciales registrados para esa fecha
+        $result_s_i = $this->model_comercial->validar_cierre_duplicado($fecha_formateada);
+        if($result_s_i == 'cierre_duplicado'){
+            // Procedimiento de validación si existe ya un cierre de ese mes
+            $this->db->select('id_monto_cierre');
+            $this->db->where('nombre_mes',$nombre_mes);
+            $this->db->where('fecha_auxiliar',$fecha_formateada);
+            $query = $this->db->get('monto_cierre');
+            if(count($query->result()) > 0){
+                echo 'error_validacion';
             }else{
-                echo '1';
+                $result_monto = $this->model_comercial->cierre_almacen_montos_2016($fecha_formateada,$nombre_mes,$fecha_final); // guarda el monto de cierre del mes en la tabla monto_cierre
+                if(!$result_monto){
+                    echo 'error_validacion_monto';
+                }else{
+                    echo '1';
+                }
             }
+        }else{
+            echo 'no_existe_saldos_iniciales';
         }
     }
 
@@ -7014,11 +7400,162 @@ class Comercial extends CI_Controller {
             echo '1';
         }
     }
-
+    /*
     public function eliminarregistrosalida()
     {
         $id_registro_salida = $this->input->get('eliminar');
         $this->model_comercial->eliminarRegistroSalida($id_registro_salida);
+    }3
+    */
+
+    public function eliminarregistrosalida(){
+        $this->db->trans_begin();
+        $contador_kardex_v = 0;
+        $contador_kardex = 0;
+        $aux = 0;
+        $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+        $id_salida_producto = $this->security->xss_clean($this->input->post('id_salida_producto'));
+        $id_detalle_producto = $this->security->xss_clean($this->input->post('id_detalle_producto'));
+        // validar que la salida a eliminar no corresponde a una fecha en la que ya se realizo un cierre
+        $result_fecha_salida = $this->model_comercial->get_fecha_salida_eliminar($id_salida_producto);
+        foreach ($result_fecha_salida as $row_fecha){
+            $fecha_registro = $row_fecha->fecha;
+            // formato de fecha para la comparacion
+            $elementos = explode("-", $fecha_registro);
+            $anio = $elementos[0];
+            $mes = $elementos[1];
+            $dia = $elementos[2];
+            // Validar si el mes es diciembre 12 : sino sale fuera de rango
+            if($mes == 12){
+                $anio = $anio + 1;
+                $mes_siguiente = 1;
+                $dia = 1;
+            }else if($mes <= 11 ){
+                $mes_siguiente = $mes + 1;
+                $dia = 1;
+            }
+            $array = array($anio, $mes_siguiente, $dia);
+            $fecha_formateada = implode("-", $array);
+            // consulta si la factura corresponde a un periodo que ya cerro
+            $this->db->select('id_saldos_iniciales');
+            $this->db->where('fecha_cierre',$fecha_formateada);
+            $query = $this->db->get('saldos_iniciales');
+            if($query->num_rows() > 0){
+                echo 'periodo_cerrado';
+            }else{
+                // Proceso de validacion de resultados
+                // Eliminar el kardex de cada producto asociado a la salida e ir actualizando el stock y su precio unitario
+                $result_mov_kardex_v = $this->model_comercial->get_salida_producto_eliminar($id_salida_producto, $id_detalle_producto); // trae el producto asociados a la factura, porque pueden ser varios pero en el filtro especifico un producto
+                foreach ($result_mov_kardex_v as $row_mov_v){
+                    // iniciar valores
+                    $stock_saldo_final = 0;
+                    $precio_unitario_saldo_final = 0;
+                    // obtener valores de la consulta
+                    $id_detalle_producto = $row_mov_v->id_detalle_producto;
+                    $fecha_registro = $row_mov_v->fecha;
+                    // actualizacion del stock y precio unitario del podructo en funcion del kardex // para lo cual necesitamos obtener el ultimo registro en el kardex de ese producto
+                    $detalle_movimientos_kardex_v = $this->model_comercial->traer_movimientos_kardex_eliminar($id_detalle_producto);
+                    $existe_v = count($detalle_movimientos_kardex_v);
+                    if($existe_v > 0){
+                        foreach ($detalle_movimientos_kardex_v as $data_v) {
+                            $numero_comprobante_kardex_v = $data_v->num_comprobante;
+                            if($id_salida_producto != $numero_comprobante_kardex_v){
+                                if($data_v->descripcion == "ENTRADA" || $data_v->descripcion == "IMPORTACION"){
+                                    if($contador_kardex_v == 0){
+                                        $stock_saldo_final = $data_v->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = $data_v->precio_unitario_actual;
+                                        $contador_kardex_v++;
+                                    }else{
+                                        $stock_antes_actualizar = $stock_saldo_final;
+                                        $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = (($data_v->cantidad_ingreso*$data_v->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data_v->cantidad_ingreso + $stock_antes_actualizar);
+                                    }
+                                }else if($data_v->descripcion == "SALIDA"){
+                                    $stock_saldo_final = $stock_saldo_final - $data_v->cantidad_salida;
+                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                }else if($data_v->descripcion == "ORDEN INGRESO"){
+                                    $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                }
+                            }
+                        }
+                    }else{
+                        $stock_saldo_final = 0;
+                        $precio_unitario_saldo_final = 0;
+                    }
+
+                    if($stock_saldo_final < 0 || $precio_unitario_saldo_final < 0){
+                        // echo 'valores_negativos_producto '.$stock_saldo_final." ".$precio_unitario_saldo_final." ";
+                        $aux++;
+                    }
+                }
+
+                if($aux == 0){
+                    // Eliminar el kardex de cada producto asociado a la factura e ir actualizando el stock y su precio unitarioc
+                    $result_mov_kardex_v = $this->model_comercial->get_salida_producto_eliminar($id_salida_producto, $id_detalle_producto); // trae el producto asociados a la factura, porque pueden ser varios pero en el filtro especifico un producto
+                    foreach ($result_mov_kardex_v as $row_mov_v){
+                        // iniciar valores
+                        $stock_saldo_final = 0;
+                        $precio_unitario_saldo_final = 0;
+                        // obtener valores de la consulta
+                        $id_detalle_producto = $row_mov_v->id_detalle_producto;
+                        $fecha_registro = $row_mov_v->fecha;
+                        // eliminacion del kardex del producto
+                        $sql = "DELETE FROM kardex_producto WHERE id_detalle_producto = " . $id_detalle_producto . " AND DATE(fecha_registro) = '" .$fecha_registro."' AND num_comprobante = '" .$id_salida_producto."'";
+                        $query = $this->db->query($sql);
+                        // actualizacion del stock y precio unitario del podructo en funcion del kardex // para lo cual necesitamos obtener el ultimo registro en el kardex de ese producto
+                        $detalle_movimientos_kardex_v = $this->model_comercial->traer_movimientos_kardex_eliminar($id_detalle_producto);
+                        $existe_v = count($detalle_movimientos_kardex_v);
+                        if($existe_v > 0){
+                            foreach ($detalle_movimientos_kardex_v as $data_v) {
+                                $numero_comprobante_kardex_v = $data_v->num_comprobante;
+                                if($id_salida_producto != $numero_comprobante_kardex_v){
+                                    if($data_v->descripcion == "ENTRADA" || $data_v->descripcion == "IMPORTACION"){
+                                        if($contador_kardex_v == 0){
+                                            $stock_saldo_final = $data_v->cantidad_ingreso;
+                                            $precio_unitario_saldo_final = $data_v->precio_unitario_actual;
+                                            $contador_kardex_v++;
+                                        }else{
+                                            $stock_antes_actualizar = $stock_saldo_final;
+                                            $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+                                            $precio_unitario_saldo_final = (($data_v->cantidad_ingreso*$data_v->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data_v->cantidad_ingreso + $stock_antes_actualizar);
+                                        }
+                                    }else if($data_v->descripcion == "SALIDA"){
+                                        $stock_saldo_final = $stock_saldo_final - $data_v->cantidad_salida;
+                                        $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                    }else if($data_v->descripcion == "ORDEN INGRESO"){
+                                        $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                    }
+                                }
+                            }
+                        }else{
+                            $stock_saldo_final = 0;
+                            $precio_unitario_saldo_final = 0;
+                        }
+
+                        $actualizar_p_u_2 = array(
+                            'precio_unitario'=> $precio_unitario_saldo_final,
+                            'stock' => $stock_saldo_final
+                        );
+                        $this->db->where('id_detalle_producto',$id_detalle_producto);
+                        $this->db->update('detalle_producto', $actualizar_p_u_2);
+                    }
+
+                    // ELIMINAR REGISTROS
+                    $sql = "DELETE FROM detalle_salida_producto WHERE id_salida_producto = " . $id_salida_producto . "";
+                    $query = $this->db->query($sql);
+
+                    $sql = "DELETE FROM salida_producto WHERE id_salida_producto = " . $id_salida_producto . "";
+                    $query = $this->db->query($sql);
+
+                    echo 'eliminacion_correcta';
+                    $this->db->trans_complete();
+                }else{
+                    echo 'valores_negativos_producto';
+                }
+            }
+        }
     }
 
     public function co_exportar_resumen_producto_excel(){
@@ -7035,6 +7572,51 @@ class Comercial extends CI_Controller {
         $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
         $data = json_decode($data, true);
         $f_inicial = $data[0];
+
+        $elementos = explode("-", $f_inicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+
+        if($mes == 1){
+            $nombre_mes = "ENERO";
+        }else if($mes == 2){
+            $nombre_mes = "FEBRERO";
+        }else if($mes == 3){
+            $nombre_mes = "MARZO";
+        }else if($mes == 4){
+            $nombre_mes = "ABRIL";
+        }else if($mes == 5){
+            $nombre_mes = "MAYO";
+        }else if($mes == 6){
+            $nombre_mes = "JUNIO";
+        }else if($mes == 7){
+            $nombre_mes = "JULIO";
+        }else if($mes == 8){
+            $nombre_mes = "AGOSTO";
+        }else if($mes == 9){
+            $nombre_mes = "SETIEMBRE";
+        }else if($mes == 10){
+            $nombre_mes = "OCTUBRE";
+        }else if($mes == 11){
+            $nombre_mes = "NOVIEMBRE";
+        }else if($mes == 12){
+            $nombre_mes = "DICIEMBRE";
+        }
+
+        // formato de la fecha
+        if($mes == 12){
+            $anio = $anio + 1;
+            $mes = 1;
+            $dia = 1;
+        }else if($mes <= 11 ){
+            $mes = $mes + 1;
+            $dia = 1;
+        }
+
+        /* Ubicar la fecha en un cierre posterior para la validacion */
+        $array = array($anio, $mes, $dia);
+        $fecha_formateada = implode("-", $array);
 
         $this->load->library('pHPExcel');
         /* variables de PHPExcel */
@@ -7072,19 +7654,20 @@ class Comercial extends CI_Controller {
 
         /* propiedades de la celda */
         $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(15);
-        $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:E1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
-        $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($borders);
-        $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($style);
-        $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($styleArray);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:E1')->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:E1')->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:E1')->applyFromArray($styleArray);
 
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(50);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(30);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(30);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(80);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(35);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(35);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(35);
 
         /* Traer informacion de la BD */
-        $saldo_inicial = $this->model_comercial->get_info_saldos_iniciales($f_inicial);
+        $saldo_inicial = $this->model_comercial->get_info_saldos_iniciales($fecha_formateada);
         /* Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex */
         
         $sumatoria = 0;
@@ -7094,25 +7677,27 @@ class Comercial extends CI_Controller {
         $objWorkSheet->setCellValue('A1', 'FECHA DE CIERRE')
                      ->setCellValue('B1', 'NOMBRE DEL PRODUCTO')
                      ->setCellValue('C1', 'STOCK DE CIERRE')
-                     ->setCellValue('D1', 'P. UNITARIO DE CIERRE');
+                     ->setCellValue('D1', 'P. UNITARIO DE CIERRE')
+                     ->setCellValue('E1', 'VALORIZADO S/.');
 
         foreach ($saldo_inicial as $reg) {
 
             /* Formatos */
             $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-
+            $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             /* Centrar contenido */
             $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
             $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
             $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
             $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
-
+            $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style);
             /* border */
             $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
             $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
             $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
             $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
 
             $nombre_producto = $reg->no_producto;
             $stock_inicial = $reg->stock_inicial;
@@ -7122,25 +7707,46 @@ class Comercial extends CI_Controller {
             if($almacen == 1){
                 $objWorkSheet->setCellValue('A'.$p, $reg->fecha_cierre)
                              ->setCellValue('B'.$p, $reg->no_producto)
-                             ->setCellValueExplicit('C'.$p, $reg->stock_inicial_sta_clara)
-                             ->setCellValueExplicit('D'.$p, $reg->precio_uni_inicial);
+                             ->setCellValue('C'.$p, $reg->stock_inicial_sta_clara)
+                             ->setCellValue('D'.$p, $reg->precio_uni_inicial)
+                             ->setCellValue('E'.$p, ($reg->stock_inicial_sta_clara * $reg->precio_uni_inicial));
+                $sumatoria = $sumatoria + ($reg->stock_inicial_sta_clara * $reg->precio_uni_inicial);
             }else if($almacen == 2){
                 $objWorkSheet->setCellValue('A'.$p, $reg->fecha_cierre)
                              ->setCellValue('B'.$p, $reg->no_producto)
-                             ->setCellValueExplicit('C'.$p, $reg->stock_inicial)
-                             ->setCellValueExplicit('D'.$p, $reg->precio_uni_inicial);
+                             ->setCellValue('C'.$p, $reg->stock_inicial)
+                             ->setCellValue('D'.$p, $reg->precio_uni_inicial)
+                             ->setCellValue('E'.$p, ($reg->stock_inicial * $reg->precio_uni_inicial));
+                $sumatoria = $sumatoria + ($reg->stock_inicial * $reg->precio_uni_inicial);
             }
-
             /* Rename sheet */
-            $objWorkSheet->setTitle("Inventario");
+            $objWorkSheet->setTitle("Inventario_cierre_".$nombre_mes);
             $p++;
         }
+
+        /* ---------------------------------------------------------------------- */
+        /* Formatos */
+        $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        /* Centrar contenido */
+        $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($styleArray);
+        $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($styleArray);
+        /* border */
+        $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+
+        $objWorkSheet->setCellValue('A'.$p, "")
+                     ->setCellValue('B'.$p, "")
+                     ->setCellValue('C'.$p, "")
+                     ->setCellValue('D'.$p, "TOTALES S/.")
+                     ->setCellValue('E'.$p, $sumatoria);
 
         $objPHPExcel->setActiveSheetIndex(0);
 
         /* datos de la salida del excel */
         header("Content-type: application/vnd.ms-excel");
-        header("Content-Disposition: attachment; filename=inventario.xls");
+        header("Content-Disposition: attachment; filename=inventario_cierre_$nombre_mes.xls");
         header("Cache-Control: max-age=0");
         $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
         $objWriter->save('php://output');
@@ -7877,6 +8483,508 @@ class Comercial extends CI_Controller {
         /* datos de la salida del excel */
         header("Content-type: application/vnd.ms-excel");
         header("Content-Disposition: attachment; filename=inventario_almacen.xls");
+        header("Cache-Control: max-age=0");
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter->save('php://output');
+        exit;
+    }
+
+    public function al_exportar_kardex_producto_excel_v2(){
+        $data = $this->security->xss_clean($this->uri->segment(3));
+        $data = json_decode($data, true);
+        $id_detalle_producto = $data[0];
+        $f_inicial = $data[1];
+        $f_final = $data[2];
+
+        (array)$arr = str_split($f_final, 4);
+        $anio = $arr[0];
+
+        /* Formato para la fecha inicial */
+        $elementos = explode("-", $f_inicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+        $array = array($dia, $mes, $anio);
+        $f_inicial = implode("-", $array);
+        /* Fin */
+
+        $this->load->library('pHPExcel');
+        /* variables de PHPExcel */
+        $objPHPExcel = new PHPExcel();
+        $nombre_archivo = "phpExcel";
+
+        /* propiedades de la celda */
+        $objPHPExcel->getDefaultStyle()->getFont()->setName('Arial Narrow');
+        $objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
+        $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(10);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
+
+        /* Here your first sheet */
+        $sheet = $objPHPExcel->getActiveSheet();
+
+        /* Traer informacion de la BD */
+        $nombre_productos_salidas = $this->model_comercial->traer_nombres_kardex_producto($id_detalle_producto);
+        /* Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex */
+        /*  */
+        $i = 0;
+        foreach ($nombre_productos_salidas as $reg) {
+            $nombre_producto = $reg->no_producto;
+            $id_unidad_medida = $reg->id_unidad_medida;
+            $id_detalle_producto = $reg->id_detalle_producto;
+            $id_pro = $reg->id_pro;
+
+            // Add new sheet
+            $objWorkSheet = $objPHPExcel->createSheet($i); //Setting index when creating
+            $objPHPExcel->setActiveSheetIndex($i)->mergeCells('A1:D1');
+            $objPHPExcel->setActiveSheetIndex($i)->mergeCells('A12:D12');
+            $objPHPExcel->setActiveSheetIndex($i)->mergeCells('E12:G12');
+            $objPHPExcel->setActiveSheetIndex($i)->mergeCells('H12:J12');
+            $objPHPExcel->setActiveSheetIndex($i)->mergeCells('K12:M12');
+
+            /* Style - Bordes */
+            $borders = array(
+                'borders' => array(
+                    'allborders' => array(
+                        'style' => PHPExcel_Style_Border::BORDER_THIN,
+                        'color' => array('argb' => 'FF000000'),
+                    )
+                ),
+            );
+
+            $style = array(
+                'alignment' => array(
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                )
+            );
+
+            $style_2 = array(
+                'alignment' => array(
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+                )
+            );
+
+            $styleArray = array(
+                'font' => array(
+                    'bold' => true
+                )
+            );
+
+            $objPHPExcel->getActiveSheet()->getStyle('A12:D12')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('E12:G12')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('H12:J12')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('K12:M12')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('A13:M13')->applyFromArray($borders);
+
+            $objPHPExcel->getActiveSheet()->getStyle('A12:D12')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('E12:G12')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('H12:J12')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('K12:M12')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('A13:M13')->applyFromArray($style);
+
+            $objPHPExcel->getActiveSheet()->getStyle('A12:D12')->applyFromArray($styleArray);
+            $objPHPExcel->getActiveSheet()->getStyle('E12:G12')->applyFromArray($styleArray);
+            $objPHPExcel->getActiveSheet()->getStyle('H12:J12')->applyFromArray($styleArray);
+            $objPHPExcel->getActiveSheet()->getStyle('K12:M12')->applyFromArray($styleArray);
+            $objPHPExcel->getActiveSheet()->getStyle('A13:M13')->applyFromArray($styleArray);
+
+            $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
+
+            $objPHPExcel->getActiveSheet()->getStyle('A1:D10')->applyFromArray($styleArray);
+            $objPHPExcel->getActiveSheet()->getStyle('F1:F10')->applyFromArray($styleArray);
+            //Write cells
+            $objWorkSheet->setCellValue('A1', 'INVENTARIO PERMANENTE VALORIZADO')
+                         ->setCellValue('A2', 'PERIODO: '.$anio)
+                         ->setCellValue('A3', 'RUC: 20101717098')
+                         ->setCellValue('A4', 'TEJIDOS JORGITO SRL')
+                         ->setCellValue('A5', 'CALLE LOS TELARES No 103-105 URB. VULCANO-ATE')
+                         ->setCellValue('A6', 'CÓDIGO: PRD'.$id_pro)
+                         ->setCellValue('A7', 'TIPO: 03')
+                         ->setCellValue('A8', 'DESCRIPCIÓN: '.$nombre_producto)
+                         ->setCellValue('A9', 'UNIDAD DE MEDIDA: '.$id_unidad_medida)
+                         ->setCellValue('A10', 'MÉTODO DE EVALUACIÓN: COSTO PROMEDIO');
+            $objWorkSheet->setCellValue('F1', 'FT: FACTURA')
+                         ->setCellValue('F2', 'GR: GUÍA DE REMISIÓN')
+                         ->setCellValue('F3', 'BV: BOLETA DE VENTA')
+                         ->setCellValue('F4', 'NC: NOTA DE CRÉDITO')
+                         ->setCellValue('F5', 'ND: NOTA DE DÉBITO')
+                         ->setCellValue('F6', 'OS: ORDEN DE SALIDA')
+                         ->setCellValue('F7', 'OI: ORDEN DE INGRESO')
+                         ->setCellValue('F8', 'CU: COSTO UNITARIO (NUEVOS SOLES)')
+                         ->setCellValue('F9', 'CT: COSTO TOTAL (NUEVOS SOLES)')
+                         ->setCellValue('F10', 'SI: SALDO INICIAL');
+            $objWorkSheet->setCellValue('A12', 'DOCUMENTO DE MOVIMIENTO')
+                         ->setCellValue('E12', 'ENTRADAS')
+                         ->setCellValue('H12', 'SALIDAS')
+                         ->setCellValue('K12', 'SALDO FINAL');
+            $objWorkSheet->setCellValue('A13', 'FECHA')
+                         ->setCellValue('B13', 'TIPO')
+                         ->setCellValue('C13', 'SERIE')
+                         ->setCellValue('D13', 'NÚMERO')
+                         ->setCellValue('E13', 'CANTIDAD')
+                         ->setCellValue('F13', 'CU')
+                         ->setCellValue('G13', 'CT')
+                         ->setCellValue('H13', 'CANTIDAD')
+                         ->setCellValue('I13', 'CU')
+                         ->setCellValue('J13', 'CT')
+                         ->setCellValue('K13', 'CANTIDAD')
+                         ->setCellValue('L13', 'CU')
+                         ->setCellValue('M13', 'CT');
+
+            /* Formato para la fila 14 */
+            $objPHPExcel->getActiveSheet()->getStyle('A14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('B14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('C14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('D14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('A14')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('B14')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('C14')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('D14')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('E14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('F14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('G14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('H14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('I14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('J14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('K14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('L14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('M14')->applyFromArray($borders);
+
+            /* Traer saldos iniciales de la BD */
+            $saldos_iniciales = $this->model_comercial->traer_saldos_iniciales($f_inicial,$id_pro);
+
+            /* varianles para las sumatorias */
+            $sumatoria_cantidad_entradas = 0;
+            $sumatoria_parciales_entradas = 0;
+
+            $sumatoria_cantidad_salidas = 0;
+            $sumatoria_parciales_salidas = 0;
+
+            $sumatoria_cantidad_saldos = 0;
+            $sumatoria_parciales_saldos = 0;
+
+            $objPHPExcel->getActiveSheet()->getStyle('E14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('F14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('G14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('H14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('I14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('J14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('K14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('L14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('M14')->applyFromArray($style_2);
+
+            $objPHPExcel->getActiveSheet()->getStyle('E14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('F14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('G14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('H14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('I14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('J14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('K14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('L14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('M14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+            if( count($saldos_iniciales) > 0 ){
+                foreach ($saldos_iniciales as $result) {
+                    $total_saldos_iniciales = $result->stock_inicial + $result->stock_inicial_sta_clara;
+                    /* Formato de Fecha */
+                    $elementos = explode("-", $result->fecha_cierre);
+                    $anio = $elementos[0];
+                    $mes = $elementos[1];
+                    $dia = $elementos[2];
+                    $array = array($dia, $mes, $anio);
+                    $fecha_formateada = implode("-", $array);
+                    /* Fin */
+                    $objWorkSheet->setCellValue('A14', $fecha_formateada)
+                                 ->setCellValue('B14', " ")
+                                 ->setCellValue('C14', "SI")
+                                 ->setCellValue('D14', " ")
+                                 ->setCellValue('E14', $total_saldos_iniciales)
+                                 ->setCellValue('F14', $result->precio_uni_inicial)
+                                 ->setCellValue('G14', $total_saldos_iniciales*$result->precio_uni_inicial)
+                                 ->setCellValueExplicit('H14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValue('I14', $result->precio_uni_inicial)
+                                 ->setCellValueExplicit('J14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValue('K14', $total_saldos_iniciales)
+                                 ->setCellValue('L14', $result->precio_uni_inicial)
+                                 ->setCellValue('M14', $total_saldos_iniciales*$result->precio_uni_inicial);
+                    /* ENTRADAS */
+                    $sumatoria_cantidad_entradas = $sumatoria_cantidad_entradas + $total_saldos_iniciales;
+                    $sumatoria_parciales_entradas = $sumatoria_parciales_entradas + ($total_saldos_iniciales * $result->precio_uni_inicial);
+                    /* SALDOS */
+                    $sumatoria_cantidad_saldos = $sumatoria_cantidad_saldos + $total_saldos_iniciales;
+                    $sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($total_saldos_iniciales * $result->precio_uni_inicial);
+                    // Nuevo - Dejar el saldo inicial para los registros posteriores
+                    $stock_inicial_kardex = $total_saldos_iniciales;
+                    $precio_unitario_inicial_kardex = $result->precio_uni_inicial;
+
+                }
+            }else{
+                $objWorkSheet->setCellValueExplicit('A14', $f_inicial)
+                             ->setCellValueExplicit('B14', " ")
+                             ->setCellValueExplicit('C14', "SI")
+                             ->setCellValueExplicit('D14', " ")
+                             ->setCellValueExplicit('E14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('F14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('G14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('H14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('I14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('J14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('K14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('L14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('M14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING);
+                // Nuevo - Dejar el saldo inicial para los registros posteriores
+                $stock_inicial_kardex = 0;
+                $precio_unitario_inicial_kardex = 0;
+            }
+
+            // Recorrido del detalle del kardex general por producto
+            $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex($id_detalle_producto,$f_inicial,$f_final);
+            $existe = count($detalle_movimientos_kardex);
+            $y = 0;
+            $contador_kardex = 0;
+            if($existe > 0){
+                foreach ($detalle_movimientos_kardex as $data) {
+                    $p = 15;
+                    $p = $p + $y;
+                    /* Centrar contenido */
+                    $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
+
+                    $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($style_2);
+
+                    $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($borders);
+                    /* formato de variables */
+                    $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+                    /* Traer ID de salida del producto */
+                    if($data->descripcion == "SALIDA"){
+                        $fecha_salida = $data->fecha_registro;
+                        $detalle_producto = $data->id_detalle_producto;
+                        $cantidad_salida = $data->cantidad_salida;
+                    }
+
+                    /* Formato de Fecha */
+                    $elementos = explode("-", $data->fecha_registro);
+                    $anio = $elementos[0];
+                    $mes = $elementos[1];
+                    $dia = $elementos[2];
+                    $array = array($dia, $mes, $anio);
+                    $fecha_formateada_2 = implode("-", $array);
+                    /* fin de formato */
+
+                    if($data->descripcion == "ENTRADA"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                            $contador_kardex++;
+                        }else{
+                            $stock_antes_actualizar = $stock_saldo_final;
+                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                        }
+                        $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
+                                     ->setCellValue('B'.$p, "FT")
+                                     ->setCellValueExplicit('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('D'.$p, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('E'.$p, $data->cantidad_ingreso)
+                                     ->setCellValue('F'.$p, $data->precio_unitario_actual)
+                                     ->setCellValue('G'.$p, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('H'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('I'.$p, $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('J'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
+                    }else if($data->descripcion == "SALIDA"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex - $data->cantidad_salida;
+                            $precio_unitario_saldo_final = $precio_unitario_inicial_kardex;
+                            $contador_kardex++;
+                        }else{
+                            $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                        }
+                        $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
+                                     ->setCellValue('B'.$p, "OS")
+                                     ->setCellValue('C'.$p, "NIG")
+                                     ->setCellValueExplicit('D'.$p, str_pad($data->id_kardex_producto, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('E'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('F'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('G'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('H'.$p, $data->cantidad_salida)
+                                     ->setCellValue('I'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('J'.$p, $data->cantidad_salida*$precio_unitario_saldo_final)
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
+                    }else if($data->descripcion == "IMPORTACION"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                            $contador_kardex++;
+                        }else{
+                            $stock_antes_actualizar = $stock_saldo_final;
+                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                        }
+                        $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
+                                     ->setCellValue('B'.$p, "IMPORTACION")
+                                     ->setCellValueExplicit('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('D'.$p, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('E'.$p, $data->cantidad_ingreso)
+                                     ->setCellValue('F'.$p, $data->precio_unitario_actual)
+                                     ->setCellValue('G'.$p, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('H'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('I'.$p, $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('J'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
+                    }else if($data->descripcion == "ORDEN INGRESO"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                            $contador_kardex++;
+                        }else{
+                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                        }
+                        $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
+                                     ->setCellValue('B'.$p, "OI")
+                                     ->setCellValueExplicit('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('D'.$p, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('E'.$p, $data->cantidad_ingreso)
+                                     ->setCellValue('F'.$p, $data->precio_unitario_actual)
+                                     ->setCellValue('G'.$p, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('H'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('I'.$p, $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('J'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
+                    }
+                    /* ENTRADAS Y ORDEN DE INGRESO*/
+                    $sumatoria_cantidad_entradas = $sumatoria_cantidad_entradas + $data->cantidad_ingreso;
+                    $sumatoria_parciales_entradas = $sumatoria_parciales_entradas + ($data->cantidad_ingreso * $data->precio_unitario_actual);
+                    /* SALIDAS */
+                    $sumatoria_cantidad_salidas = $sumatoria_cantidad_salidas + $data->cantidad_salida;
+                    $sumatoria_parciales_salidas = $sumatoria_parciales_salidas + ($data->cantidad_salida * $precio_unitario_saldo_final);
+                    /* SALDOS */
+                    $sumatoria_cantidad_saldos = $sumatoria_cantidad_saldos + $stock_saldo_final;
+                    // Sumatoria de saldos parciales caso general
+                    $sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($stock_saldo_final * $precio_unitario_saldo_final);
+                    /*
+                    if($data->descripcion == "SALIDA"){
+                        $sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($stock_saldo_final * $precio_unitario_saldo_final);
+                    }else if($data->descripcion == "ENTRADA"){
+                        $sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($stock_saldo_final * $precio_unitario_saldo_final);
+                    }else if($data->descripcion == "ORDEN INGRESO"){
+                        $sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($stock_saldo_final * $precio_unitario_saldo_final);
+                    }
+                    */
+                    $y = $y + 1;
+                }
+            }
+
+            $p = 15 + $y;
+            $objWorkSheet->setCellValue('A'.$p, "")
+                         ->setCellValue('B'.$p, "")
+                         ->setCellValue('C'.$p, "")
+                         ->setCellValue('D'.$p, "TOTALES")
+                         ->setCellValue('E'.$p, $sumatoria_cantidad_entradas)
+                         ->setCellValue('F'.$p, "")
+                         ->setCellValue('G'.$p, $sumatoria_parciales_entradas)
+                         ->setCellValue('H'.$p, $sumatoria_cantidad_salidas)
+                         ->setCellValue('I'.$p, "")
+                         ->setCellValue('J'.$p, $sumatoria_parciales_salidas)
+                         ->setCellValue('K'.$p, $sumatoria_cantidad_saldos)
+                         ->setCellValue('L'.$p, "")
+                         ->setCellValue('M'.$p, $sumatoria_parciales_saldos);
+
+            /* Centrar contenido */
+            $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($borders);
+
+            /* Dar formato numericos a las celdas */
+            $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+            /* Alinear el valor de la celda a la derecha */
+            $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($style_2);
+
+            /* Rename sheet */
+            $objWorkSheet->setTitle("$nombre_producto");
+            $i++;
+        }
+
+        $objPHPExcel->setActiveSheetIndex(0);
+
+        /* datos de la salida del excel */
+        header("Content-type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=$nombre_producto.xls");
         header("Cache-Control: max-age=0");
         $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
         $objWriter->save('php://output');
@@ -8745,6 +9853,38 @@ class Comercial extends CI_Controller {
         $data = json_decode($data, true);
         $f_inicial = $data[0];
         $f_final = $data[1];
+        $id_maquina = $data[2];
+
+        $elementos = explode("-", $f_final);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+
+        if($mes == 1){
+            $nombre_mes = "ENERO";
+        }else if($mes == 2){
+            $nombre_mes = "FEBRERO";
+        }else if($mes == 3){
+            $nombre_mes = "MARZO";
+        }else if($mes == 4){
+            $nombre_mes = "ABRIL";
+        }else if($mes == 5){
+            $nombre_mes = "MAYO";
+        }else if($mes == 6){
+            $nombre_mes = "JUNIO";
+        }else if($mes == 7){
+            $nombre_mes = "JULIO";
+        }else if($mes == 8){
+            $nombre_mes = "AGOSTO";
+        }else if($mes == 9){
+            $nombre_mes = "SETIEMBRE";
+        }else if($mes == 10){
+            $nombre_mes = "OCTUBRE";
+        }else if($mes == 11){
+            $nombre_mes = "NOVIEMBRE";
+        }else if($mes == 12){
+            $nombre_mes = "DICIEMBRE";
+        }
 
         $this->load->library('pHPExcel');
         /* variables de PHPExcel */
@@ -8782,11 +9922,11 @@ class Comercial extends CI_Controller {
 
         /* propiedades de la celda */
         $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(15);
-        $objPHPExcel->getActiveSheet()->getStyle('A1:K1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:L1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
-        $objPHPExcel->getActiveSheet()->getStyle('A1:K1')->applyFromArray($style);
-        $objPHPExcel->getActiveSheet()->getStyle('A1:K1')->applyFromArray($borders);
-        $objPHPExcel->getActiveSheet()->getStyle('A1:K1')->applyFromArray($styleArray);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:L1')->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:L1')->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:L1')->applyFromArray($styleArray);
         
 
         $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
@@ -8794,12 +9934,15 @@ class Comercial extends CI_Controller {
         $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
         $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
         $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(40);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(65);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(35);
+        
+        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(35);
+
+        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(65);
         $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(25);
         $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(25);
 
         //Write cells
         $objWorkSheet->setCellValue('A1', 'ITEM')
@@ -8808,14 +9951,15 @@ class Comercial extends CI_Controller {
                      ->setCellValue('D1', 'NÚMERO')
                      ->setCellValue('E1', 'CATEGORÍA')
                      ->setCellValue('F1', 'ÁREA')
-                     ->setCellValue('G1', 'CÓDIGO PRODUCTO')
-                     ->setCellValue('H1', 'PRODUCTO')
-                     ->setCellValue('I1', 'UNID. MEDIDA')
-                     ->setCellValue('J1', 'CANTIDAD SALIDA')
-                     ->setCellValue('K1', 'VALORIZADO S/.');
+                     ->setCellValue('G1', 'MÁQUINA')
+                     ->setCellValue('H1', 'CÓDIGO PRODUCTO')
+                     ->setCellValue('I1', 'PRODUCTO')
+                     ->setCellValue('J1', 'UNID. MEDIDA')
+                     ->setCellValue('K1', 'CANTIDAD SALIDA')
+                     ->setCellValue('L1', 'VALORIZADO S/.');
 
         /* Traer informacion de la BD */
-        $movimientos_salida = $this->model_comercial->traer_movimientos_salidas_facturas($f_inicial,$f_final);
+        $movimientos_salida = $this->model_comercial->traer_movimientos_salidas_facturas($f_inicial,$f_final,$id_maquina);
         $existe = count($movimientos_salida);
         $sumatoria_totales = 0;
         $p = 2; // contador de filas del excel
@@ -8824,8 +9968,8 @@ class Comercial extends CI_Controller {
             foreach ($movimientos_salida as $data) {
                 /* $no_producto = htmlentities($data->no_producto, ENT_QUOTES,'UTF-8'); */
                 /* Formatos */
-                $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                 $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                 /* Centrar contenido */
                 $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
                 $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
@@ -8838,6 +9982,7 @@ class Comercial extends CI_Controller {
                 $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style);
                 $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style);
                 $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style);
 
                 /* border */
                 $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
@@ -8851,6 +9996,7 @@ class Comercial extends CI_Controller {
                 $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
                 $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
                 $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
 
                 $objWorkSheet->setCellValue('A'.$p, $i)
                              ->setCellValue('B'.$p, $data->fecha)
@@ -8858,11 +10004,12 @@ class Comercial extends CI_Controller {
                              ->setCellValue('D'.$p, str_pad($data->id_salida_producto, 8, 0, STR_PAD_LEFT))
                              ->setCellValue('E'.$p, $data->no_categoria)
                              ->setCellValue('F'.$p, $data->no_area)
-                             ->setCellValue('G'.$p, "PRD".$data->id_pro)
-                             ->setCellValue('H'.$p, $data->no_producto)
-                             ->setCellValue('I'.$p, $data->nom_uni_med)
-                             ->setCellValue('J'.$p, $data->cantidad_salida)
-                             ->setCellValue('K'.$p, $data->cantidad_salida*$data->p_u_salida);
+                             ->setCellValue('G'.$p, $data->nombre_maquina)
+                             ->setCellValue('H'.$p, "PRD".$data->id_pro)
+                             ->setCellValue('I'.$p, $data->no_producto)
+                             ->setCellValue('J'.$p, $data->nom_uni_med)
+                             ->setCellValue('K'.$p, $data->cantidad_salida)
+                             ->setCellValue('L'.$p, $data->cantidad_salida*$data->p_u_salida);
                 $p = $p + 1;
                 $i = $i + 1;
                 $sumatoria_totales = $sumatoria_totales + ($data->cantidad_salida*$data->p_u_salida);
@@ -8870,15 +10017,15 @@ class Comercial extends CI_Controller {
         }
         /* ---------------------------------------------------------------------- */
         /* Formatos */
-        $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
         /* Centrar contenido */
-        $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style);
         $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style);
-        $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($styleArray);
+        $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($styleArray);
         $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($styleArray);
         /* border */
-        $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
         $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
 
         $objWorkSheet->setCellValue('A'.$p, "")
                      ->setCellValue('B'.$p, "")
@@ -8889,17 +10036,18 @@ class Comercial extends CI_Controller {
                      ->setCellValue('G'.$p, "")
                      ->setCellValue('H'.$p, "")
                      ->setCellValue('I'.$p, "")
-                     ->setCellValue('J'.$p, "TOTALES S/.")
-                     ->setCellValue('K'.$p, $sumatoria_totales); // colocar lo siguiente me da un error: ->setCellValue('G'.$p, "S/. ".$suma_soles); al insertar el icono de soles, convierte todo los valores en texto y no lo puedo pasar a numerico
+                     ->setCellValue('J'.$p, "")
+                     ->setCellValue('K'.$p, "TOTALES S/.")
+                     ->setCellValue('L'.$p, $sumatoria_totales); // colocar lo siguiente me da un error: ->setCellValue('G'.$p, "S/. ".$suma_soles); al insertar el icono de soles, convierte todo los valores en texto y no lo puedo pasar a numerico
         /* ---------------------------------------------------------------------- */
         /* Rename sheet */
-        $objWorkSheet->setTitle("Reporte de Salidas");
+        $objWorkSheet->setTitle("Reporte de Salidas_$nombre_mes");
         //->setCellValueExplicit('G'.$p, $data->total,PHPExcel_Cell_DataType::TYPE_STRING);
         $objPHPExcel->setActiveSheetIndex(0);
 
         /* datos de la salida del excel */
         header("Content-type: application/vnd.ms-excel");
-        header("Content-Disposition: attachment; filename=Reporte_De_Salidas.xls");
+        header("Content-Disposition: attachment; filename=Reporte_De_Salidas_$nombre_mes.xls");
         header("Cache-Control: max-age=0");
         $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
         $objWriter->save('php://output');
@@ -9348,16 +10496,18 @@ class Comercial extends CI_Controller {
         $f_inicial = $data[0];
         $f_final = $data[1];
 
-        (array)$arr = str_split($f_final, 4);
-        $anio = $arr[0];
+        //(array)$arr = str_split($f_final, 4);
+        //$anio = $arr[0];
 
         /* Formato para la fecha inicial */
+        /*
         $elementos = explode("-", $f_inicial);
         $anio = $elementos[0];
         $mes = $elementos[1];
         $dia = $elementos[2];
         $array = array($dia, $mes, $anio);
         $f_inicial = implode("-", $array);
+        */
         /* Fin */
 
         $this->load->library('pHPExcel');
@@ -9397,6 +10547,12 @@ class Comercial extends CI_Controller {
             )
         );
 
+        $style_3 = array(
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+            )
+        );
+
         $styleArray = array(
             'font' => array(
                 'bold' => true
@@ -9414,19 +10570,19 @@ class Comercial extends CI_Controller {
         $objPHPExcel->getActiveSheet()->getStyle('E1:G1')->applyFromArray($borders);
         $objPHPExcel->getActiveSheet()->getStyle('H1:J1')->applyFromArray($borders);
         $objPHPExcel->getActiveSheet()->getStyle('K1:M1')->applyFromArray($borders);
-        $objPHPExcel->getActiveSheet()->getStyle('A2:Q2')->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('A2:AN2')->applyFromArray($borders);
 
         $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($style);
         $objPHPExcel->getActiveSheet()->getStyle('E1:G1')->applyFromArray($style);
         $objPHPExcel->getActiveSheet()->getStyle('H1:J1')->applyFromArray($style);
         $objPHPExcel->getActiveSheet()->getStyle('K1:M1')->applyFromArray($style);
-        $objPHPExcel->getActiveSheet()->getStyle('A2:Q2')->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('A2:AN2')->applyFromArray($style);
 
         $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($styleArray);
         $objPHPExcel->getActiveSheet()->getStyle('E1:G1')->applyFromArray($styleArray);
         $objPHPExcel->getActiveSheet()->getStyle('H1:J1')->applyFromArray($styleArray);
         $objPHPExcel->getActiveSheet()->getStyle('K1:M1')->applyFromArray($styleArray);
-        $objPHPExcel->getActiveSheet()->getStyle('A2:Q2')->applyFromArray($styleArray);
+        $objPHPExcel->getActiveSheet()->getStyle('A2:AN2')->applyFromArray($styleArray);
 
         $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
         $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
@@ -9443,8 +10599,32 @@ class Comercial extends CI_Controller {
         $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
 
         $objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(30);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(15);
         $objPHPExcel->getActiveSheet()->getColumnDimension('Q')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('R')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('S')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('T')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('U')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('V')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('W')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('X')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('Y')->setWidth(60);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('Z')->setWidth(15);
+
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AA')->setWidth(15);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AB')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AC')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AD')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AE')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AF')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AG')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AH')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AI')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AJ')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AK')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AL')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AM')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('AN')->setWidth(20);
 
         /* Cabecera SUNAT */
         $objWorkSheet->setCellValue('A1', 'DOCUMENTO DE MOVIMIENTO')
@@ -9464,9 +10644,33 @@ class Comercial extends CI_Controller {
                      ->setCellValue('K2', 'CANTIDAD')
                      ->setCellValue('L2', 'CU')
                      ->setCellValue('M2', 'CT')
-                     ->setCellValue('O2', 'CODGIO')
-                     ->setCellValue('P2', 'DESCRIPCION')
-                     ->setCellValue('Q2', 'UNID DE MEDIDA');
+                     ->setCellValue('O2', 'KPERIODO')
+                     ->setCellValue('P2', 'KANEXO')
+                     ->setCellValue('Q2', 'KCATALOGO')
+                     ->setCellValue('R2', 'KTIPEXIST')
+                     ->setCellValue('S2', 'KCODEXIST')
+                     ->setCellValue('T2', 'KFECDOC')
+                     ->setCellValue('U2', 'KTIPODOC')
+                     ->setCellValue('V2', 'KSERDOC')
+                     ->setCellValue('W2', 'KNUMDOC')
+                     ->setCellValue('X2', 'KTIPOPE')
+                     ->setCellValue('Y2', 'KDESEXIST')
+                     ->setCellValue('Z2', 'KUNIMED')
+                     ->setCellValue('AA2', 'KMETVAL')
+                     ->setCellValue('AB2', 'KUNIING')
+                     ->setCellValue('AC2', 'KCOSING')
+                     ->setCellValue('AD2', 'KTOTING')
+                     ->setCellValue('AE2', 'KUNIRET')
+                     ->setCellValue('AF2', 'KCOSRET')
+                     ->setCellValue('AG2', 'KTOTRET')
+                     ->setCellValue('AH2', 'KSALFIN')
+                     ->setCellValue('AI2', 'KCOSFIN')
+                     ->setCellValue('AJ2', 'KTOTFIN')
+
+                     ->setCellValue('AK2', 'KESTOPE')
+                     ->setCellValue('AL2', 'KINTDIAMAY')
+                     ->setCellValue('AM2', 'KINTVTACOM')
+                     ->setCellValue('AN2', 'KINTREG');
         /* Traer informacion de la BD */
         $nombre_productos_salidas = $this->model_comercial->traer_nombres_kardex_sunat();
         /* Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex */
@@ -9475,10 +10679,39 @@ class Comercial extends CI_Controller {
         foreach ($nombre_productos_salidas as $reg) {
 
             $nombre_producto = $reg->no_producto;
-            $id_producto = $reg->id_producto;
+            $id_producto = $reg->id_pro;
             $id_unidad_medida = $reg->id_unidad_medida;
             $id_detalle_producto = $reg->id_detalle_producto;
             $id_pro = $reg->id_pro;
+            $id_categoria = $reg->id_categoria;
+
+            // Asignar codigo de existencia
+            if($id_categoria == 1){
+                $ktipexist = '07';
+            }else if($id_categoria == 2){
+                $ktipexist = '06';
+            }else{
+                $ktipexist = '99';
+            }
+
+            // Asignar codigo de unidad de medida
+            if($id_unidad_medida == 1){
+                $kunimed = 'KGM';
+            }else if($id_unidad_medida == 7){
+                $kunimed = 'C62';
+            }else if($id_unidad_medida == 8){
+                $kunimed = 'LTR';
+            }else if($id_unidad_medida == 9){
+                $kunimed = 'GLL';
+            }else if($id_unidad_medida == 12){
+                $kunimed = 'BX';
+            }else if($id_unidad_medida == 13){
+                $kunimed = 'MIL';
+            }else if($id_unidad_medida == 15){
+                $kunimed = 'MTR';
+            }else if($id_unidad_medida == 99){
+                $kunimed = 'D44';
+            }
 
             /* Traer sólo productos que tengan registros en el periodo seleccionado */
             $produtos_con_kardex = $this->model_comercial->traer_producto_con_kardex($id_detalle_producto,$f_inicial,$f_final);
@@ -9504,9 +10737,40 @@ class Comercial extends CI_Controller {
                 $objPHPExcel->getActiveSheet()->getStyle('O'.$i)->applyFromArray($borders);
                 $objPHPExcel->getActiveSheet()->getStyle('P'.$i)->applyFromArray($borders);
                 $objPHPExcel->getActiveSheet()->getStyle('Q'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('R'.$i)->applyFromArray($borders);
+
+                $objPHPExcel->getActiveSheet()->getStyle('S'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('T'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('U'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('V'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('W'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('X'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('Z'.$i)->applyFromArray($borders);
+
+                $objPHPExcel->getActiveSheet()->getStyle('AA'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->applyFromArray($borders);
 
                 /* Traer saldos iniciales de la BD */
                 $saldos_iniciales = $this->model_comercial->traer_saldos_iniciales($f_inicial,$id_pro);
+
+                $elementos = explode("-", $f_inicial);
+                $anio = $elementos[0];
+                $mes = $elementos[1];
+                $dia = $elementos[2];
+                $kperiodo_si = $dia.$mes.'00';
 
                 $objPHPExcel->getActiveSheet()->getStyle('E'.$i)->applyFromArray($style_2);
                 $objPHPExcel->getActiveSheet()->getStyle('F'.$i)->applyFromArray($style_2);
@@ -9520,7 +10784,33 @@ class Comercial extends CI_Controller {
                 $objPHPExcel->getActiveSheet()->getStyle('O'.$i)->applyFromArray($style_2);
                 $objPHPExcel->getActiveSheet()->getStyle('P'.$i)->applyFromArray($style_2);
                 $objPHPExcel->getActiveSheet()->getStyle('Q'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('R'.$i)->applyFromArray($style_2);
 
+                $objPHPExcel->getActiveSheet()->getStyle('S'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('T'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('U'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('V'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('W'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('X'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('Z'.$i)->applyFromArray($style_2);
+
+                $objPHPExcel->getActiveSheet()->getStyle('AA'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->applyFromArray($style_2);
+                $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->applyFromArray($style_2);
+
+                $objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($style_3);
 
                 $objPHPExcel->getActiveSheet()->getStyle('E'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                 $objPHPExcel->getActiveSheet()->getStyle('F'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
@@ -9531,6 +10821,22 @@ class Comercial extends CI_Controller {
                 $objPHPExcel->getActiveSheet()->getStyle('K'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                 $objPHPExcel->getActiveSheet()->getStyle('L'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                 $objPHPExcel->getActiveSheet()->getStyle('M'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+                $objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                /*
+                $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                */
 
                 if( count($saldos_iniciales) > 0 ){
                     foreach ($saldos_iniciales as $result) {
@@ -9556,9 +10862,32 @@ class Comercial extends CI_Controller {
                                      ->setCellValue('K'.$i, $stock_cierre_total)
                                      ->setCellValue('L'.$i, $result->precio_uni_inicial)
                                      ->setCellValue('M'.$i, $stock_cierre_total*$result->precio_uni_inicial)
-                                     ->setCellValue('O'.$i, $id_producto)
-                                     ->setCellValue('P'.$i, $nombre_producto)
-                                     ->setCellValue('Q'.$i, $id_unidad_medida);
+                                     ->setCellValue('O'.$i, $kperiodo_si)
+                                     ->setCellValue('P'.$i, "2")
+                                     ->setCellValue('Q'.$i, "9")
+                                     ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('S'.$i, $id_producto)
+                                     ->setCellValue('T'.$i, $fecha_formateada)
+                                     ->setCellValue('U'.$i, "")
+                                     ->setCellValue('V'.$i, "SI")
+                                     ->setCellValue('W'.$i, "")
+                                     ->setCellValue('X'.$i, "16")
+                                     ->setCellValue('Y'.$i, $nombre_producto)
+                                     ->setCellValue('Z'.$i, $kunimed)
+                                     ->setCellValue('AA'.$i, "1")
+                                     ->setCellValue('AB'.$i, $stock_cierre_total)
+                                     ->setCellValue('AC'.$i, $result->precio_uni_inicial)
+                                     ->setCellValue('AD'.$i, $stock_cierre_total*$result->precio_uni_inicial)
+                                     ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('AF'.$i, $result->precio_uni_inicial)
+                                     ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('AH'.$i, $stock_cierre_total)
+                                     ->setCellValue('AI'.$i, $result->precio_uni_inicial)
+                                     ->setCellValue('AJ'.$i, $stock_cierre_total*$result->precio_uni_inicial)
+                                     ->setCellValue('AK'.$i, "1")
+                                     ->setCellValue('AL'.$i, "0")
+                                     ->setCellValue('AM'.$i, "0")
+                                     ->setCellValue('AN'.$i, "0");
                         $i++;
                     }
                 }else{
@@ -9575,9 +10904,32 @@ class Comercial extends CI_Controller {
                                  ->setCellValueExplicit('K'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
                                  ->setCellValueExplicit('L'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
                                  ->setCellValueExplicit('M'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                 ->setCellValueExplicit('O'.$i, $id_producto)
-                                 ->setCellValueExplicit('P'.$i, $nombre_producto)
-                                 ->setCellValueExplicit('Q'.$i, $id_unidad_medida);
+                                 ->setCellValueExplicit('O'.$i, $kperiodo_si,PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('P'.$i, "2",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('Q'.$i, "9",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValue('T'.$i, $f_inicial)
+                                 ->setCellValue('U'.$i, "")
+                                 ->setCellValue('V'.$i, "SI")
+                                 ->setCellValue('W'.$i, "")
+                                 ->setCellValue('X'.$i, "16")
+                                 ->setCellValue('Y'.$i, $nombre_producto)
+                                 ->setCellValue('Z'.$i, $kunimed)
+                                 ->setCellValueExplicit('AA'.$i, "1")
+                                 ->setCellValueExplicit('AB'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('AC'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('AD'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('AF'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('AH'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('AI'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValueExplicit('AJ'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValue('AK'.$i, "1")
+                                 ->setCellValue('AL'.$i, "0")
+                                 ->setCellValue('AM'.$i, "0")
+                                 ->setCellValue('AN'.$i, "0");
                     $i++;
                 }
 
@@ -9610,6 +10962,33 @@ class Comercial extends CI_Controller {
                         $objPHPExcel->getActiveSheet()->getStyle('O'.$i)->applyFromArray($style_2);
                         $objPHPExcel->getActiveSheet()->getStyle('P'.$i)->applyFromArray($style_2);
                         $objPHPExcel->getActiveSheet()->getStyle('Q'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('R'.$i)->applyFromArray($style_2);
+
+                        $objPHPExcel->getActiveSheet()->getStyle('S'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('T'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('U'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('V'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('W'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('X'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('Z'.$i)->applyFromArray($style_2);
+
+                        $objPHPExcel->getActiveSheet()->getStyle('AA'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->applyFromArray($style_2);
+                        $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->applyFromArray($style_2);
+
+                        $objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($style_3);
 
                         $objPHPExcel->getActiveSheet()->getStyle('H'.$i)->applyFromArray($borders);
                         $objPHPExcel->getActiveSheet()->getStyle('I'.$i)->applyFromArray($borders);
@@ -9620,7 +10999,33 @@ class Comercial extends CI_Controller {
                         $objPHPExcel->getActiveSheet()->getStyle('O'.$i)->applyFromArray($borders);
                         $objPHPExcel->getActiveSheet()->getStyle('P'.$i)->applyFromArray($borders);
                         $objPHPExcel->getActiveSheet()->getStyle('Q'.$i)->applyFromArray($borders);
-                        /* formato de variables */
+                        $objPHPExcel->getActiveSheet()->getStyle('R'.$i)->applyFromArray($borders);
+
+                        $objPHPExcel->getActiveSheet()->getStyle('S'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('T'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('U'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('V'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('W'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('X'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('Z'.$i)->applyFromArray($borders);
+
+                        $objPHPExcel->getActiveSheet()->getStyle('AA'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->applyFromArray($borders);
+                        $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->applyFromArray($borders);
+
+                        // formato de variables
                         $objPHPExcel->getActiveSheet()->getStyle('E'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                         $objPHPExcel->getActiveSheet()->getStyle('F'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                         $objPHPExcel->getActiveSheet()->getStyle('G'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
@@ -9631,6 +11036,22 @@ class Comercial extends CI_Controller {
                         $objPHPExcel->getActiveSheet()->getStyle('L'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                         $objPHPExcel->getActiveSheet()->getStyle('M'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
+                        $objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        /*
+                        $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                        */
+
                         /* Formato de Fecha */
                         $elementos = explode("-", $data->fecha_registro);
                         $anio = $elementos[0];
@@ -9639,26 +11060,102 @@ class Comercial extends CI_Controller {
                         $array = array($dia, $mes, $anio);
                         $fecha_formateada_2 = implode("-", $array);
                         /* fin de formato */
-                        
+                        $kperiodo_movimiento = $anio.$mes.'00';
                         /* fin de formato */
                         if($data->descripcion == "ENTRADA"){
-                            $objWorkSheet->setCellValue('A'.$i, $fecha_formateada_2)
-                                         ->setCellValue('B'.$i, "FT")
-                                         ->setCellValueExplicit('C'.$i, $data->serie_comprobante,PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValueExplicit('D'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValue('E'.$i, $data->cantidad_ingreso)
-                                         ->setCellValue('F'.$i, $data->precio_unitario_actual)
-                                         ->setCellValue('G'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
-                                         ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValue('I'.$i, $data->precio_unitario_actual_promedio)
-                                         ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValue('K'.$i, $data->stock_actual)
-                                         ->setCellValue('L'.$i, $data->precio_unitario_actual_promedio)
-                                         ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
-                                         ->setCellValue('O'.$i, $data->id_producto)
-                                         ->setCellValue('P'.$i, $data->no_producto)
-                                         ->setCellValue('Q'.$i, $data->id_unidad_medida);
-                            $i++;
+                            // verificar si la entrada es una factura importada
+                            $this->db->select('id_agente');
+                            $this->db->where('serie_comprobante',$data->serie_comprobante);
+                            $this->db->where('nro_comprobante',$data->num_comprobante);
+                            $this->db->where('fecha',$data->fecha_registro);
+                            $query = $this->db->get('ingreso_producto');
+                            foreach($query->result() as $row){
+                                $id_agente = $row->id_agente;
+                            }
+
+                            if($id_agente == 2){
+                                $objWorkSheet->setCellValue('A'.$i, $fecha_formateada_2)
+                                             ->setCellValue('B'.$i, "FT")
+                                             ->setCellValueExplicit('C'.$i, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValueExplicit('D'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('E'.$i, $data->cantidad_ingreso)
+                                             ->setCellValue('F'.$i, $data->precio_unitario_actual)
+                                             ->setCellValue('G'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                             ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('I'.$i, $data->precio_unitario_actual_promedio)
+                                             ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('K'.$i, $data->stock_actual)
+                                             ->setCellValue('L'.$i, $data->precio_unitario_actual_promedio)
+                                             ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                             ->setCellValue('O'.$i, $kperiodo_movimiento)
+                                             ->setCellValue('P'.$i, "2")
+                                             ->setCellValue('Q'.$i, "9")
+                                             ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('T'.$i, $fecha_formateada_2)
+                                             ->setCellValueExplicit('U'.$i, "01",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValueExplicit('V'.$i, $data->serie_comprobante,PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValueExplicit('W'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValueExplicit('X'.$i, "02",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('Y'.$i, $nombre_producto)
+                                             ->setCellValue('Z'.$i, $kunimed)
+                                             ->setCellValue('AA'.$i, "1")
+                                             ->setCellValue('AB'.$i, $data->cantidad_ingreso)
+                                             ->setCellValue('AC'.$i, $data->precio_unitario_actual)
+                                             ->setCellValue('AD'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                             ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('AF'.$i, $data->precio_unitario_actual_promedio)
+                                             ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('AH'.$i, $data->stock_actual)
+                                             ->setCellValue('AI'.$i, $data->precio_unitario_actual_promedio)
+                                             ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                             ->setCellValue('AK'.$i, "1")
+                                             ->setCellValue('AL'.$i, "0")
+                                             ->setCellValue('AM'.$i, "0")
+                                             ->setCellValue('AN'.$i, "0");
+                                $i++;
+                            }else{
+                                $objWorkSheet->setCellValue('A'.$i, $fecha_formateada_2)
+                                             ->setCellValue('B'.$i, "FT")
+                                             ->setCellValueExplicit('C'.$i, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValueExplicit('D'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('E'.$i, $data->cantidad_ingreso)
+                                             ->setCellValue('F'.$i, $data->precio_unitario_actual)
+                                             ->setCellValue('G'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                             ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('I'.$i, $data->precio_unitario_actual_promedio)
+                                             ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('K'.$i, $data->stock_actual)
+                                             ->setCellValue('L'.$i, $data->precio_unitario_actual_promedio)
+                                             ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                             ->setCellValue('O'.$i, $kperiodo_movimiento)
+                                             ->setCellValue('P'.$i, "2")
+                                             ->setCellValue('Q'.$i, "9")
+                                             ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('T'.$i, $fecha_formateada_2)
+                                             ->setCellValueExplicit('U'.$i, "01",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValueExplicit('V'.$i, $data->serie_comprobante,PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValueExplicit('W'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValueExplicit('X'.$i, "18",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('Y'.$i, $nombre_producto)
+                                             ->setCellValue('Z'.$i, $kunimed)
+                                             ->setCellValue('AA'.$i, "1")
+                                             ->setCellValue('AB'.$i, $data->cantidad_ingreso)
+                                             ->setCellValue('AC'.$i, $data->precio_unitario_actual)
+                                             ->setCellValue('AD'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                             ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('AF'.$i, $data->precio_unitario_actual_promedio)
+                                             ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                             ->setCellValue('AH'.$i, $data->stock_actual)
+                                             ->setCellValue('AI'.$i, $data->precio_unitario_actual_promedio)
+                                             ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                             ->setCellValue('AK'.$i, "1")
+                                             ->setCellValue('AL'.$i, "0")
+                                             ->setCellValue('AM'.$i, "0")
+                                             ->setCellValue('AN'.$i, "0");
+                                $i++;
+                            }
                         }else if($data->descripcion == "SALIDA"){
                             $objWorkSheet->setCellValue('A'.$i, $fecha_formateada_2)
                                          ->setCellValue('B'.$i, "OS")
@@ -9673,9 +11170,73 @@ class Comercial extends CI_Controller {
                                          ->setCellValue('K'.$i, $data->stock_actual)
                                          ->setCellValue('L'.$i, $data->precio_unitario_actual)
                                          ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual)
-                                         ->setCellValue('O'.$i, $data->id_producto)
-                                         ->setCellValue('P'.$i, $data->no_producto)
-                                         ->setCellValue('Q'.$i, $data->id_unidad_medida);
+                                         ->setCellValue('O'.$i, $kperiodo_movimiento)
+                                         ->setCellValue('P'.$i, "2")
+                                         ->setCellValue('Q'.$i, "9")
+                                         ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValue('T'.$i, $fecha_formateada_2)
+                                         ->setCellValueExplicit('U'.$i, "00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValue('V'.$i, "NIG")
+                                         ->setCellValueExplicit('W'.$i, str_pad($data->id_kardex_producto, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('X'.$i, "10",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValue('Y'.$i, $nombre_producto)
+                                         ->setCellValue('Z'.$i, $kunimed)
+                                         ->setCellValue('AA'.$i, "1")
+                                         ->setCellValueExplicit('AB'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('AC'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('AD'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValue('AE'.$i, $data->cantidad_salida)
+                                         ->setCellValue('AF'.$i, $data->precio_unitario_anterior)
+                                         ->setCellValue('AG'.$i, $data->cantidad_salida*$data->precio_unitario_anterior)
+                                         ->setCellValue('AH'.$i, $data->stock_actual)
+                                         ->setCellValue('AI'.$i, $data->precio_unitario_actual)
+                                         ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual)
+                                         ->setCellValue('AK'.$i, "1")
+                                         ->setCellValue('AL'.$i, "0")
+                                         ->setCellValue('AM'.$i, "0")
+                                         ->setCellValue('AN'.$i, "0");
+                            $i++;
+                        }else if($data->descripcion == "ORDEN INGRESO"){
+                            $objWorkSheet->setCellValue('A'.$i, $fecha_formateada_2)
+                                         ->setCellValue('B'.$i, "OI")
+                                         ->setCellValueExplicit('C'.$i, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('D'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValue('E'.$i, $data->cantidad_ingreso)
+                                         ->setCellValue('F'.$i, $data->precio_unitario_actual)
+                                         ->setCellValue('G'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                         ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValue('I'.$i, $data->precio_unitario_actual)
+                                         ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValue('K'.$i, $data->stock_actual)
+                                         ->setCellValue('L'.$i, $data->precio_unitario_actual_promedio)
+                                         ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                         ->setCellValue('O'.$i, $kperiodo_movimiento)
+                                         ->setCellValue('P'.$i, "2")
+                                         ->setCellValue('Q'.$i, "9")
+                                         ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValue('T'.$i, $fecha_formateada_2)
+                                         ->setCellValueExplicit('U'.$i, "00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('V'.$i, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('W'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('X'.$i, "21",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValue('Y'.$i, $nombre_producto)
+                                         ->setCellValue('Z'.$i, $kunimed)
+                                         ->setCellValue('AA'.$i, "1")
+                                         ->setCellValue('AB'.$i, $data->cantidad_ingreso)
+                                         ->setCellValue('AC'.$i, $data->precio_unitario_actual)
+                                         ->setCellValue('AD'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                         ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValue('AF'.$i, $data->precio_unitario_actual)
+                                         ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValue('AH'.$i, $data->stock_actual)
+                                         ->setCellValue('AI'.$i, $data->precio_unitario_actual_promedio)
+                                         ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                         ->setCellValue('AK'.$i, "1")
+                                         ->setCellValue('AL'.$i, "0")
+                                         ->setCellValue('AM'.$i, "0")
+                                         ->setCellValue('AN'.$i, "0");
                             $i++;
                         }
                     }

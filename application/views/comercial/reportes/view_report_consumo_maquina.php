@@ -27,7 +27,6 @@
 			//$("#div-loader").show().dialog({modal: true,position: 'center',width: 300, height: 195,resizable: false,hide: 'blind',show: 'blind',});
     		var fechainicial = $("#fechainicial").val();
     		var fechafinal = $("#fechafinal").val();
-    		var id_maquina = $("#maquina").val();
     		if( fechainicial == '' || fechafinal == ''){
     			//$("#div-loader").hide().dialog("destroy");
 				$("#modalerror").html('<strong>!Todos los Campos del Formulario son Obligatorios. Verificar!</strong>').dialog({
@@ -38,7 +37,6 @@
 	    		var array_json = Array();
 	    		array_json[0] = fechainicial;
 	    		array_json[1] = fechafinal;
-	    		array_json[2] = id_maquina;
 			    var jObject = {};
 			    for(i in array_json){ 
 			    	jObject[i] = array_json[i]; 
@@ -120,7 +118,7 @@
 </head>
 <body>
     <div id="contenedor">
-    	<div id="tituloCont" style="margin-bottom:0px;width: 1380px;">Reporte de Salida de Productos</div>
+    	<div id="tituloCont" style="margin-bottom:0px;width: 1380px;">Reporte de Consumos por Máquina</div>
     	<div id="formFiltro" style="background: whitesmoke;padding-top: 5px;padding-left: 15px;padding-bottom: 15px;border-bottom: 1px solid #000;">
 			<table width="1050" border="0" cellspacing="0" cellpadding="0" style="margin-top: 25px;margin-bottom: 20px;">
 				<tr>
@@ -138,14 +136,16 @@
 			            else
 			            {
 		          	?>
-		          			<td width="300"><?php echo form_dropdown('maquina', $listamaquina,$selected_maquina,"id='maquina' class='required' style='width:200px;margin-left: 0px;height: 28px;'");?></td>
+		          			<td width="300"><?php echo form_dropdown('maquina', $listamaquina,$selected_maquina,"id='maquina' class='required' style='width:200px;margin-left: 0px;'");?></td>
 		          	<?php }?>
                     <td width="195"><input name="submit" type="submit" id="report_registro_salidas" class="report_registro_salidas" value="EXPORTE REPORTE A EXCEL" style="background-color: #FF5722;width: 180px;margin-bottom: 6px;" /></td>
 	            </tr>
 			</table>
+			<!--
 			<div class="chart">
 				<canvas id="mycanvas"></canvas>
 			</div>
+			-->
 		</div>
     </div>
     <div id="modalerror"></div>

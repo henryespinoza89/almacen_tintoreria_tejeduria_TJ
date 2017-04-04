@@ -94,65 +94,6 @@
 
     $('#listaRegistros').DataTable();
 
-    // Eliminar registro
-    $('a.eliminar_registro').bind('click', function () {
-      var ruta = $('#direccionelim').text();
-      var id = $(this).attr('id').replace('elim_', '');
-      var parent = $(this).parent().parent();
-      $("#dialog-confirm").data({
-        'delid': id,
-        'parent': parent,
-        'ruta': ruta
-      }).dialog('open');
-      return false;
-    });
-
-    $("#dialog-confirm").dialog({
-      resizable: false,
-      bgiframe: true,
-      autoOpen: false,
-      width: 400,
-      height: "auto",
-      zindex: 9998,
-      modal: false,
-      buttons: {
-        'Eliminar': function () {
-          var parent = $(this).data('parent');
-          var id = $(this).data('delid');
-          var ruta = $(this).data('ruta');
-          $.ajax({
-            type: 'get',
-            url: ruta,
-            data: {
-              'eliminar' : id
-            },
-            success: function(msg){
-              if(msg == 1){
-                $("#finregistro").html('<strong>!La Factura ha sido eliminada correctamente!</strong>').dialog({
-                  modal: true,position: 'center',width: 480,height: 125,resizable: false, title: '!Eliminación Conforme!',
-                  buttons: { Ok: function(){
-                    // window.location.href="<?php echo base_url();?>comercial/gestionconsultarSalidaRegistros";
-                    $("#finregistro").dialog('close');
-                  }}
-                });
-              }else{
-                $("#modalerror").empty().append(msg).dialog({
-                  modal: true,position: 'center',width: 700,height: 125,resizable: false,title: '!No se puede eliminar la Salida!',
-                  buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-                });
-                $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-              }
-            }
-          });
-          $(this).dialog('close');
-          //setTimeout('window.location.href="<?php echo base_url(); ?>comercial/gestionconsultarRegistros_optionsAdvanced"', 200);
-        },
-        'Cancelar': function(){
-          $(this).dialog('close');
-        }
-      }
-    });
-    // FIN DE ELIMINAR
   });
 
   //Fuera de $(function(){         });
@@ -174,46 +115,114 @@
         });
       }
 
+  function delete_factura(id_ingreso_producto){
+    swal({   
+      title: "Estas seguro?",
+      text: "No se podrá recuperar esta información!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Si, eliminar!",
+      closeOnConfirm: false 
+    },
+    function(){
+      var dataString = 'id_ingreso_producto='+id_ingreso_producto+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/eliminarregistroingreso/",
+        data: dataString,
+        success: function(msg){
+          if(msg == 'eliminacion_correcta'){
+            swal({
+              title: "La factura ha sido eliminada con Éxito!",
+              text: "",
+              type: "success",
+              confirmButtonText: "OK"
+            },function(isConfirm){
+              if (isConfirm) {
+                window.location.href="<?php echo base_url();?>comercial/gestionconsultarRegistros_optionsAdvanced";  
+              }
+            });
+          }else if(msg == 'periodo_cerrado'){
+            sweetAlert("No se puede eliminar la factura", "No puede eliminar facturas de un periodo donde ya realizo el Cierre Mensual de Almacén. Verificar!", "error");
+          }else if(msg == 'valores_negativos_producto'){
+            sweetAlert("No se puede eliminar la factura", "Se produce valores negativos en el stock o precio unitario de los productos asociados a la factura. Existen salidas posteriores a la fecha de factura. Verificar!", "error");
+          }
+        }
+      });
+    });
+  }
+
 </script>
 </head>
 <body>
   <div id="contenedor">
-    <div id="tituloCont">Eliminar Registros de Ingreso de Facturas - Opciones Avanzadas</div>
+    <div id="tituloCont">Eliminar Facturas - Opciones Avanzadas</div>
     <div id="formFiltro">
-      <div class="tituloFiltro">Filtrar Búsqueda</div>
+
+      <?php
+        foreach($anios_registros as $row_anios){
+          $input_filter_list_anio = array('name'=>'input_filter_list_anio_'.$row_anios->fecha_registro,'id'=>'input_filter_list_anio_'.$row_anios->fecha_registro,'maxlength'=>'20', 'value'=>$row_anios->fecha_registro, 'style'=>'display:none');
+      ?>
+        <form name="filtroBusqueda" action="#" method="post" style="width:140px; float:left;margin-bottom: 0px;border-bottom: none;">
+          <?php echo form_open(base_url()."comercial/gestionconsultarRegistros_optionsAdvanced", 'id="buscar" style="width:780px;margin-bottom: 0px;border-bottom: none;"') ?>
+            <table width="150" border="0" cellspacing="0" cellpadding="0" style="display:block;float: left;">
+              <tr>
+                <td width="219" style="display: none;"><?php echo form_input($input_filter_list_anio);?></td>
+                <td width="150" style="padding-bottom:4px;">
+                  <?php 
+                    if ($this->input->post('input_filter_list_anio_'.$row_anios->fecha_registro)){
+                  ?>
+                    <input name="submit" type="submit" id="submit" value="<?php echo $row_anios->fecha_registro ?>" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #FF5722; border-radius:6px; width: 100px;margin-right: 15px;" />
+                  <?php } else { ?>
+                    <input name="submit" type="submit" id="submit" value="<?php echo $row_anios->fecha_registro ?>" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #303F9F; border-radius:6px; width: 100px;margin-right: 15px;" />
+                  <?php } ?>
+                </td>
+              </tr>
+            </table>
+          <?php echo form_close() ?>
+        </form>
+      <?php
+        } 
+      ?>
+      
+      <!--<div class="tituloFiltro">Filtrar Búsqueda</div>-->
+      <!--
       <form name="filtroBusqueda" action="#" method="post">
+        <!--
         <?php
           	// para el numero de factura
-          	if ($this->input->post('num_factura')){
-            $num_factura = array('name'=>'num_factura','id'=>'num_factura','maxlength'=>'12','value'=>$this->input->post('num_factura'), 'style'=>'width:130px');
-          	}else{
-            $num_factura = array('name'=>'num_factura','id'=>'num_factura','maxlength'=>'12', 'style'=>'width:130px');
-            }
+          	//if ($this->input->post('num_factura')){
+            //$num_factura = array('name'=>'num_factura','id'=>'num_factura','maxlength'=>'12','value'=>$this->input->post('num_factura'), 'style'=>'width:130px');
+          	//}else{
+            //$num_factura = array('name'=>'num_factura','id'=>'num_factura','maxlength'=>'12', 'style'=>'width:130px');
+            // }
             //para la Fecha de Registro
-          	if ($this->input->post('fecharegistro')){
-      			 $fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
-        		}else{
-        		  $fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
-        		}
-            if ($this->input->post('fechainicial')){
-              $fechainicial = array('name'=>'fechainicial','id'=>'fechainicial','maxlength'=>'10','value'=>$this->input->post('fechainicial'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
-            }else{
-              $fechainicial = array('name'=>'fechainicial','id'=>'fechainicial','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
-            }
+          	//if ($this->input->post('fecharegistro')){
+      			 //$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+        		//}//else{
+        		  //$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+        		// }
+            //if ($this->input->post('fechainicial')){
+              //$fechainicial = array('name'=>'fechainicial','id'=>'fechainicial','maxlength'=>'10','value'=>$this->input->post('fechainicial'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+            // }//else{
+              //$fechainicial = array('name'=>'fechainicial','id'=>'fechainicial','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+            // }
             //para la fecha final del periodo
-            if ($this->input->post('fechafinal')){
-              $fechafinal = array('name'=>'fechafinal','id'=>'fechafinal','maxlength'=>'10','value'=>$this->input->post('fechafinal'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
-            }else{
-              $fechafinal = array('name'=>'fechafinal','id'=>'fechafinal','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
-            }
+            //if ($this->input->post('fechafinal')){
+              //$fechafinal = array('name'=>'fechafinal','id'=>'fechafinal','maxlength'=>'10','value'=>$this->input->post('fechafinal'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+            // }//else{
+              //$fechafinal = array('name'=>'fechafinal','id'=>'fechafinal','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+            // }
         ?>
-        <?php echo form_open(base_url()."comercial/gestionconsultarRegistros_optionsAdvanced", 'id="buscar"') ?>
+        
+        <?php // echo form_open(base_url()."comercial/gestionconsultarRegistros_optionsAdvanced", 'id="buscar"') ?>
           <table width="1000" border="0" cellspacing="0" cellpadding="0">
             <tr>
                 <td width="110">N° de Factura:</td>
-                <td width="160"><?php echo form_input($num_factura);?></td>
+                <td width="160"><?php // echo form_input($num_factura);?></td>
                 <td width="70" valign="middle">Proveedor:</td>
-                <td width="211"><?php echo form_input($nombre_proveedor);?></td>
+                <td width="211"><?php // echo form_input($nombre_proveedor);?></td>
               <td width="81" align="center" style="padding-bottom:4px;">
                 <input name="submit" type="submit" id="submit" value="Buscar" />
               </td>
@@ -222,17 +231,18 @@
               </td>
             <tr>
                 <td>Fecha de Registro:</td>
-                <td><?php echo form_input($fecharegistro);?></td>
+                <td><?php // echo form_input($fecharegistro);?></td>
             </tr>
             <tr>
               <td>Fecha Inicial:</td>
-              <td><?php echo form_input($fechainicial);?></td>
+              <td><?php // echo form_input($fechainicial);?></td>
               <td>Fecha Final:</td>
-              <td><?php echo form_input($fechafinal);?></td>
+              <td><?php // echo form_input($fechafinal);?></td>
             </tr>
           </table>
-        <?php echo form_close() ?>
+        <?php // echo form_close() ?>
       </form>
+      -->
       <!--
       <div>
         <input name="submit" type="submit" id="button_killer" value=" Buttom Killer xD" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
@@ -273,10 +283,9 @@
             <td style="vertical-align: middle;"><?php echo $listaregistros->fecha; ?></td>
             <td style="vertical-align: middle;"><?php echo number_format($listaregistros->total,2,'.',','); ?></td>
             <td style="vertical-align: middle;"><?php echo $listaregistros->nombresimbolo; ?></td>
-            <td width="20" align="center"><img class="mostrar_detalle" src="<?php echo base_url();?>assets/img/view.png" width="20" height="20" title="Mostrar Detalle" onClick="mostrar_detalle(<?php echo $listaregistros->id_ingreso_producto; ?>)" /></td>
+            <td width="20" align="center"><img class="mostrar_detalle" src="<?php echo base_url();?>assets/img/view.png" width="20" height="20" title="Mostrar Detalle" onClick="mostrar_detalle(<?php echo $listaregistros->id_ingreso_producto; ?>)" style="cursor: pointer;"/></td>
             <td width="20" align="center">
-              <a href="" class="eliminar_registro" id="elim_<?php echo $listaregistros->id_ingreso_producto; ?>">
-              <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Registro"/></a>
+              <img class="delete_factura" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Factura" onClick="delete_factura(<?php echo $listaregistros->id_ingreso_producto; ?>)" style="cursor: pointer;"/>
             </td>
           </tr>
           <?php 

@@ -661,6 +661,46 @@ function imprimir_salida(id_salida_producto){
   	$(location).attr('href',url);
 }
 
+function delete_salida(id_salida_producto, id_detalle_producto){
+    swal({   
+      title: "Estas seguro?",
+      text: "No se podrá recuperar esta información!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Si, eliminar!",
+      closeOnConfirm: false 
+    },
+    function(){
+      var dataString = 'id_salida_producto='+id_salida_producto+'&id_detalle_producto='+id_detalle_producto+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/eliminarregistrosalida/",
+        data: dataString,
+        success: function(msg){
+          if(msg == 'eliminacion_correcta'){
+            swal({
+              title: "La salida ha sido eliminada con Éxito!",
+              text: "",
+              type: "success",
+              confirmButtonText: "OK"
+            },function(isConfirm){
+              if (isConfirm) {
+                window.location.href="<?php echo base_url();?>comercial/gestion_devolucion_producto";  
+              }
+            });
+          }else if(msg == 'periodo_cerrado'){
+            sweetAlert("No se puede eliminar la salida", "No puede eliminar salidas de un periodo donde ya realizo el Cierre Mensual de Almacén. Verificar!", "error");
+          }else if(msg == 'valores_negativos_producto'){
+            sweetAlert("No se puede eliminar la salida", "Se produce valores negativos en el stock o precio unitario de los productos asociados a la salida. Existen salidas posteriores a la fecha de salida. Verificar!", "error");
+          }
+        }
+      });
+    });
+  }
+
+
+
 </script>
 
 <div id="contenedor">
@@ -711,7 +751,7 @@ function imprimir_salida(id_salida_producto){
         <div id="retorno"></div>
       </div>
     <?php } ?>
-	<div id="tituloCont" style="margin-bottom: 10px;">Devolución y Consulta de Productos</div>
+	<div id="tituloCont" style="margin-bottom: 10px;">Devolución y Consulta de Salida de Productos</div>
 	<div id="formFiltro">
 		<div id="options" style="border-bottom: 1px solid #000; padding-bottom: 15px;margin-bottom: 0px;">
 			<div class="newarea"><a href="<?php echo base_url(); ?>comercial/gestionarea/">Gestionar Área y Responsable</a></div>
@@ -819,6 +859,32 @@ function imprimir_salida(id_salida_producto){
         	</tr>
 	    </table>
 	</div>
+
+	<?php
+        foreach($anios_registros_salidas as $row_anios){
+          $input_filter_list_anio = array('name'=>'input_filter_list_anio_'.$row_anios->fecha_registro,'id'=>'input_filter_list_anio_'.$row_anios->fecha_registro,'maxlength'=>'20', 'value'=>$row_anios->fecha_registro, 'style'=>'display:none');
+      ?>
+        <form name="filtroBusqueda" action="#" method="post" style="width:140px; float:left;margin-bottom: 0px;border-bottom: none;">
+          <?php echo form_open(base_url()."comercial/gestion_devolucion_producto", 'id="buscar" style="width:780px;margin-bottom: 0px;border-bottom: none;"') ?>
+            <table width="150" border="0" cellspacing="0" cellpadding="0" style="display:block;float: left;">
+              <tr>
+                <td width="219" style="display: none;"><?php echo form_input($input_filter_list_anio);?></td>
+                <td width="150" style="padding-bottom:4px;">
+                  <?php 
+                    if ($this->input->post('input_filter_list_anio_'.$row_anios->fecha_registro)){
+                  ?>
+                    <input name="submit" type="submit" id="submit" value="<?php echo $row_anios->fecha_registro ?>" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #FF5722; border-radius:6px; width: 100px;margin-right: 15px;color: white;" />
+                  <?php } else { ?>
+                    <input name="submit" type="submit" id="submit" value="<?php echo $row_anios->fecha_registro ?>" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #303F9F; border-radius:6px; width: 100px;margin-right: 15px;color: white;" />
+                  <?php } ?>
+                </td>
+              </tr>
+            </table>
+          <?php echo form_close() ?>
+        </form>
+      <?php
+        } 
+      ?>
 	
 	<?php 
       $existe = count($salidaproducto);
@@ -838,7 +904,7 @@ function imprimir_salida(id_salida_producto){
                 <td sort="procprod" width="80">FECHA</td>
                 <td sort="procprod" width="340">PRODUCTO</td>
                 <td sort="procprod" width="70">CANTIDAD</td>
-                
+                <td width="20" style="background-image: none;">&nbsp;</td>
                 <td width="20" style="background-image: none;">&nbsp;</td>
                 <td width="20" style="background-image: none;">&nbsp;</td>
               </tr>
@@ -859,13 +925,16 @@ function imprimir_salida(id_salida_producto){
                 <td width="20" align="center" style="vertical-align: inherit;">
                 	<i class="fa fa-print" aria-hidden="true" style="color: red;cursor: pointer;" title="Exportar PDF" onClick="imprimir_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)"></i>
                 </td>
+                <!--<span id="imprimir_salida" class="icon-ban" style="color: red;cursor: pointer;" onClick="imprimir_salida(<?php //echo $listasalidaproductos->id_salida_producto; ?>)"></span>-->
                 <!--
-                <span id="imprimir_salida" class="icon-ban" style="color: red;cursor: pointer;" onClick="imprimir_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)"></span>
                 <td width="20" align="center">
                   <a href="" class="eliminar_salida" id="elim_<?php // echo $listasalidaproductos->id_salida_producto; ?>">
                   <img src="<?php // echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida"/></a>
                 </td>
-                -->
+				-->
+                <td width="20" align="center">
+	              	<img class="delete_salida" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Factura" onClick="delete_salida(<?php echo $listasalidaproductos->id_salida_producto; ?> , <?php echo $listasalidaproductos->id_detalle_producto; ?>)" style="cursor: pointer;"/>
+	            </td>
               </tr>
           <?php 
             $i++;
