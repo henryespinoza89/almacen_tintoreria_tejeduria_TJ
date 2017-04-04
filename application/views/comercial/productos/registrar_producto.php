@@ -346,53 +346,7 @@
 </head>
 <body>
   <div id="contenedor">
-    <?php if($tipocambio == 1){?>
-      <div id="newtipocambio" title="Registrar Tipo de Cambio" style="font-size:11px;min-height:20px;padding-left: 50px;width: 700px;height: auto;text-align: center;">
-        <?php echo form_open('/comercial/guardarTipoCambio',array('name'=>'tipodecambio')); ?>
-          <?php
-            $datacompra_dol = array('name'=>'datacompra_dol','id'=>'datacompra_dol','maxlength'=>'5', 'size'=>'10');
-            $dataventa_dol = array('name'=>'dataventa_dol','id'=>'dataventa_dol','maxlength'=> '5', 'size'=>'10');
-            $datacompra_eur = array('name'=>'datacompra_eur','id'=>'datacompra_eur','maxlength'=>'5', 'size'=>'10');
-            $dataventa_eur = array('name'=>'dataventa_eur','id'=>'dataventa_eur','maxlength'=> '5', 'size'=>'10');
-          ?>
-          <table width="600" border="0" cellspacing="2" cellpadding="2" align="rigth">
-            <tr>
-              <td width="85" height="30">Fecha Actual:</td>
-              <td width="104" height="30"><b><?php echo date('d-m-Y'); ?></b></td>
-              <td width="110" height="30">Tipo de Cambio:</td>
-              <td width="220" height="30"><a href="http://www.sbs.gob.pe/app/stats/tc-cv.asp" id="tipo_cambio" target="_blank">Superintendencia de Banca, Seguros y AFP</a></td>
-            </tr>
-          </table>
-          <fieldset style="border: 1px dashed #999999;width: 240px;float: left;margin-right: 50px;margin-bottom:5px;margin-left: 13px;padding-bottom: 8px;padding-right: 5px;">
-            <legend><strong>Tipo de Cambio en Dólares</strong></legend>
-            <table width="220" border="0" cellspacing="2" cellpadding="2" align="center">
-              <tr>
-                <td height="30">Valor de Compra:</td>
-                <td height="30"><?php echo form_input($datacompra_dol); ?></td>
-              </tr>
-              <tr>
-                <td height="30">Valor de Venta:</td>
-                <td height="30"><?php echo form_input($dataventa_dol); ?></td>
-              </tr>
-            </table>
-          </fieldset>
-          <fieldset style="border: 1px dashed #999999;width: 240px;float: left;margin-right: 55px;margin-bottom:5px;padding-bottom: 8px;padding-right: 5px;">
-            <legend><strong>Tipo de Cambio en Euros</strong></legend>
-            <table width="220" border="0" cellspacing="2" cellpadding="2" align="center">
-              <tr>
-                <td height="30">Valor de Compra:</td>
-                <td height="30"><?php echo form_input($datacompra_eur); ?></td>
-              </tr>
-              <tr>
-                <td height="30">Valor de Venta:</td>
-                <td height="30"><?php echo form_input($dataventa_eur); ?></td>
-              </tr>
-            </table>
-          </fieldset>
-        <?php echo form_close() ?>
-        <div id="retorno" style="float: left;margin-left: 13px;margin-top: 8px;"></div>
-      </div>
-    <?php } ?>
+    <?php $this->view('modal_tipo_cambio'); ?>
     <div id="tituloCont">Gestión de Productos - Repuestos y Suministros</div>
     <div id="formFiltro">
       <div id="options_productos">
@@ -418,7 +372,7 @@
         <table border="0" cellspacing="0" cellpadding="0" id="listaProductos" style="width:1370px;" class="table table-hover table-striped">
           <thead>
             <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
-              <td sort="idprod" width="65" height="27">ITEM</td>
+              <!--<td sort="idprod" width="65" height="27">ITEM</td>-->
               <td sort="idproducto" width="120" height="27">ID PRODUCTO</td>
               <td sort="nombreprod" width="330">NOMBRE O DESCRIPCIÓN</td>
               <td sort="catprod" width="110">UBICACIÓN</td>
@@ -426,6 +380,7 @@
               <td sort="catprod" width="150">TIPO PRODUCTO</td>
               <td sort="procprod" width="95">MEDIDA</td>
               <td sort="procprod" width="90">STOCK</td>
+              <td sort="procprod" width="65">P.U.</td>
               <td width="20" style="background-image: none;">&nbsp;</td>
               <td width="20" style="background-image: none;">&nbsp;</td>
             </tr>
@@ -437,7 +392,7 @@
           ?> 
           <body> 
             <tr class="contentTable" style="font-size: 12px;">
-              <td height="23" style="vertical-align: middle;"><?php echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>
+              <!--<td height="23" style="vertical-align: middle;"><?php // echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>-->
               <td style="vertical-align: middle;"><?php echo 'PRD'.$listaproductos->id_pro; ?></td>
               <td style="vertical-align: middle;"><?php echo $listaproductos->no_producto; ?></td>
               <td style="vertical-align: middle;"><?php echo $listaproductos->nombre_ubicacion; ?></td>
@@ -446,6 +401,7 @@
               <!--<td><?php // echo $listaproductos->no_procedencia; ?></td>-->
               <td style="vertical-align: middle;"><?php echo $listaproductos->nom_uni_med; ?></td>
               <td style="vertical-align: middle;"><?php echo $listaproductos->stock; ?></td>
+              <td style="vertical-align: middle;"><?php echo @number_format($listaproductos->precio_unitario, 2, '.', ''); ?></td>
               <td width="20" align="center">
                 <img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listaproductos->id_pro;?>)" style="cursor: pointer;" />
               </td>

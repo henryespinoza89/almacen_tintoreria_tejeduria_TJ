@@ -49,6 +49,14 @@ footer{
 	margin-right: 660px;
 }
 
+#lista_monto_cierre_paginate{
+	margin-right: 550px;
+}
+
+#lista_monto_cierre_filter{
+	margin-right: 560px;
+}
+
 #listaTiposProductos_paginate{
 	margin-right: 650px;
 }

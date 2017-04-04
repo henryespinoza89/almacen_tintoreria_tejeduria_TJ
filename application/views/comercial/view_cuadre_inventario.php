@@ -115,6 +115,8 @@ $(function(){
 		                	}}
 		              	});
 		              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+		            }else if(response == "stock_precio_cero"){
+		              	sweetAlert("!No se puede realizar el cuadre del producto. Verificar!", "El producto no tiene Precio Unitario ni movimientos en el kardex", "error");
 		            }else if(response == "error_kardex"){
 		            	$("#modalerror").empty().append('<span style="color:red"><b>!Se produjo un Error en la Actualización del Stock del Producto!</b></span>').dialog({
 		                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'blind',show: 'blind',

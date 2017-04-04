@@ -87,6 +87,36 @@
 			}
     	});
 
+		$("#report_kardex_excel_v2").click(function(){
+    		var fechainicial = $("#fechainicial").val();
+    		var fechafinal = $("#fechafinal").val();
+    		var id_detalle_producto = $("#id_detalle_producto").val();
+
+    		if( fechainicial == '' || fechafinal == '' || id_detalle_producto == ''){
+				$("#modalerror").html('<strong>!Todos los Campos del Formulario son Obligatorios. Verificar!</strong>').dialog({
+		            modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
+		          	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+		        });
+			}else{
+				var array_json = Array();
+
+	    		array_json[0] = id_detalle_producto;
+	    		array_json[1] = fechainicial;
+	    		array_json[2] = fechafinal;
+	    		
+			    var jObject = {}; // Lo convierto a objeto
+
+			    for(i in array_json){
+			        jObject[i] = array_json[i];
+			    }
+
+			    jObject= JSON.stringify(jObject);
+	    		
+	    		url = '<?php echo base_url(); ?>comercial/al_exportar_kardex_producto_excel_v2/'+jObject;
+	    		$(location).attr('href',url);
+			}
+    	});
+
 		$("#nombre_producto_autocomplete").autocomplete({
 	        source: function (request, respond) {
 	        	$.post("<?php echo base_url('comercial/traer_producto_autocomplete_with_id'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term},
@@ -134,13 +164,14 @@
 		                <td><input type="hidden" name="id_detalle_producto" id="id_detalle_producto" value=""></td>
 		            </tr>
 				</table>
-				<table width="703" border="0" cellspacing="0" cellpadding="0" style="margin-top: 10px;">
+				<table width="1003" border="0" cellspacing="0" cellpadding="0" style="margin-top: 10px;">
 					<tr>
 		                <td width="103" height="30">Fecha de Inicio:</td>
 		                <td width="156" height="30"><?php echo form_input($fechainicial);?></td>
 		                <td width="81" height="30">Fecha Final:</td>
 		                <td width="168" height="30"><?php echo form_input($fechafinal);?></td>
-	                    <td width="195"><input name="submit" type="submit" id="report_kardex_excel" class="report_kardex_excel" value="Generar Kardex del Producto" style="background-color: #4B8A08;width: 170px;margin-bottom: 6px;" /></td>
+	                    <!--<td width="195"><input name="submit" type="submit" id="report_kardex_excel" class="report_kardex_excel" value="Generar Kardex del Producto" style="background-color: #4B8A08;width: 170px;margin-bottom: 6px;" /></td>-->
+	                    <td width="195"><input name="submit" type="submit" id="report_kardex_excel_v2" class="report_kardex_excel_v2" value="KARDEX DE PRODUCTO" style="background-color: #4B8A08;width: 170px;margin-bottom: 6px;" /></td>
 		            </tr>
 				</table>
 			
