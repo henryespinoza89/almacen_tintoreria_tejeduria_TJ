@@ -23,6 +23,42 @@
 
     	$('#lista_monto_cierre').DataTable();
 
+    	$("#validacion_negative").click(function(){
+			$.ajax({
+                type: 'POST',
+                url: "<?php echo base_url(); ?>comercial/validacion_negative_controller/",
+                success: function(response){
+                  	if(response == 1){
+                  		$("#div-loader").hide().dialog("destroy");
+		                swal({
+		                    title: "El Cierre de Almacén ha sido regristado con éxito!",
+		                    text: "",
+		                    type: "success",
+		                    confirmButtonText: "OK"
+		                  	},function(isConfirm){
+			                    if (isConfirm) {
+			                      window.location.href="<?php echo base_url();?>comercial/gestion_cierre_saldos_iniciales";  
+			                    }
+		                	}
+		                );
+                  	}else if(response == 'cierre_duplicado'){
+                  		$("#div-loader").hide().dialog("destroy");
+                  		sweetAlert("!No es posible realizar el cierre del periodo seleccionado. Verificar!", "Ya existe un Cierre de Almacén para ese periodo", "error");
+                  	}else if(response == 'error_validacion'){
+                  		$("#div-loader").hide().dialog("destroy");
+                  		$("#modalerror").html('<strong>!Ya Existe registro de Cierre de Almacén para la Fecha Seleccionada. Verifique!</strong>').dialog({
+				            modal: true,position: 'center',width: 450, height: 135,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+				          	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+				        });
+                  	}else{
+                  		$("#div-loader").hide().dialog("destroy");
+                  		$("#modalerror").html('<strong>!No se realizo el Registro. Intentelo Nuevamente!</strong>').dialog({
+				            modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}});
+                  	}
+                }
+            });
+    	});
+
 		$("#cierre_almacen_saldos_iniciales").click(function(){
 			$("#div-loader").show().dialog({modal: true,position: 'center',width: 300, height: 195,resizable: false,hide: 'blind',show: 'blind',});
     		var fecha_inicial = $("#fecha_inicial").val(); var fecha_final = $("#fecha_final").val();
@@ -131,7 +167,8 @@
 </script>
 
 </head>
-<body>
+<body
+>
     <div id="contenedor" style="">
     	<div id="tituloCont" style="margin-bottom:0px;width: 1380px;">Cierre de Almacén</div>
     	<div id="formFiltro" style="background: whitesmoke;padding-top: 5px;padding-left: 15px;padding-bottom: 10px;border-bottom: 1px solid #000;margin-bottom: 30px;">
@@ -144,6 +181,7 @@
 	                <td width="260" colspan="1"><input name="submit" type="submit" id="cierre_almacen_saldos_iniciales" class="cierre_almacen_saldos_iniciales" value="CIERRE DE SALDOS INICIALES" style="background-color: #FF5722;width: 188px;margin-bottom: 6px;margin-left: 40px;" /></td>
 	                <td width="180" colspan="2"><input name="submit" type="submit" id="registrar_monto_cierre" class="registrar_monto_cierre" value="REGISTRAR MONTO DE CIERRE" style="background-color: #FF5722;width: 188px;margin-bottom: 6px;margin-right: 40px;" /></td>
 	                <td width="195" colspan="2"><input name="submit" type="submit" id="report_exportar_excel" class="report_exportar_excel" value="EXPORTAR A EXCEL" style="background-color: #4B8A08;width: 160px;margin-bottom: 6px;" /></td>
+	                <!--<td width="195" colspan="2"><input name="submit" type="submit" id="validacion_negative" class="validacion_negative" value="VALIDACION RESULT NEGATIVOS" style="background-color: #4B8A08;width: 160px;margin-bottom: 6px;" /></td>-->
 	            </tr>
 			</table>
 		</div>

@@ -7087,6 +7087,67 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function validacion_negative_controller(){
+        $data_product = $this->model_comercial->get_all_productos_v2();
+        $contador = 0;
+        $contador_2 = 0;
+        foreach ($data_product as $row){
+            $contador++;
+            $id_detalle_producto = $row->id_detalle_producto;
+            $id_pro = $row->id_pro;
+            $detalle_movimientos_kardex_sin_fecha = $this->model_comercial->traer_movimientos_kardex_saldos_iniciales_sin_filtro_fecha($id_detalle_producto);
+            $existe_sin_fecha = count($detalle_movimientos_kardex_sin_fecha);
+            $contador_kardex_2 = 0;
+            if($existe_sin_fecha > 0){
+                foreach ($detalle_movimientos_kardex_sin_fecha as $data_2) {
+                    $contador_2++;
+                    if($data_2->descripcion == "ENTRADA"){
+                        if($contador_kardex_2 == 0){
+                            $stock_saldo_final_2 = $data_2->cantidad_ingreso;
+                            $precio_unitario_saldo_final_2 = $data_2->precio_unitario_actual;
+                            $contador_kardex_2++;
+                        }else{
+                            $stock_antes_actualizar = $stock_saldo_final_2;
+                            $stock_saldo_final_2 = $stock_saldo_final_2 + $data_2->cantidad_ingreso;
+                            $precio_unitario_saldo_final_2 = (($data_2->cantidad_ingreso*$data_2->precio_unitario_actual) + ($precio_unitario_saldo_final_2 * $stock_antes_actualizar))/($data_2->cantidad_ingreso + $stock_antes_actualizar);
+                        }
+                    }else if($data_2->descripcion == "SALIDA"){
+                        $stock_saldo_final_2 = $stock_saldo_final_2 - $data_2->cantidad_salida;
+                        $precio_unitario_saldo_final_2 = $precio_unitario_saldo_final_2;
+                    }else if($data_2->descripcion == "IMPORTACION"){
+                        if($contador_kardex_2 == 0){
+                            $stock_saldo_final_2 = $data_2->cantidad_ingreso;
+                            $precio_unitario_saldo_final_2 = $data_2->precio_unitario_actual;
+                            $contador_kardex_2++;
+                        }else{
+                            $stock_antes_actualizar = $stock_saldo_final_2;
+                            $stock_saldo_final_2 = $stock_saldo_final_2 + $data_2->cantidad_ingreso;
+                            $precio_unitario_saldo_final_2 = (($data_2->cantidad_ingreso*$data_2->precio_unitario_actual) + ($precio_unitario_saldo_final_2 * $stock_antes_actualizar))/($data_2->cantidad_ingreso + $stock_antes_actualizar);
+                        }
+                    }else if($data_2->descripcion == "ORDEN INGRESO"){
+                        if($contador_kardex_2 == 0){
+                            $stock_saldo_final_2 = $data_2->cantidad_ingreso;
+                            $precio_unitario_saldo_final_2 = $data_2->precio_unitario_actual;;
+                            $contador_kardex_2++;
+                        }else{
+                            $stock_saldo_final_2 = $stock_saldo_final_2 + $data_2->cantidad_ingreso;
+                            $precio_unitario_saldo_final_2 = $precio_unitario_saldo_final_2;
+                        }
+                    }
+
+                    if($stock_saldo_final_2 < 0 || $precio_unitario_saldo_final_2 < 0){
+                        echo $data_2->id_detalle_producto."_";
+                    }
+
+
+                }
+
+            }
+        }
+        echo '_______CANT.PRODUCTO_'.$contador;
+        echo '_______CANT.KARDEX_'.$contador_2;
+    }
+
     public function actualizar_saldos_iniciales_controller_version_6(){
         $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
         $fecha_inicial = $this->security->xss_clean($this->input->post("fecha_inicial"));
