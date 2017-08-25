@@ -20,7 +20,6 @@
 	}else{
 		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10', 'style'=>'width:70px;margin-bottom: 0px;', 'class'=>'required', 'onpaste'=>'return false');
 	}
-
 	if ($this->input->post('unidades_devolucion')){
 		$unidades_devolucion = array('name'=>'unidades_devolucion','id'=>'unidades_devolucion','maxlength'=>'10','value'=>$this->input->post('unidades_devolucion'), 'style'=>'width:70px');
 	}else{
@@ -113,59 +112,14 @@ $(function() {
 	          	data: dataString,
 	          	success: function(response){
 	            if(response == 1){
-	            	/*
-	              	$("#modalerror").empty().append('<span style="color:black"><b>!Salida Registrada con Éxito!</b></span>').dialog({
-	                	modal: true,position: 'center',width: 400,height: 125,resizable: false,title: 'Registro de Salidas',hide: 'slide',show: 'slide',
-	                	buttons: { Ok: function() {
-	                		window.location.href="<?php echo base_url();?>comercial/gestionsalida";
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-	              	*/
-					$('#maquina').val('');
-					$('#parte_maquina').val('');
-					$('#observacion').val('');
-	              	$('#area').val('');
-					$('#solicitante').val('');
-					$('#fecharegistro').val('');
-					$('#nombre_producto').val('');
-					$('#stockactual').val('');
-					$('#unidadmedida').val('');
-					$('#cantidad').val('');
 	              	swal({ title: "Salida Registrada con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 6000000 });
 	              	window.location.href="<?php echo base_url();?>comercial/gestionsalida";
 	            }else if(response == "error_stock"){
-	              	$("#modalerror").empty().append('<span style="color:red"><b>!No existe Stock Disponible!</b><br><b>Verificar la Cantidad Solicitada.</b></span>').dialog({
-	                	modal: true,position: 'center',width: 350,height: 145,resizable: false,title: 'Validación',hide: 'slide',show: 'slide',
-	                	buttons: { Ok: function() {
-	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	              	sweetAlert("!No existe Stock Disponible! \n Verificar la Cantidad Solicitada.", "", "error");
 	            }else if(response == "error_cierre"){
-	              	$("#modalerror").empty().append('<span style="color:red"><b>!No se puede realizar el registro!</b><br><b>La Fecha seleccionada corresponde a un Periodo de Cierre Anterior</b></span>').dialog({
-	                	modal: true,position: 'center',width: 500,height: 135,resizable: false,title: 'Validación',hide: 'slide',show: 'slide',
-	                	buttons: { Ok: function() {
-	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	              	sweetAlert("!No se puede realizar el registro! \n La Fecha seleccionada corresponde a un Periodo de Cierre Anterior.", "", "error");
 	            }else if(response == "no_existe_stock_disponible"){
-	              	$("#modalerror").empty().append('<span style="color:red"><b>!No se puede realizar el registro!</b><br><b>No Existe Stock disponible para la Fecha seleccionada</b><br><b>Verificar Kardex del Producto</b></span>').dialog({
-	                	modal: true,position: 'center',width: 500,height: 165,resizable: false,title: 'Validación',hide: 'slide',show: 'slide',
-	                	buttons: { Ok: function() {
-	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-	            }else if(response == "no_existe_stock_disponible_actualizacion_negativo"){
-	              	$("#modalerror").empty().append('<span style="color:red"><b>!No se puede realizar el registro!</b><br><b>La Salida genera un Stock Negativo</b><br><b>Analizar Kardex del Producto</b></span>').dialog({
-	                	modal: true,position: 'center',width: 500,height: 165,resizable: false,title: 'Validación',hide: 'slide',show: 'slide',
-	                	buttons: { Ok: function() {
-	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	              	sweetAlert("!No se puede realizar el registro! \n No Existe Stock disponible para la Fecha seleccionada. \n Verificar el Kardex del Producto", "", "error");
 	            }else{
 	            	console.log(response);
 	            	$("#modalerror").empty().append('<span style="color:red"><b>!ERROR!</b></span>').dialog({

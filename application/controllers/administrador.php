@@ -18,30 +18,30 @@ class Administrador extends CI_Controller {
 		}else{
 			$data['tipocambio'] = 1;
 		}
-		$data['almacen']= $this->model_admin->listarAlmacen();
-		$data['listacategoria'] = $this->model_comercial->listarCategoria();
-		$data['producto']= $this->model_admin->listarProducto();
+		$data['almacen']= $this->model_comercial->listarAlmacen();
+		$data['listatipousuarios']= $this->model_comercial->listarTipoUsuario();
+		$data['usuario']= $this->model_admin->listarUsuario_admin();
 		$this->load->view('administrador/menu');
-		$this->load->view('administrador/registrar_producto_admin',$data);
+		$this->load->view('administrador/registrar_usuario_admin',$data);
 	}
 
 	public function gestionproductos_admin(){
-		$nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
-		$apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
+		$nombre = $this->security->xss_clean($this->session->userdata('nombre'));
+		$apellido = $this->security->xss_clean($this->session->userdata('apaterno'));
 		if($nombre == "" AND $apellido == ""){
 			$this->load->view('login');
 		}else{
 			$data['almacen']= $this->model_admin->listarAlmacen();
 			$data['listacategoria'] = $this->model_comercial->listarCategoria();
-			$data['producto']= $this->model_admin->listarProducto();
+			$data['producto']= $this->model_comercial->listarProducto();
 			$this->load->view('administrador/menu');
 			$this->load->view('administrador/registrar_producto_admin',$data);
 		}
 	}
 
 	public function gestionmaquinas_admin(){
-		$nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
-		$apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
+		$nombre = $this->security->xss_clean($this->session->userdata('nombre'));
+		$apellido = $this->security->xss_clean($this->session->userdata('apaterno'));
 		if($nombre == "" AND $apellido == ""){
 			$this->load->view('login');
 		}else{
