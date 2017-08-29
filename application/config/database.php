@@ -51,9 +51,9 @@ $active_record = TRUE;
 
 // Server
 /*
-$db['default']['hostname'] = '74.63.242.235';
+$db['default']['hostname'] = 'localhost';
 $db['default']['username'] = 'tejidosj_hespinoza';
-$db['default']['password'] = 'publicclass01';
+$db['default']['password'] = '.z8a5DMTolXJ';
 $db['default']['database'] = 'tejidosj_almacen_tintoreria_tejeduria';
 */
 // Local
