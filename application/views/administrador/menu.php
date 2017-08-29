@@ -126,10 +126,10 @@
 <header>
 	<div id="logo"><a href="<?php echo base_url();?>administrador/gestionproductos_admin"><img src="<?php echo base_url();?>assets/img/logo_tejidos.jpg" height="72" title="Sistema de Almacén"></a></div>
 	<div id="userlogin">
-		<img src="<?php echo base_url();?>assets/img/user.jpg" width="45px" height="45px" title="Usuario" class="image">
-		<div class="username">
-			<span><?php echo $this->session->userdata('nombre') ." ". $this->session->userdata('apaterno') ?></span> <img src="<?php echo base_url();?>assets/img/arrow-down.png" width="20px" height="20px" id="optionsuser">
-			<nav>
+		<img src="<?php echo base_url();?>assets/img/user.png" width="50px" height="50px" title="Usuario" class="image" style="border-radius: 50%;margin-left: 10px;margin-top: 5px;margin-right: 15px;">
+		<div class="username" style="padding-top: 5px;position: absolute;margin-left: 75px;">
+			<span><?php echo $this->session->userdata('nombre') ." ". $this->session->userdata('apaterno') ?></span> <img src="<?php echo base_url();?>assets/img/arrow-down.png" width="20px" height="20px" id="optionsuser" style="float: right;">
+			<nav style="display: none; z-index: 99;">
 				<a class="cambiarcontrasena">Cambiar Contraseña</a>
 				<a href="<?php echo base_url();?>comercial/logout">Cerrar Sesión</a>
 			</nav>
@@ -139,23 +139,25 @@
 		<div id="menucomercial">
 			<div id="cssmenu">
 				<ul class="nav">
-					<li><a href='<?php echo base_url();?>administrador/gestionmaquinas_admin'><span>Gestión de Maquinarias</span></a></li>
-					<li><a href='<?php echo base_url();?>administrador/gestionproductos_admin'><span>Gestión de Productos</span></a></li>
-					<li><a href='<?php echo base_url();?>administrador/gestionproveedores_admin'><span>Gestión de Proveedores</span></a></li>
-					<li><a href='<?php echo base_url();?>administrador/gestionusuarios_admin'><span>Gestión de Usuarios</span></a></li>
-					<li><a href='<?php echo base_url();?>administrador/gestionusuarios_admin'><span>Gestión de Interfaces</span></a>
+					<!--<li><a href='<?php // echo base_url();?>administrador/gestionmaquinas_admin'><span>Gestión de Maquinarias</span></a></li>-->
+					<li style="width: 250px;"><a href='<?php echo base_url();?>administrador/gestionproductos_admin'><span>Gestión de Productos</span></a></li>
+					<!--<li><a href='<?php // echo base_url();?>administrador/gestionproveedores_admin'><span>Gestión de Proveedores</span></a></li>-->
+					<!--<li><a href='<?php // echo base_url();?>administrador/gestionusuarios_admin'><span>Gestión de Usuarios</span></a></li>-->
+					<!--
+					<li><a href='<?php // echo base_url();?>administrador/gestionusuarios_admin'><span>Gestión de Interfaces</span></a>
 						<ul>
-							<li><a href='<?php echo base_url();?>administrador/gestion_ingreso_producto'><span>Tabla ingreso_producto</span></a>
-							<li><a href='<?php echo base_url();?>administrador/gestion_detalle_ingreso_producto'><span>Tabla detalle_ingreso_producto</span></a>
-							<li><a href='<?php echo base_url();?>administrador/gestion_tipo_cambio'><span>Tabla tipo_cambio</span></a>
-							<li><a href='<?php echo base_url();?>administrador/gestion_saldos_iniciales'><span>Tabla saldos_iniciales</span></a>
-							<li><a href='<?php echo base_url();?>administrador/gestion_salida_producto'><span>Tabla salida_producto</span></a>
-							<li><a href='<?php echo base_url();?>administrador/gestion_kardex_producto'><span>Tabla kardex_producto</span></a>
-							<li><a href='<?php echo base_url();?>administrador/gestion_detalle_producto'><span>Tabla detalle_producto</span></a>
-							<li><a href='<?php echo base_url();?>administrador/gestion_producto'><span>Tabla producto</span></a>
-							<li><a href='<?php echo base_url();?>administrador/gestion_proveedor'><span>Tabla proveedor</span></a>
+							<li><a href='<?php // echo base_url();?>administrador/gestion_ingreso_producto'><span>Tabla ingreso_producto</span></a>
+							<li><a href='<?php // echo base_url();?>administrador/gestion_detalle_ingreso_producto'><span>Tabla detalle_ingreso_producto</span></a>
+							<li><a href='<?php // echo base_url();?>administrador/gestion_tipo_cambio'><span>Tabla tipo_cambio</span></a>
+							<li><a href='<?php // echo base_url();?>administrador/gestion_saldos_iniciales'><span>Tabla saldos_iniciales</span></a>
+							<li><a href='<?php // echo base_url();?>administrador/gestion_salida_producto'><span>Tabla salida_producto</span></a>
+							<li><a href='<?php // echo base_url();?>administrador/gestion_kardex_producto'><span>Tabla kardex_producto</span></a>
+							<li><a href='<?php // echo base_url();?>administrador/gestion_detalle_producto'><span>Tabla detalle_producto</span></a>
+							<li><a href='<?php // echo base_url();?>administrador/gestion_producto'><span>Tabla producto</span></a>
+							<li><a href='<?php // echo base_url();?>administrador/gestion_proveedor'><span>Tabla proveedor</span></a>
 						</ul>
 					</li>
+					-->
 					<!--<li><a href='<?php //echo base_url();?>administrador/gestioningreso'><span>Registro de Ingreso</span></a></li>
 					<li><a href='<?php //echo base_url();?>administrador/gestionsalida'><span>Registro de Salida</span></a></li>-->
 				</ul>

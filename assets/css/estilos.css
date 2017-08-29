@@ -327,18 +327,18 @@ ul, ol
 }
 
 #userlogin span{
-	padding-left: 10px;
+	padding: 20px;
 }
 
 #userlogin nav {
 	clear: both;
-	position: fixed;
-	border: 1px solid #CCC;
+	/*position: fixed;*/
+	/*border: 1px solid #CCC;*/
 	overflow: hidden;
 	border-radius: 4px;
 	-moz-border-radius:4px; /* Firefox */ 
 	-webkit-border-radius:4px; /* Safari y Chrome */ 
-	padding: 5px;
+	padding: 10px;
 	background-color: #EEEEEE;
 	display: none;
 }

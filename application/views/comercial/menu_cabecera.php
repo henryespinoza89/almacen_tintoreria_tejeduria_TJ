@@ -142,8 +142,8 @@
 	</div>
 	<div class="view_invoice" id="view_invoice"></div>-->
 	<div id="userlogin">
-		<img src="<?php echo base_url();?>assets/img/user.png" width="50px" height="50px" title="Usuario" class="image" style="border-radius: 50%;margin-left: 10px;margin-top: 5px;margin-right: 15px;">
-		<div class="username">
+		<img src="<?php echo base_url();?>assets/img/user.png" width="45px" height="45px" title="Usuario" class="image" style="border-radius: 50%;margin-left: 10px;margin-top: 5px;margin-right: 15px;">
+		<div class="username" style="padding-top: 5px;position: absolute;margin-left: 75px;">
 			<span><?php echo $this->session->userdata('nombre') ." ". $this->session->userdata('apaterno') ?></span> <img src="<?php echo base_url();?>assets/img/arrow-down.png" width="20px" height="20px" id="optionsuser" style="margin-left: 10px;">
 			<nav style="display: none; position: absolute; z-index: 99;width: 150px;">
 				<a class="cambiarcontrasena">Cambiar Contraseña</a>
