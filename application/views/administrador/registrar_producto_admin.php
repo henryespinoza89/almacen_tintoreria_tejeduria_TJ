@@ -90,9 +90,9 @@
         <table border="0" cellspacing="0" cellpadding="0" id="listaProductosAdmin" style="width:1370px;" class="table table-hover table-striped">
           <thead>
             <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
-              <td sort="idproducto" width="120" height="27">ID PRODUCTO</td>
+              <td sort="idproducto" width="120" height="27">UBICACIÓN</td>
               <td sort="nombreprod" width="330">NOMBRE O DESCRIPCIÓN</td>
-              <td sort="catprod" width="110">UBICACIÓN</td>
+              <td sort="catprod" width="110">PROCEDENCIA</td>
               <td sort="catprod" width="125">CATEGORIA</td>
               <td sort="catprod" width="150">TIPO PRODUCTO</td>
               <td sort="procprod" width="95">MEDIDA</td>
@@ -105,16 +105,16 @@
             foreach($producto as $listaproductos){ 
           ?>  
           <tr class="contentTable" style="font-size: 12px;">
-            <!--<td height="27"><?php //echo str_pad($listaproductos->id_pro, 5, 0, STR_PAD_LEFT); ?></td>-->
-            <td style="vertical-align: middle;height: 23px;"><?php echo 'PRD'.$listaproductos->id_pro; ?></td>
-            <td style="vertical-align: middle;"><?php echo $listaproductos->no_producto; ?></td>
+            <!--<td height="27"><?php //echo str_pad($listaproductos->id_pro, 5, 0, STR_PAD_LEFT); ?></td>
+            <td style="vertical-align: middle;height: 23px;"><?php //echo 'PRD'.$listaproductos->id_pro; ?></td>-->
             <td style="vertical-align: middle;"><?php echo $listaproductos->nombre_ubicacion; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproductos->no_producto; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproductos->no_procedencia; ?></td>
             <td style="vertical-align: middle;"><?php echo $listaproductos->no_categoria; ?></td>
             <td style="vertical-align: middle;"><?php echo $listaproductos->no_tipo_producto; ?></td>
-            <!--<td><?php // echo $listaproductos->no_procedencia; ?></td>-->
             <td style="vertical-align: middle;"><?php echo $listaproductos->nom_uni_med; ?></td>
-            <td style="vertical-align: middle;"><?php echo $listaproductos->stock; ?></td>
-            <td style="vertical-align: middle;"><?php echo @number_format($listaproductos->precio_unitario, 2, '.', ''); ?></td>
+            <td style="vertical-align: middle;"><?php echo @number_format($listaproductos->stock, 2, '.', ','); ?></td>
+            <td style="vertical-align: middle;"><?php echo @number_format($listaproductos->precio_unitario, 2, '.', ','); ?></td>
           </tr>
           <?php
             $i++;

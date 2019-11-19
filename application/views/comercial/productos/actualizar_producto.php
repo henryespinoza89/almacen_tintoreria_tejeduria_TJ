@@ -14,7 +14,7 @@
     });
   });
 </script>
-<div id="contenedor" style="width:450px; height:250px;">
+<div id="contenedor" style="width:450px; height:340px;">
 	<div id="tituloCont" style="margin-bottom: 10px;">Editar Producto</div>
 	<div id="formFiltro" style="width:500px;">
 		<?php 
@@ -33,6 +33,9 @@
 				$editnombreprod = array('name'=>'editnombreprod','id'=>'editnombreprod','maxlength'=>'100', 'value'=>$prod->no_producto, 'style'=>'width:300px');
 				$edit_ubicacion = array('name'=>'edit_ubicacion','id'=>'edit_ubicacion','maxlength'=>'100', 'value'=>$prod->nombre_ubicacion, 'style'=>'width:150px');
 				$editobser = array('name'=>'editobser','id'=>'editobser','maxlength'=>'60', 'value'=>$prod->observacion, 'style'=>'width:150px');
+				$edit_stock_interna = array('name'=>'edit_stock_interna','id'=>'edit_stock_interna','maxlength'=>'100', 'value'=>$prod->stock_interno, 'style'=>'width:150px');
+				$edit_precio_unitario = array('name'=>'edit_precio_unitario','id'=>'edit_precio_unitario','maxlength'=>'100', 'value'=>$prod->precio_unitario, 'style'=>'width:150px');
+				$edit_stock_minimo = array('name'=>'edit_stock_minimo','id'=>'edit_stock_minimo','maxlength'=>'100', 'value'=>$prod->stock_minimo, 'style'=>'width:150px');
 			?>
 				<script type="text/javascript">
              		$("#editcat option[value='<?php echo $prod->id_categoria;?>']").attr("selected",true);
@@ -70,6 +73,20 @@
 					<td width="127">Observación:</td>
 					<td width="245"><?php echo form_input($editobser); ?></td>
 				</tr>
+				<tr>
+					<td width="127">Stock mínimo:</td>
+					<td width="245"><?php echo form_input($edit_stock_minimo); ?></td>
+				</tr>
+				<tr>
+					<td width="127">Stock interno:</td>
+					<td width="245"><?php echo form_input($edit_stock_interna); ?></td>
+				</tr>
+				<?php if($prod->precio_unitario == 0){ ?>
+					<tr>
+						<td width="127">Precio Unitario:</td>
+						<td width="245"><?php echo form_input($edit_precio_unitario); ?></td>
+					</tr>
+				<?php } ?>
 			<?php }?>
 	    	</table>
 	 	</form>

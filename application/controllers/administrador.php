@@ -631,12 +631,9 @@ class Administrador extends CI_Controller {
 			}
 		}else {
 			$result = $this->model_admin->UpdatePassword();
-	        // Verificamos que existan resultados
 	        if(!$result){
-	            //Sí no se encotnraron datos.
-	            echo '<span style="color:red"><b>ERROR: </b>Validación Incorrecta de Contraseña. Su Contraseña Actual no Coincide.</span>';
+	            echo 'error';
 	        }else{
-	        	//Registramos la sesion del usuario
 	        	echo '1';
 	        }
 		}

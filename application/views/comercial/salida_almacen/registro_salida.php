@@ -10,6 +10,11 @@
 	}else{
 		$stockactual = array('name'=>'stockactual','id'=>'stockactual', 'style'=>'width:70px','readonly'=> 'readonly');
 	}
+	if ($this->input->post('stockinterno')){
+		$stockinterno = array('name'=>'stockinterno','id'=>'stockinterno','value'=>$this->input->post('stockinterno'), 'style'=>'width:70px','readonly'=> 'readonly');
+	}else{
+		$stockinterno = array('name'=>'stockinterno','id'=>'stockinterno', 'style'=>'width:70px','readonly'=> 'readonly');
+	}
 	if ($this->input->post('encargado')){
 		$encargado = array('name'=>'encargado','id'=>'encargado','value'=>$this->input->post('encargado'), 'style'=>'width:142px', 'class'=>'required','readonly'=> 'readonly');
 	}else{
@@ -101,36 +106,75 @@ $(function() {
 		//var nombre_producto = $("#nombre_producto").val();
 		//var cantidad = $("#cantidad").val();
 		var observacion = $("#observacion").val();
-		// Validación contra campos vacios valores nulos
-		if(id_area == '' || fecharegistro == ''){
-	        sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
-	    }else{
-	    	var dataString = 'id_area='+id_area+'&fecharegistro='+fecharegistro+'&solicitante='+solicitante+'&observacion='+observacion+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
-	    	$.ajax({
-	            type: "POST",
-	            url: "<?php echo base_url(); ?>comercial/procesar_detalle_productos_salida/",
-	          	data: dataString,
-	          	success: function(response){
-	            if(response == 1){
-	              	swal({ title: "Salida Registrada con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 6000000 });
-	              	window.location.href="<?php echo base_url();?>comercial/gestionsalida";
-	            }else if(response == "error_stock"){
-	              	sweetAlert("!No existe Stock Disponible! \n Verificar la Cantidad Solicitada.", "", "error");
-	            }else if(response == "error_cierre"){
-	              	sweetAlert("!No se puede realizar el registro! \n La Fecha seleccionada corresponde a un Periodo de Cierre Anterior.", "", "error");
-	            }else if(response == "no_existe_stock_disponible"){
-	              	sweetAlert("!No se puede realizar el registro! \n No Existe Stock disponible para la Fecha seleccionada. \n Verificar el Kardex del Producto", "", "error");
-	            }else{
-	            	console.log(response);
-	            	$("#modalerror").empty().append('<span style="color:red"><b>!ERROR!</b></span>').dialog({
-	                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'slide',show: 'slide',
-	                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-	                }
-	            }
-	       	});
-	    }
+		var radios = document.getElementsByName('cases');
+		for (var i = 0, length = radios.length; i < length; i++){
+		 	if (radios[i].checked){
+			  	result = radios[i].value; break;
+		 	}
+		}
+		//alert(result);
+		if(result == "kardex"){
+			// Validación contra campos vacios valores nulos
+			if(id_area == '' || fecharegistro == ''){
+		        sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
+		    }else{
+		    	var dataString = 'id_area='+id_area+'&fecharegistro='+fecharegistro+'&solicitante='+solicitante+'&observacion='+observacion+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+		    	$.ajax({
+		            type: "POST",
+		            url: "<?php echo base_url(); ?>comercial/procesar_detalle_productos_salida/",
+		          	data: dataString,
+		          	success: function(response){
+			            if(response == 1){
+			              	swal({ title: "Salida Registrada con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 6000000 });
+			              	window.location.href="<?php echo base_url();?>comercial/gestionsalida";
+			            }else if(response == "error_stock"){
+			              	sweetAlert("!No existe Stock Disponible! \n Verificar la Cantidad Solicitada.", "", "error");
+			            }else if(response == "error_cierre"){
+			              	sweetAlert("!No se puede realizar el registro! \n La Fecha seleccionada corresponde a un Periodo de Cierre Anterior.", "", "error");
+			            }else if(response == "no_existe_stock_disponible"){
+			              	sweetAlert("!No se puede realizar el registro! \n No Existe Stock disponible para la Fecha seleccionada. \n Verificar el Kardex del Producto", "", "error");
+			            }else{
+			            	console.log(response);
+			            	$("#modalerror").empty().append('<span style="color:red"><b>!ERROR!</b></span>').dialog({
+			                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'slide',show: 'slide',
+			                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+			              	});
+			              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+			            }
+		            }
+		       	});
+		    }
+		}else if (result == "interno") {
+			if(id_area == '' || fecharegistro == ''){
+		        sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
+		    }else{
+		    	var dataString = 'id_area='+id_area+'&fecharegistro='+fecharegistro+'&solicitante='+solicitante+'&observacion='+observacion+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+		    	$.ajax({
+		            type: "POST",
+		            url: "<?php echo base_url(); ?>comercial/procesar_detalle_productos_salida_interno/",
+		          	data: dataString,
+		          	success: function(response){
+			            if(response == 1){
+			              	swal({ title: "Salida Registrada con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 6000000 });
+			              	window.location.href="<?php echo base_url();?>comercial/gestionsalida";
+			            }else if(response == "error_stock"){
+			              	sweetAlert("!No existe Stock Disponible! \n Verificar la Cantidad Solicitada.", "", "error");
+			            }else if(response == "error_cierre"){
+			              	sweetAlert("!No se puede realizar el registro! \n La Fecha seleccionada corresponde a un Periodo de Cierre Anterior.", "", "error");
+			            }else if(response == "no_existe_stock_disponible"){
+			              	sweetAlert("!No se puede realizar el registro! \n No Existe Stock disponible para la Fecha seleccionada. \n Verificar el Kardex del Producto", "", "error");
+			            }else{
+			            	console.log(response);
+			            	$("#modalerror").empty().append('<span style="color:red"><b>!ERROR!</b></span>').dialog({
+			                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'slide',show: 'slide',
+			                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+			              	});
+			              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+			            }
+		            }
+		       	});
+		    }
+		}
 	});
 
 	$("#submit_devolucion_producto").on("click",function(){
@@ -290,6 +334,17 @@ $(function() {
 	          	},
 	          	success: function(response){
 	            	$("#stockactual").val(formatNumber.new(response));
+	          	}
+	        });
+	        var ruta3 = $('#direccion_traer_stock_interno').text();
+	        $.ajax({
+	          	type: 'get',
+	          	url: ruta3,
+	          	data: {
+	            	'nombre_producto' : nombre_producto
+	          	},
+	          	success: function(response){
+	            	$("#stockinterno").val(formatNumber.new(response));
 	          	}
 	        });
 	        $("#cantidad").focus();
@@ -642,8 +697,12 @@ function fill_inputs(id_salida_producto){
 			<!--<div class="newsalida"><a href="<?php // echo base_url(); ?>comercial/gestionconsultarSalidaRegistros/">Consultar Registro de Salida</a></div>-->
 			<!--<div class="reportOut"><a href="<?php //echo base_url(); ?>comercial/gestionreportesalida/">Gestionar Reporte de Salidas</a></div>-->
 		</div>
-		<div id="datosalida" style="min-height: 185px;">
+		<div id="datosalida" style="min-height: 225px;">
 			<input type="hidden" name="id_salida_producto_hidden" id="id_salida_producto_hidden" value="">
+		    <div width="400" style="height: 26px;margin-left: 10px;margin-bottom: 10px;margin-top: 5px;">
+		    	<span style="margin-right: 10px;font-weight: bold;">Stock Kardex</span><input type="radio" name="cases" id="cases" value="kardex" checked="checked">
+		    	<span style="margin-right: 10px;font-weight: bold;margin-left: 20px;">Stock Interno</span><input type="radio" id="cases" name="cases" value="interno">
+		    </div>
 		    <table width="400" border="0" cellspacing="0" cellpadding="0" style="margin-top: 5px; float: left; margin-left: 10px;width: 380px;margin-right: 45px;">
 		        <tr>
 		          	<td width="370" valign="middle" style="height:30px;">Área:</td>
@@ -697,9 +756,13 @@ function fill_inputs(id_salida_producto){
 	                <td width="133" valign="middle" height="30" style="padding-bottom: 4px;">Producto:</td>
 	                <td height="30" colspan="5"><?php echo form_input($nombre_producto);?></td>
 	            </tr>
-	            <tr>
-					<td width="133" valign="middle" style="color:#005197;">Stock Actual:</td>
+			</table>
+			<table>
+				<tr>
+					<td width="133" valign="middle" style="color:#005197;font-weight: bold;">Stock Kardex:</td>
 			        <td width="109"><?php echo form_input($stockactual);?></td>
+			        <td width="106" valign="middle" style="color:#005197;font-weight: bold;">Stock Interno:</td>
+			        <td width="109"><?php echo form_input($stockinterno);?></td>
 	            </tr>
 			</table>
 			<table width="460" border="0" cellspacing="0" cellpadding="0" style="float: left;display:block;" id="table_button_finalizar_salida">
@@ -827,6 +890,7 @@ function fill_inputs(id_salida_producto){
 <div style="display:none">
     <div id="direccionelim"><?php echo site_url('comercial/eliminarregistrosalida');?></div>
     <div id="direccion_traer_stock"><?php echo site_url('comercial/traerStock_Autocompletado');?></div>
+    <div id="direccion_traer_stock_interno"><?php echo site_url('comercial/traerStockInterno_Autocompletado');?></div>
     <div id="direccion_traer_unidad_medida"><?php echo site_url('comercial/traerUnidadMedida_Autocompletado');?></div>
 </div>
 <div id="dialog-confirm" style="display: none;" title="Eliminar Registro">

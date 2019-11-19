@@ -43,44 +43,38 @@
 		        }}
 	    	});
 
-			$(".cambiarcontrasena").click(function() { //activacion de ventana modal
-				$("#mdlUpPass" ).dialog({  //declaracion de ventana modal
-					modal: true,resizable: false,show: "blind",position: 'center',width: 370,height: 323,draggable: false,closeOnEscape: false, //Aumenta el marco general
+			$(".cambiarcontrasena").click(function() {
+				$("#mdlUpPass" ).dialog({
+					modal: true,resizable: false,show: "blind",position: 'center',width: 370,height: 343,draggable: false,closeOnEscape: false, //Aumenta el marco general
 			        buttons: {
-			        Actualizar: function() {
-			            $(".ui-dialog-buttonpane button:contains('Registrar')").button("disable");
-			            $(".ui-dialog-buttonpane button:contains('Registrar')").attr("disabled", true).addClass("ui-state-disabled");
-			            //CONTROLO LAS VARIABLES
-			            var user = $('#user').val(); password = $('#password').val(); datacontrasena = $('#datacontrasena').val();
-			            
-			                //REGISTRO
-			                var dataString = 'user='+user+'&password='+password+'&datacontrasena='+datacontrasena+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
-		                    $.ajax({
-		                      type: "POST",
-		                      url: "<?php echo base_url(); ?>comercial/UpdatePassword/",
-		                      data: dataString,
-		                      success: function(msg){
-		                        if(msg == 1){
-		                          $("#finregistro").html('!La Contraseña ha sido regristado con éxito!.').dialog({
-		                            modal: true,position: 'center',width: 330,height: 125,resizable: false, title: 'Fin de Registro',
-		                            buttons: { Ok: function(){
-		                              window.location.href="<?php echo base_url();?>comercial/gestioningreso";
-		                            }}
-		                          });
-		                        }else{
-		                          $("#modalerror").empty().append(msg).dialog({
-		                            modal: true,position: 'center',width: 500,height: 140,resizable: false,
-		                            buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-		                          });
-		                          $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-		                        }
-		                      }
-		                    });
-			            
-			        },
-			        Cancelar: function(){
-			             $("#mdlUpPass").dialog("close");
-			        }
+				        Actualizar: function() {
+				            var user = $('#user').val(); password = $('#password').val(); datacontrasena = $('#datacontrasena').val();
+				            if (user == "" || password == "" || datacontrasena == ""){
+				            	sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
+				            }else{
+				                var dataString = 'user='+user+'&password='+password+'&datacontrasena_actualizar='+datacontrasena+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+			                    $.ajax({
+			                      	type: "POST",
+			                      	url: "<?php echo base_url(); ?>administrador/UpdatePassword/",
+			                      	data: dataString,
+			                      	success: function(msg){
+			                        if(msg == 1){
+			                          	swal({ title: "!La Contraseña ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+			                          	$('#password').val("");
+			                          	$('#datacontrasena').val("");
+			                          	$("#mdlUpPass").dialog("close");
+			                        }else{
+			                          	sweetAlert("Su Contraseña Actual no Coincide. Verificar!", "", "error");
+			                        }
+			                      	}
+			                    });
+				            }
+				        },
+				        Cancelar: function(){
+				        	$('#password').val("");
+			                $('#datacontrasena_actualizar').val("");
+				            $("#mdlUpPass").dialog("close");
+				        }
 			        }
 				});
 			});
@@ -142,10 +136,10 @@
 	</div>
 	<div class="view_invoice" id="view_invoice"></div>-->
 	<div id="userlogin">
-		<img src="<?php echo base_url();?>assets/img/user.png" width="45px" height="45px" title="Usuario" class="image" style="border-radius: 50%;margin-left: 10px;margin-top: 5px;margin-right: 15px;">
+		<img src="<?php echo base_url();?>assets/img/user.png" width="50px" height="50px" title="Usuario" class="image" style="border-radius: 50%;margin-left: 10px;margin-top: 5px;margin-right: 15px;">
 		<div class="username" style="padding-top: 5px;position: absolute;margin-left: 75px;">
-			<span><?php echo $this->session->userdata('nombre') ." ". $this->session->userdata('apaterno') ?></span> <img src="<?php echo base_url();?>assets/img/arrow-down.png" width="20px" height="20px" id="optionsuser" style="margin-left: 10px;">
-			<nav style="display: none; position: absolute; z-index: 99;width: 150px;">
+			<span><?php echo $this->session->userdata('nombre') ." ". $this->session->userdata('apaterno') ?></span> <img src="<?php echo base_url();?>assets/img/arrow-down.png" width="20px" height="20px" id="optionsuser" style="float: right;">
+			<nav style="display: none; z-index: 99;position: relative;">
 				<a class="cambiarcontrasena">Cambiar Contraseña</a>
 				<a href="<?php echo base_url();?>comercial/logout">Cerrar Sesión</a>
 			</nav>
@@ -195,9 +189,11 @@
 					<!--<li><a href='<?php //echo base_url();?>comercial/backup'><span>Backup de la BD</span></a></li>-->
 					<li><a href="" style="width: 193px;"><span>Gestión Reportes</span></a>
 						<ul>
-							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada' ><span>Reporte de Facturas</span></a>
+							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada' style="width: 193px;"><span>Reporte de Facturas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportsalida'><span>Reporte de Salidas</span></a>
-							<li><a href='<?php echo base_url();?>comercial/gestioninventarioalmacen'><span>Inventario Valorizado de Almacén</span></a>
+							<li><a href='<?php echo base_url();?>comercial/gestioninventarioalmacen'><span>Inventario Valorizado</span></a>
+							<li><a href='<?php echo base_url();?>comercial/reportConsumoProducto'><span>Consumos por producto</span></a>
+							<li><a href='<?php echo base_url();?>comercial/reportRotacionInventario'><span>Rotación de inventario</span></a>
 							<!--<li><a href='<?php // echo base_url();?>comercial/gestionreportconsumopormaquina'><span>Consumos por máquina</span></a>-->
 							<!--<li><a href='<?php //echo base_url();?>comercial/gestionreportmensual'><span>Reporte Mensual</span></a>-->
 						</ul>
@@ -209,7 +205,7 @@
 <!--<footer><div><h2 align="center">Sistema de Almacén - Repuestos y Suministros</h2></div></footer>-->
 <!---  Ventanas modales -->
     <div id="mdlUpPass" style="display:none">
-        <div id="contenedor" style="width:320px; height:200px;"> <!--Aumenta el marco interior-->
+        <div id="contenedor" style="width:320px; height:220px;"> <!--Aumenta el marco interior-->
         <div id="tituloCont">Actualizar Contraseña</div>
 	        <div id="formFiltro" style="width:500px;">
 	        <?php

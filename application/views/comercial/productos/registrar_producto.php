@@ -179,67 +179,66 @@
     // Venta Modal Registrar Producto
     $(".newprospect").click(function(){
       $("#mdlNuevoProducto" ).dialog({
-          modal: true,resizable: false,show: "blind",position: 'center',width: 525,height: 375,draggable: false,closeOnEscape: false,
+          modal: true,resizable: false,show: "blind",position: 'center',width: 525,height: 405,draggable: false,closeOnEscape: false,
           buttons: {
           Registrar: function() {
-              var nombrepro = $('#nombrepro').val(); categoria = $('#categoriaN').val(); tipo_producto = $('#tipo_producto').val(); area = $('#area').val(); ubicacion_producto = $('#ubicacion_producto').val();
-              var procedencia = $('#procedenciaN').val(); obser = $('#obser').val(); uni_med = $('#uni_med').val(); producto_asociado = $('#producto_asociado').val();
-              if(nombrepro == '' || categoria == ''|| procedencia == '' || uni_med == '' || tipo_producto == '' || area == '' || ubicacion_producto == ''){
-                sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
-              }else{
-                var dataString = 'nombrepro='+nombrepro+'&categoria='+categoria+'&procedencia='+procedencia+'&uni_med='+uni_med+'&obser='+obser+'&tipo_producto='+tipo_producto+'&area='+area+'&producto_asociado='+producto_asociado+'&ubicacion_producto='+ubicacion_producto+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
-                $.ajax({
-                  type: "POST",
-                  url: "<?php echo base_url(); ?>comercial/registrarproducto/",
-                  data: dataString,
-                  success: function(msg){
-                    if(msg == 1){
-                      swal({ title: "El Producto ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
-                      $("#mdlNuevoProducto").dialog("close");
-
-                      $('#nombrepro').val('');
-                      $('#ubicacion_producto').val('');
-                      $('#uni_med').val('');
-                      $('#obser').val('');
-                      $('#categoriaN').val('');
-                      $('#tipo_producto').val('');
-                      $('#procedenciaN').val('');
-                      /*
-                      var dataString_reload_table = 'nombrepro='+nombrepro+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
-                      $.ajax({
-                        type: "POST",
-                        url: "<?php echo base_url(); ?>comercial/get_all_productos_insert/",
-                        data: dataString_reload_table,
-                        success: function(data_get_all){
-                          data_get_all = JSON.parse(data_get_all);
-                          var table = $('#listaProductos').DataTable();
-                          table.row.add({
-                            "0": "<td height='23' style='text-align: center;'>"+table.data.length+999,
-                            "1": 'PRD'+data_get_all.result[0].id_pro,
-                            "2": data_get_all.result[0].no_producto,
-                            "3": data_get_all.result[0].nombre_ubicacion,
-                            "4": data_get_all.result[0].no_categoria,
-                            "5": data_get_all.result[0].no_tipo_producto,
-                            "6": data_get_all.result[0].nom_uni_med,
-                            "7": data_get_all.result[0].stock,
-                            "8": '<img class="editar_producto" src="http://localhost/almacen_tintoreria_tejeduria_TJ/assets/img/edit.png" width="20" height="20" title="Editar producto" onclick="editar_producto('+data_get_all.result[0].id_pro+')" style="cursor: pointer;">',
-                            "9": '<img class="eliminar_producto" src="http://localhost/almacen_tintoreria_tejeduria_TJ/assets/img/trash.png" width="20" height="20" title="Eliminar Producto" id="elim_'+data_get_all.result[0].id_pro+'" onclick="eliminar_producto('+data_get_all.result[0].id_pro+')" style="cursor: pointer;">'
-                          }).draw();
-                        }
-                      });
-                      */
-                    }else if(msg == 'unidad_no_existe'){
-                      sweetAlert("!La Unidad de Medida ingresada no es correcta. Verificar!", "", "error");
-                    }else if(msg == 'nombre_producto'){
-                      sweetAlert("!El Nombre del Producto ya se encuentra registrado. Verificar!", "", "error");
-                    }else if(msg == 'ubicacion_no_existe'){
-                      sweetAlert("!La Ubicación del Producto ingresada no es Correcta. Verificar!", "", "error");
-                    }else if(msg == 'error_registro'){
-                      sweetAlert("!Se ha producto un error. Intentelo Nuevamente!", "", "error");
-                    }
+            var nombrepro = $('#nombrepro').val(); categoria = $('#categoriaN').val(); tipo_producto = $('#tipo_producto').val(); area = $('#area').val(); ubicacion_producto = $('#ubicacion_producto').val();
+            var procedencia = $('#procedenciaN').val(); obser = $('#obser').val(); uni_med = $('#uni_med').val(); producto_asociado = $('#producto_asociado').val(); stock_minimo = $('#stock_minimo').val();
+            if(nombrepro == '' || categoria == ''|| procedencia == '' || uni_med == '' || tipo_producto == '' || area == '' || ubicacion_producto == ''){
+              sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
+            }else{
+              var dataString = 'nombrepro='+nombrepro+'&categoria='+categoria+'&procedencia='+procedencia+'&uni_med='+uni_med+'&obser='+obser+'&tipo_producto='+tipo_producto+'&area='+area+'&producto_asociado='+producto_asociado+'&ubicacion_producto='+ubicacion_producto+'&stock_minimo='+stock_minimo+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+              $.ajax({
+                type: "POST",
+                url: "<?php echo base_url(); ?>comercial/registrarproducto/",
+                data: dataString,
+                success: function(msg){
+                  if(msg == 1){
+                    swal({ title: "El Producto ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                    $("#mdlNuevoProducto").dialog("close");
+                    $('#nombrepro').val('');
+                    $('#ubicacion_producto').val('');
+                    $('#uni_med').val('');
+                    $('#obser').val('');
+                    $('#categoriaN').val('');
+                    $('#tipo_producto').val('');
+                    $('#procedenciaN').val('');
+                    /*
+                    var dataString_reload_table = 'nombrepro='+nombrepro+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+                    $.ajax({
+                      type: "POST",
+                      url: "<?php echo base_url(); ?>comercial/get_all_productos_insert/",
+                      data: dataString_reload_table,
+                      success: function(data_get_all){
+                        data_get_all = JSON.parse(data_get_all);
+                        var table = $('#listaProductos').DataTable();
+                        table.row.add({
+                          "0": "<td height='23' style='text-align: center;'>"+table.data.length+999,
+                          "1": 'PRD'+data_get_all.result[0].id_pro,
+                          "2": data_get_all.result[0].no_producto,
+                          "3": data_get_all.result[0].nombre_ubicacion,
+                          "4": data_get_all.result[0].no_categoria,
+                          "5": data_get_all.result[0].no_tipo_producto,
+                          "6": data_get_all.result[0].nom_uni_med,
+                          "7": data_get_all.result[0].stock,
+                          "8": '<img class="editar_producto" src="http://localhost/almacen_tintoreria_tejeduria_TJ/assets/img/edit.png" width="20" height="20" title="Editar producto" onclick="editar_producto('+data_get_all.result[0].id_pro+')" style="cursor: pointer;">',
+                          "9": '<img class="eliminar_producto" src="http://localhost/almacen_tintoreria_tejeduria_TJ/assets/img/trash.png" width="20" height="20" title="Eliminar Producto" id="elim_'+data_get_all.result[0].id_pro+'" onclick="eliminar_producto('+data_get_all.result[0].id_pro+')" style="cursor: pointer;">'
+                        }).draw();
+                      }
+                    });
+                    */
+                  }else if(msg == 'unidad_no_existe'){
+                    sweetAlert("!La Unidad de Medida ingresada no es correcta. Verificar!", "", "error");
+                  }else if(msg == 'nombre_producto'){
+                    sweetAlert("!El Nombre del Producto ya se encuentra registrado. Verificar!", "", "error");
+                  }else if(msg == 'ubicacion_no_existe'){
+                    sweetAlert("!La Ubicación del Producto ingresada no es Correcta. Verificar!", "", "error");
+                  }else if(msg == 'error_registro'){
+                    sweetAlert("!Se ha producto un error. Intentelo Nuevamente!", "", "error");
                   }
-                });
-              }
+                }
+              });
+            }
           },
           Cancelar: function(){
             $("#mdlNuevoProducto").dialog("close");
@@ -282,16 +281,17 @@
   function editar_producto(id_pro){
     var urlMaq = '<?php echo base_url();?>comercial/editarproducto/'+id_pro;
     $("#mdlEditarProducto").load(urlMaq).dialog({
-      modal: true, position: 'center', width: 500, height: 378, draggable: false, resizable: false, closeOnEscape: false,
+      modal: true, position: 'center', width: 500, height: 478, draggable: false, resizable: false, closeOnEscape: false,
       buttons: {
         Actualizar: function() {
           var editnombreprod = $('#editnombreprod').val(); editcat = $('#editcat').val(); editunid_med = $('#editunid_med').val(); 
           var editobser = $('#editobser').val(); editprocedencia = $('#editprocedencia').val(); edittipoprod = $('#edittipoprod').val();
-          var edit_ubicacion = $('#edit_ubicacion').val();
+          var edit_ubicacion = $('#edit_ubicacion').val(); edit_stock_interna = $('#edit_stock_interna').val(); edit_precio_unitario = $('#edit_precio_unitario').val();
+          var edit_stock_minimo = $('#edit_stock_minimo').val();
           if(edit_ubicacion == '' || editnombreprod == '' || editcat == '' || editprocedencia == '' || editunid_med == '' || edittipoprod == ''){
             sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
           }else{
-            var dataString = 'edit_ubicacion='+edit_ubicacion+'&editnombreprod='+editnombreprod+'&edittipoprod='+edittipoprod+'&editcat='+editcat+'&editunid_med='+editunid_med+'&editprocedencia='+editprocedencia+'&editobser='+editobser+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+            var dataString = 'edit_ubicacion='+edit_ubicacion+'&editnombreprod='+editnombreprod+'&edittipoprod='+edittipoprod+'&editcat='+editcat+'&editunid_med='+editunid_med+'&editprocedencia='+editprocedencia+'&editobser='+editobser+'&edit_stock_interna='+edit_stock_interna+'&edit_precio_unitario='+edit_precio_unitario+'&edit_stock_minimo='+edit_stock_minimo+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
             $.ajax({
               type: "POST",
               url: "<?php echo base_url(); ?>comercial/actualizarproducto/"+id_pro,
@@ -373,14 +373,15 @@
           <thead>
             <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
               <!--<td sort="idprod" width="65" height="27">ITEM</td>-->
-              <td sort="idproducto" width="120" height="27">ID PRODUCTO</td>
-              <td sort="nombreprod" width="330">NOMBRE O DESCRIPCIÓN</td>
-              <td sort="catprod" width="110">UBICACIÓN</td>
-              <td sort="catprod" width="125">CATEGORIA</td>
+              <td sort="idproducto" width="90" height="27">ID PROD</td>
+              <td sort="catprod" width="90">UBICACIÓN</td>
+              <td sort="nombreprod" width="240">NOMBRE O DESCRIPCIÓN</td>
+              <td sort="catprod" width="105">CATEGORIA</td>
               <td sort="catprod" width="150">TIPO PRODUCTO</td>
               <td sort="procprod" width="95">MEDIDA</td>
-              <td sort="procprod" width="90">STOCK</td>
+              <td sort="procprod" width="110">STOCK KARDEX</td>
               <td sort="procprod" width="65">P.U.</td>
+              <td sort="procprod" width="110">STOCK INTERNO</td>
               <td width="20" style="background-image: none;">&nbsp;</td>
               <td width="20" style="background-image: none;">&nbsp;</td>
             </tr>
@@ -394,14 +395,15 @@
             <tr class="contentTable" style="font-size: 12px;">
               <!--<td height="23" style="vertical-align: middle;"><?php // echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>-->
               <td style="vertical-align: middle;"><?php echo 'PRD'.$listaproductos->id_pro; ?></td>
-              <td style="vertical-align: middle;"><?php echo $listaproductos->no_producto; ?></td>
               <td style="vertical-align: middle;"><?php echo $listaproductos->nombre_ubicacion; ?></td>
+              <td style="vertical-align: middle;"><?php echo $listaproductos->no_producto; ?></td>
               <td style="vertical-align: middle;"><?php echo $listaproductos->no_categoria; ?></td>
               <td style="vertical-align: middle;"><?php echo $listaproductos->no_tipo_producto; ?></td>
               <!--<td><?php // echo $listaproductos->no_procedencia; ?></td>-->
               <td style="vertical-align: middle;"><?php echo $listaproductos->nom_uni_med; ?></td>
-              <td style="vertical-align: middle;"><?php echo $listaproductos->stock; ?></td>
-              <td style="vertical-align: middle;"><?php echo @number_format($listaproductos->precio_unitario, 2, '.', ''); ?></td>
+              <td style="vertical-align: middle;"><?php echo @number_format($listaproductos->stock, 2, '.', ','); ?></td>
+              <td style="vertical-align: middle;"><?php echo @number_format($listaproductos->precio_unitario, 2, '.', ','); ?></td>
+              <td style="vertical-align: middle;"><?php echo @number_format($listaproductos->stock_interno, 2, '.', ','); ?></td>
               <td width="20" align="center">
                 <img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listaproductos->id_pro;?>)" style="cursor: pointer;" />
               </td>
@@ -418,7 +420,7 @@
   </div>
   <!---  Ventanas modales -->
   <div id="mdlNuevoProducto" style="display:none">
-      <div id="contenedor" style="width:470px; height:245px;"> <!--Aumenta el marco interior-->
+      <div id="contenedor" style="width:470px; height:275px;"> <!--Aumenta el marco interior-->
       <div id="tituloCont" style="margin-bottom: 10px;">Nuevo Producto</div>
       <div id="formFiltro" style="width:500px;">
       <?php
@@ -429,6 +431,7 @@
         $precio_unitario = array('name'=>'precio_unitario','id'=>'precio_unitario','maxlength'=>'30', 'style'=>'width:150px');//este es un input
         $stock = array('name'=>'stock','id'=>'stock','maxlength'=>'30', 'style'=>'width:150px');//este es un input
         $producto_asociado = array('name'=>'producto_asociado','id'=>'producto_asociado','maxlength'=>'100', 'style'=>'width:150px');//este es un input
+        $stock_minimo = array('name'=>'stock_minimo','id'=>'stock_minimo','maxlength'=>'30', 'style'=>'width:150px');
       ?>  
         <form method="post" id="nuevo_producto" style=" border-bottom:0px">
           <table>
@@ -459,6 +462,10 @@
             <tr>
               <td width="130">Observaciones:</td>
               <td width="263"><?php echo form_input($observacion);?></td>
+            </tr>
+            <tr>
+              <td width="130">Stock mínimo:</td>
+              <td width="263"><?php echo form_input($stock_minimo); ?></td>
             </tr>
           </table>
         </form>

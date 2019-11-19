@@ -151,6 +151,9 @@
     <div id="modalerror"></div>
 
     <script type="text/javascript">
+
+    	var fecha = new Date();
+    	var ano = fecha.getFullYear();
     	
     	var chrt = document.getElementById("mycanvas").getContext("2d");
 
@@ -163,7 +166,7 @@
 			    labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"],
 			    datasets: [
 			        {
-			            label: "Total de consumos en S/. - Año 2016   ", // optional
+			            label: "Total de consumos en S/. - "+ ano, // optional
 			            backgroundColor: "#007CC1",
 			            borderColor: "#FFF",
 			            borderWidth: 1,

@@ -53,14 +53,15 @@ $active_record = TRUE;
 /*
 $db['default']['hostname'] = 'localhost';
 $db['default']['username'] = 'tejidosj_hespinoza';
-$db['default']['password'] = '.z8a5DMTolXJ';
+$db['default']['password'] = 'wvyrEY%0bk6c';
 $db['default']['database'] = 'tejidosj_almacen_tintoreria_tejeduria';
 */
 // Local
+
 $db['default']['hostname'] = 'localhost';
 $db['default']['username'] = 'postgres';
 $db['default']['password'] = '120492';
-$db['default']['database'] = 'almacen_tintoreria_tejeduria_2';
+$db['default']['database'] = 'almacen_tintoreria_tejeduria';
 
 $db['default']['dbdriver'] = 'postgre';
 $db['default']['port'] = '5432';

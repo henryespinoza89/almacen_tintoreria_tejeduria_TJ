@@ -44,8 +44,8 @@ class Comercial extends CI_Controller {
     }
 
     public function gestionproductos(){
-        $nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
-        $apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
+        $nombre = $this->security->xss_clean($this->session->userdata('nombre'));
+        $apellido = $this->security->xss_clean($this->session->userdata('apaterno'));
         if($nombre == "" AND $apellido == ""){
             $this->load->view('login');
         }else{
@@ -59,7 +59,6 @@ class Comercial extends CI_Controller {
             $data['listacategoria'] = $this->model_comercial->listarCategoria();
             $data['lista_tipo_producto'] = $this->model_comercial->listarTipoProducto();
             $data['listaprocedencia'] = $this->model_comercial->listarProcedencia();
-            /*$this->load->view('comercial/menu');*/
             $this->load->view('comercial/menu');
             $this->load->view('comercial/productos/registrar_producto',$data);
         }
@@ -1312,6 +1311,41 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function reportConsumoProducto(){
+        $nombre = $this->security->xss_clean($this->session->userdata('nombre'));
+        $apellido = $this->security->xss_clean($this->session->userdata('apaterno'));
+        if($nombre == "" AND $apellido == ""){
+            $this->load->view('login');
+        }else{
+            if($this->model_comercial->existeTipoCambio() == TRUE){
+            $data['tipocambio'] = 0;
+            }else{
+                $data['tipocambio'] = 1;
+            }
+            $this->load->view('comercial/menu_script');
+            $this->load->view('comercial/menu_cabecera');
+            $this->load->view('comercial/reportes/view_report_consumo_producto');
+        }
+    }
+
+    public function reportRotacionInventario(){
+        $nombre = $this->security->xss_clean($this->session->userdata('nombre'));
+        $apellido = $this->security->xss_clean($this->session->userdata('apaterno'));
+        if($nombre == "" AND $apellido == ""){
+            $this->load->view('login');
+        }else{
+            if($this->model_comercial->existeTipoCambio() == TRUE){
+            $data['tipocambio'] = 0;
+            }else{
+                $data['tipocambio'] = 1;
+            }
+            $data['lista_anios_registros']= $this->model_comercial->lista_anios_registros_kardex();
+            $this->load->view('comercial/menu_script');
+            $this->load->view('comercial/menu_cabecera');
+            $this->load->view('comercial/reportes/view_report_rotacion_inventario', $data);
+        }
+    }
+
     public function gestionreportmensual(){
         $nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
         $apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
@@ -1532,6 +1566,15 @@ class Comercial extends CI_Controller {
         $variable = $this->model_comercial->getDataStock($nombre_producto);
         foreach($variable as $fila){
             echo $fila->stock;
+        }
+    }
+
+    public function traerStockInterno_Autocompletado()
+    {
+        $nombre_producto = $this->input->get('nombre_producto');
+        $variable = $this->model_comercial->getDataStockInterno($nombre_producto);
+        foreach($variable as $fila){
+            echo $fila->stock_interno;
         }
     }
 
@@ -4360,6 +4403,71 @@ class Comercial extends CI_Controller {
         }
 
 
+    }
+
+    function procesar_detalle_productos_salida_interno(){
+        $this->db->trans_begin();
+        $auxiliar = '';
+        $count = 0;
+        $id_area = $this->security->xss_clean($this->input->post('id_area'));
+        $solicitante = strtoupper($this->security->xss_clean($this->input->post('solicitante')));
+        $fecharegistro = $this->security->xss_clean($this->input->post('fecharegistro'));
+        $observacion = $this->security->xss_clean($this->input->post('observacion'));
+        $id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+        // registrar los datos de la cabecera
+        $a_data = array('id_area' => $id_area,
+                        'fecha' => $fecharegistro,
+                        'id_almacen' => $id_almacen,
+                        'solicitante' => $solicitante,
+                        'observacion' => "STOCK_INTERNO"
+                        );
+        $result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
+        // obtener los datos del detalle de la salida
+        $detalle_producto_salida = $this->cart->contents();
+        // realizar un recorrido por detalle e ir registrandolo
+        foreach ($detalle_producto_salida as $item) {
+            $no_producto = $item['name'];
+            //var_dump("Producto: ".$no_producto."\n");
+            $cantidad_salida = $item['qty'];
+            if($this->cart->has_options($item['rowid']) === TRUE){
+                $array = $this->cart->product_options($item['rowid']);
+                $nombre_maquina = $array[0];
+                $nombre_parte_maquina = $array[1];
+            }
+            // Obtener los id de la maquina y parte de maquina
+            $this->db->select('id_maquina');
+            $this->db->where('nombre_maquina',$nombre_maquina);
+            $query = $this->db->get('maquina');
+            foreach($query->result() as $row){
+                $id_maquina = $row->id_maquina;
+            }
+            if($nombre_parte_maquina != ""){
+                $this->db->select('id_parte_maquina');
+                $this->db->where('nombre_parte_maquina',$nombre_parte_maquina);
+                $query = $this->db->get('parte_maquina');
+                foreach($query->result() as $row){
+                    $id_parte_maquina = $row->id_parte_maquina;
+                }
+            }else{
+                $id_parte_maquina = null;
+            }
+            // Enviar informacion a funcion que realizara el registro de salida de productos
+            $result = $this->model_comercial->finalizar_salida_before_13_interno($result_insert,$id_maquina,$id_parte_maquina,$no_producto,$cantidad_salida);
+            if($result != '1' && $count == 0){
+                $auxiliar = $result;
+                $count++;
+            }
+        }
+        if($auxiliar == ''){
+            echo '1';
+            $this->cart->destroy();
+        }else {
+            echo $auxiliar;
+            die();
+        }
+        // Eliminar las variables de sesion de la maquina
+        $this->session->unset_userdata('id_maquina');
+        $this->db->trans_complete();
     }
 
     function procesar_detalle_productos_salida(){
@@ -8889,7 +8997,8 @@ class Comercial extends CI_Controller {
             $objPHPExcel->getActiveSheet()->getStyle('L14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
             $objPHPExcel->getActiveSheet()->getStyle('M14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
-            if( count($saldos_iniciales) > 0 ){
+            if( empty(!$saldos_iniciales) > 0) {
+            // if( count($saldos_iniciales) > 0 ){
                 foreach ($saldos_iniciales as $result) {
                     $total_saldos_iniciales = $result->stock_inicial + $result->stock_inicial_sta_clara;
                     /* Formato de Fecha */
@@ -9421,6 +9530,9 @@ class Comercial extends CI_Controller {
                     /* SALDOS */
                     $sumatoria_cantidad_saldos = $sumatoria_cantidad_saldos + $total_saldos_iniciales;
                     $sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($total_saldos_iniciales * $result->precio_uni_inicial);
+                    // Nuevo - Dejar el saldo inicial para los registros posteriores
+                    $stock_inicial_kardex = $total_saldos_iniciales;
+                    $precio_unitario_inicial_kardex = $result->precio_uni_inicial;
                 }
             }else{
                 $objWorkSheet->setCellValueExplicit('A14', $f_inicial)
@@ -9436,12 +9548,16 @@ class Comercial extends CI_Controller {
                              ->setCellValueExplicit('K14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
                              ->setCellValueExplicit('L14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
                              ->setCellValueExplicit('M14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING);
+                // Nuevo - Dejar el saldo inicial para los registros posteriores
+                $stock_inicial_kardex = 0;
+                $precio_unitario_inicial_kardex = 0;
             }
 
             /* Recorrido del detalle del kardex general por producto */
             $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex($id_detalle_producto,$f_inicial,$f_final);
             $existe = count($detalle_movimientos_kardex);
             $y = 0;
+            $contador_kardex = 0;
             if($existe > 0){
                 foreach ($detalle_movimientos_kardex as $data) {
                     $p = 15;
@@ -9503,6 +9619,15 @@ class Comercial extends CI_Controller {
 
                     /* fin de formato */
                     if($data->descripcion == "ENTRADA"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                            $contador_kardex++;
+                        }else{
+                            $stock_antes_actualizar = $stock_saldo_final;
+                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                        }
                         $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
                                      ->setCellValue('B'.$p, "FT")
                                      ->setCellValueExplicit('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
@@ -9513,10 +9638,18 @@ class Comercial extends CI_Controller {
                                      ->setCellValueExplicit('H'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
                                      ->setCellValue('I'.$p, $data->precio_unitario_actual)
                                      ->setCellValueExplicit('J'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                     ->setCellValue('K'.$p, $data->stock_actual)
-                                     ->setCellValue('L'.$p, $data->precio_unitario_actual_promedio)
-                                     ->setCellValue('M'.$p, $data->stock_actual*$data->precio_unitario_actual_promedio);
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
                     }else if($data->descripcion == "SALIDA"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex - $data->cantidad_salida;
+                            $precio_unitario_saldo_final = $precio_unitario_inicial_kardex;
+                            $contador_kardex++;
+                        }else{
+                            $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                        }
                         $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
                                      ->setCellValue('B'.$p, "OS")
                                      ->setCellValue('C'.$p, "NIG")
@@ -9525,12 +9658,21 @@ class Comercial extends CI_Controller {
                                      ->setCellValueExplicit('F'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
                                      ->setCellValueExplicit('G'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
                                      ->setCellValue('H'.$p, $data->cantidad_salida)
-                                     ->setCellValue('I'.$p, $data->precio_unitario_anterior)
-                                     ->setCellValue('J'.$p, $data->cantidad_salida*$data->precio_unitario_anterior)
-                                     ->setCellValue('K'.$p, $data->stock_actual)
-                                     ->setCellValue('L'.$p, $data->precio_unitario_actual)
-                                     ->setCellValue('M'.$p, $data->stock_actual*$data->precio_unitario_actual);
+                                     ->setCellValue('I'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('J'.$p, $data->cantidad_salida*$precio_unitario_saldo_final)
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
                     }else if($data->descripcion == "IMPORTACION"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                            $contador_kardex++;
+                        }else{
+                            $stock_antes_actualizar = $stock_saldo_final;
+                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                        }
                         $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
                                      ->setCellValue('B'.$p, "IMPORTACION")
                                      ->setCellValueExplicit('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
@@ -9541,10 +9683,18 @@ class Comercial extends CI_Controller {
                                      ->setCellValueExplicit('H'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
                                      ->setCellValue('I'.$p, $data->precio_unitario_actual)
                                      ->setCellValueExplicit('J'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                     ->setCellValue('K'.$p, $data->stock_actual)
-                                     ->setCellValue('L'.$p, $data->precio_unitario_actual_promedio)
-                                     ->setCellValue('M'.$p, $data->stock_actual*$data->precio_unitario_actual_promedio);
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
                     }else if($data->descripcion == "ORDEN INGRESO"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                            $contador_kardex++;
+                        }else{
+                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                        }
                         $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
                                      ->setCellValue('B'.$p, "OI")
                                      ->setCellValueExplicit('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
@@ -9555,9 +9705,9 @@ class Comercial extends CI_Controller {
                                      ->setCellValueExplicit('H'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
                                      ->setCellValue('I'.$p, $data->precio_unitario_actual)
                                      ->setCellValueExplicit('J'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                     ->setCellValue('K'.$p, $data->stock_actual)
-                                     ->setCellValue('L'.$p, $data->precio_unitario_actual_promedio)
-                                     ->setCellValue('M'.$p, $data->stock_actual*$data->precio_unitario_actual_promedio);
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
                     }           
                     /* ENTRADAS */
                     $sumatoria_cantidad_entradas = $sumatoria_cantidad_entradas + $data->cantidad_ingreso;
@@ -9637,6 +9787,281 @@ class Comercial extends CI_Controller {
         $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
         $objWriter->save('php://output');
         exit;
+    }
+
+    public function al_exportar_report_consumo_maquina_excel(){
+        $data = $this->security->xss_clean($this->uri->segment(3));
+        $data = json_decode($data, true);
+        $f_inicial = $data[0];
+        $f_final = $data[1];
+        $id_detalle_producto = $data[2];
+
+        $this->load->library('pHPExcel');
+        /* variables de PHPExcel */
+        $objPHPExcel = new PHPExcel();
+        $nombre_archivo = "phpExcel";
+
+        /* propiedades de la celda */
+        $objPHPExcel->getDefaultStyle()->getFont()->setName('Arial Narrow');
+        $objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
+
+        // Add new sheet
+        $objWorkSheet = $objPHPExcel->createSheet(0); //Setting index when creating
+        $objPHPExcel->setActiveSheetIndex(0); // Esta línea y en esta posición hace que los formatos vayan a la primera hoja
+
+        $style = array(
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            )
+        );
+
+        $borders = array(
+            'borders' => array(
+                'allborders' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                    'color' => array('argb' => 'FF000000'),
+                )
+            ),
+        );
+
+        $styleArray = array(
+            'font' => array(
+                'bold' => true
+            )
+        );
+
+        // propiedades de la celda
+        $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(15);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:H1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+
+        $objPHPExcel->getActiveSheet()->getStyle('A1:H1')->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:H1')->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:H1')->applyFromArray($styleArray);
+        
+        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(40);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(35);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(35);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(40);
+
+        //Write cells
+        $objWorkSheet->setCellValue('A1', 'ITEM')
+                     ->setCellValue('B1', 'FECHA DE REGISTRO')
+                     ->setCellValue('C1', 'NOMBRE DEL PRODUCTO')
+                     ->setCellValue('D1', 'CANTIDAD DE SALIDA')
+                     ->setCellValue('E1', 'PRECIO')
+                     ->setCellValue('F1', 'MÁQUINA')
+                     ->setCellValue('G1', 'PARTE DE MÁQUINA')
+                     ->setCellValue('H1', 'SOLICITANTE');
+
+        // Traer informacion de la BD
+        $movimientos = $this->model_comercial->getReportConsumoMaquina($f_inicial,$f_final,$id_detalle_producto);
+        $existe = count($movimientos);
+        $p = 2; // contador de filas del excel
+        $i = 1; // Este calor es el contador de cuantos registros existen
+        if($existe > 0){
+            foreach ($movimientos as $data) {
+                // Formatos
+                $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                // Centrar contenido
+                $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style);
+                // border
+                $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
+
+                $objWorkSheet->setCellValue('A'.$p, $i)
+                             ->setCellValue('B'.$p, $data->fecha)
+                             ->setCellValue('C'.$p, $data->no_producto)
+                             ->setCellValue('D'.$p, str_pad($data->cantidad_salida, 8, 0, STR_PAD_LEFT))
+                             ->setCellValue('E'.$p, str_pad($data->p_u_salida, 8, 0, STR_PAD_LEFT))
+                             ->setCellValue('F'.$p, $data->nombre_maquina)
+                             ->setCellValue('G'.$p, $data->nombre_parte_maquina)
+                             ->setCellValue('H'.$p, $data->solicitante);
+                $p = $p + 1;
+                $i = $i + 1;
+            }
+        }
+        // Rename sheet
+        $objWorkSheet->setTitle("Reporte de Consumos por máquinas");
+        $objPHPExcel->setActiveSheetIndex(0);
+        // datos de la salida del excel
+        header("Content-type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=Reporte_De_Consumos_Maquina.xls");
+        header("Cache-Control: max-age=0");
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter->save('php://output');
+        // echo 'ok';
+    }
+
+    public function al_exportar_report_rotacion_inventario_excel(){
+        $data = $this->security->xss_clean($this->uri->segment(3));
+        $data = json_decode($data, true);
+        $anio = $data[0];
+
+        $this->load->library('pHPExcel');
+        /* variables de PHPExcel */
+        $objPHPExcel = new PHPExcel();
+        $nombre_archivo = "phpExcel";
+
+        /* propiedades de la celda */
+        $objPHPExcel->getDefaultStyle()->getFont()->setName('Arial Narrow');
+        $objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
+
+        // Add new sheet
+        $objWorkSheet = $objPHPExcel->createSheet(0); //Setting index when creating
+        $objPHPExcel->setActiveSheetIndex(0); // Esta línea y en esta posición hace que los formatos vayan a la primera hoja
+
+        $style = array(
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            )
+        );
+
+        $borders = array(
+            'borders' => array(
+                'allborders' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                    'color' => array('argb' => 'FF000000'),
+                )
+            ),
+        );
+
+        $styleArray = array(
+            'font' => array(
+                'bold' => true
+            )
+        );
+        // propiedades de la celda
+        $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(15);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:H1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+
+        $objPHPExcel->getActiveSheet()->getStyle('A1:H1')->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:H1')->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:H1')->applyFromArray($styleArray);
+        
+        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(50);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(30);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(20);
+        //Write cells
+        $objWorkSheet->setCellValue('A1', 'ITEM')
+                     ->setCellValue('B1', 'UBICACIÓN')
+                     ->setCellValue('C1', 'NOMBRE DEL PRODUCTO')
+                     ->setCellValue('D1', 'CATEGORÍA')
+                     ->setCellValue('E1', 'TIPO DE PRODUCTO')
+                     ->setCellValue('F1', 'STOCK')
+                     ->setCellValue('G1', 'PRECIO UNITARIO')
+                     ->setCellValue('H1', 'VALORIZADO');
+        $result = $this->model_comercial->get_info_inventario_rotacion();
+        $existe_2 = count($result);
+        if($existe_2 > 0){
+            $p = 2; // contador de filas del excel
+            $i = 1; // Este calor es el contador de cuantos registros existen
+            foreach ($result as $data2) {
+                $movimientos = $this->model_comercial->getReportRotacionInventario($anio,$data2->id_detalle_producto);
+                if ($movimientos == 'sin_kardex' && ($data2->stock != 0)){
+                    // Formatos
+                    $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    // Centrar contenido
+                    $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style);
+                    // border
+                    $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
+
+                    $objWorkSheet->setCellValue('A'.$p, $i)
+                                 ->setCellValue('B'.$p, $data2->nombre_ubicacion)
+                                 ->setCellValue('C'.$p, $data2->no_producto)
+                                 ->setCellValue('D'.$p, $data2->no_categoria)
+                                 ->setCellValue('E'.$p, $data2->no_tipo_producto)
+                                 ->setCellValue('F'.$p, $data2->stock)
+                                 ->setCellValue('G'.$p, $data2->precio_unitario)
+                                 ->setCellValue('H'.$p, ($data2->stock*$data2->precio_unitario));
+                    $p = $p + 1;
+                    $i = $i + 1;
+                }
+            }
+        }
+        // Rename sheet
+        $objWorkSheet->setTitle("Reporte de rotacion de inventarios");
+        $objPHPExcel->setActiveSheetIndex(0);
+        // datos de la salida del excel
+        header("Content-type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=Reporte_De_rotacion_Inventario.xls");
+        header("Cache-Control: max-age=0");
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter->save('php://output');
+        // echo 'ok';
+    }
+
+    public function al_exportar_report_consumo_maquina_view(){
+        $fechainicial = $this->security->xss_clean($this->input->post('fechainicial'));
+        $fechafinal = $this->security->xss_clean($this->input->post('fechafinal'));
+        $id_detalle_producto = $this->security->xss_clean($this->input->post('id_detalle_producto'));
+
+        echo '<table id="tableResponse" width="1350" border="0" cellspacing="1" cellpadding="1" style="margin-left: 70px;margin-bottom: 20px;">
+                <tr>
+                    <td colspan="7" class="title-formulate-selected"><strong>RESUMEN DE ENTREGA DEL PRODUCTO</strong></td>
+                </tr>
+                <tr class="tituloTable-guia-proceso" style="height: 30px;">
+                    <td width="167">FECHA REGISTRO</td>
+                    <td width="420">NOMBRE DEL PRODUCTO</td>
+                    <td width="180">CANTIDAD SALIDA</td>
+                    <td width="120">PRECIO</td>
+                    <td width="200">MÁQUINA</td>
+                    <td width="250">PARTE DE MÁQUINA</td>
+                    <td width="280">SOLICITANTE</td>
+                </tr>';
+
+        $data = $this->model_comercial->getReportConsumoMaquina($fechainicial,$fechafinal,$id_detalle_producto);
+
+        foreach($data as $key => $fila){
+            echo '<tr id="row" class="contentTable-guia-proceso" style="font-size: 11px;height: 30px;">
+                    <td>'.$fila->fecha.'</td>
+                    <td>'.$fila->no_producto.'</td>
+                    <td>'.$fila->cantidad_salida.'</td>
+                    <td>'.$fila->p_u_salida.'</td>
+                    <td>'.$fila->nombre_maquina.'</td>
+                    <td>'.$fila->nombre_parte_maquina.'</td>
+                    <td>'.$fila->solicitante.'</td>
+                </tr>';
+        }
+        echo '</table>';
     }
 
     public function al_exportar_report_ingresos(){
@@ -10909,7 +11334,8 @@ class Comercial extends CI_Controller {
 
             /* Traer sólo productos que tengan registros en el periodo seleccionado */
             $produtos_con_kardex = $this->model_comercial->traer_producto_con_kardex($id_detalle_producto,$f_inicial,$f_final);
-            if( count($produtos_con_kardex) > 0 ){
+            // if( count($produtos_con_kardex) > 0 ){
+            if( empty( ! $produtos_con_kardex) > 0 ){
                 /* Formato para la filas */
                 $objPHPExcel->getActiveSheet()->getStyle('A'.$i)->applyFromArray($borders);
                 $objPHPExcel->getActiveSheet()->getStyle('B'.$i)->applyFromArray($borders);
@@ -11025,14 +11451,9 @@ class Comercial extends CI_Controller {
                 $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                 $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                 $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                /*
-                $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                */
 
-                if( count($saldos_iniciales) > 0 ){
+                // if( count($saldos_iniciales) > 0 ){
+                if( empty(!$saldos_iniciales) > 0) {
                     foreach ($saldos_iniciales as $result) {
                         /* Formato de Fecha */
                         $elementos = explode("-", $result->fecha_cierre);
@@ -11083,6 +11504,9 @@ class Comercial extends CI_Controller {
                                      ->setCellValue('AM'.$i, "0")
                                      ->setCellValue('AN'.$i, "0");
                         $i++;
+                        // Nuevo - Dejar el saldo inicial para los registros posteriores
+                        $stock_inicial_kardex = $stock_cierre_total;
+                        $precio_unitario_inicial_kardex = $result->precio_uni_inicial;
                     }
                 }else{
                     $objWorkSheet->setCellValueExplicit('A'.$i, $f_inicial)
@@ -11124,14 +11548,19 @@ class Comercial extends CI_Controller {
                                  ->setCellValue('AL'.$i, "0")
                                  ->setCellValue('AM'.$i, "0")
                                  ->setCellValue('AN'.$i, "0");
-                    $i++;
+                        $i++;
+                        // Nuevo - Dejar el saldo inicial para los registros posteriores
+                        $stock_inicial_kardex = 0;
+                        $precio_unitario_inicial_kardex = 0;
                 }
 
-                /* Recorrido del detalle del kardex general por producto */
+                // Recorrido del detalle del kardex general por producto
                 $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex($id_detalle_producto,$f_inicial,$f_final);
-                if( count($detalle_movimientos_kardex) > 0 ){
+                $contador_kardex = 0;
+                // if( count($detalle_movimientos_kardex) > 0 ){
+                if( empty(!$detalle_movimientos_kardex) > 0 ){
                     foreach ($detalle_movimientos_kardex as $data) {
-                        /* Centrar contenido */
+                        // Centrar contenido
                         $objPHPExcel->getActiveSheet()->getStyle('A'.$i)->applyFromArray($borders);
                         $objPHPExcel->getActiveSheet()->getStyle('B'.$i)->applyFromArray($borders);
                         $objPHPExcel->getActiveSheet()->getStyle('C'.$i)->applyFromArray($borders);
@@ -11218,7 +11647,6 @@ class Comercial extends CI_Controller {
                         $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->applyFromArray($borders);
                         $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->applyFromArray($borders);
                         $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->applyFromArray($borders);
-
                         // formato de variables
                         $objPHPExcel->getActiveSheet()->getStyle('E'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                         $objPHPExcel->getActiveSheet()->getStyle('F'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
@@ -11239,13 +11667,6 @@ class Comercial extends CI_Controller {
                         $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                         $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
                         $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                        /*
-                        $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                        $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                        $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                        $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-                        */
-
                         /* Formato de Fecha */
                         $elementos = explode("-", $data->fecha_registro);
                         $anio = $elementos[0];
@@ -11263,8 +11684,32 @@ class Comercial extends CI_Controller {
                             $this->db->where('nro_comprobante',$data->num_comprobante);
                             $this->db->where('fecha',$data->fecha_registro);
                             $query = $this->db->get('ingreso_producto');
-                            foreach($query->result() as $row){
-                                $id_agente = $row->id_agente;
+                            if(count($query->result()) > 0){
+                                foreach($query->result() as $row){
+                                    $id_agente = $row->id_agente;
+                                }
+                            }else{
+                                $id_agente = 0;
+                            }
+
+                            if($contador_kardex == 0){
+                                $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                                $val = $data->cantidad_ingreso + $stock_inicial_kardex;
+                                if($val == 0){
+                                    echo 'id_detalle_producto'.$id_detalle_producto;
+                                }else{
+                                    $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                                }
+                                $contador_kardex++;
+                            }else{
+                                $stock_antes_actualizar = $stock_saldo_final;
+                                $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                $val = $data->cantidad_ingreso + $stock_antes_actualizar;
+                                if($val == 0){
+                                    echo 'id_detalle_producto'.$id_detalle_producto;
+                                }else{
+                                    $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                                }
                             }
 
                             if($id_agente == 2){
@@ -11276,11 +11721,11 @@ class Comercial extends CI_Controller {
                                              ->setCellValue('F'.$i, $data->precio_unitario_actual)
                                              ->setCellValue('G'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
                                              ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                             ->setCellValue('I'.$i, $data->precio_unitario_actual_promedio)
+                                             ->setCellValue('I'.$i, $precio_unitario_saldo_final)
                                              ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                             ->setCellValue('K'.$i, $data->stock_actual)
-                                             ->setCellValue('L'.$i, $data->precio_unitario_actual_promedio)
-                                             ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                             ->setCellValue('K'.$i, $stock_saldo_final)
+                                             ->setCellValue('L'.$i, $precio_unitario_saldo_final)
+                                             ->setCellValue('M'.$i, $stock_saldo_final*$precio_unitario_saldo_final)
                                              ->setCellValue('O'.$i, $kperiodo_movimiento)
                                              ->setCellValue('P'.$i, "2")
                                              ->setCellValue('Q'.$i, "9")
@@ -11298,11 +11743,11 @@ class Comercial extends CI_Controller {
                                              ->setCellValue('AC'.$i, $data->precio_unitario_actual)
                                              ->setCellValue('AD'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
                                              ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
-                                             ->setCellValue('AF'.$i, $data->precio_unitario_actual_promedio)
+                                             ->setCellValue('AF'.$i, $precio_unitario_saldo_final)
                                              ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
-                                             ->setCellValue('AH'.$i, $data->stock_actual)
-                                             ->setCellValue('AI'.$i, $data->precio_unitario_actual_promedio)
-                                             ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                             ->setCellValue('AH'.$i, $stock_saldo_final)
+                                             ->setCellValue('AI'.$i, $precio_unitario_saldo_final)
+                                             ->setCellValue('AJ'.$i, $stock_saldo_final*$precio_unitario_saldo_final)
                                              ->setCellValue('AK'.$i, "1")
                                              ->setCellValue('AL'.$i, "0")
                                              ->setCellValue('AM'.$i, "0")
@@ -11319,9 +11764,9 @@ class Comercial extends CI_Controller {
                                              ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
                                              ->setCellValue('I'.$i, $data->precio_unitario_actual_promedio)
                                              ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                             ->setCellValue('K'.$i, $data->stock_actual)
-                                             ->setCellValue('L'.$i, $data->precio_unitario_actual_promedio)
-                                             ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                             ->setCellValue('K'.$i, $stock_saldo_final)
+                                             ->setCellValue('L'.$i, $precio_unitario_saldo_final)
+                                             ->setCellValue('M'.$i, $stock_saldo_final*$precio_unitario_saldo_final)
                                              ->setCellValue('O'.$i, $kperiodo_movimiento)
                                              ->setCellValue('P'.$i, "2")
                                              ->setCellValue('Q'.$i, "9")
@@ -11339,11 +11784,11 @@ class Comercial extends CI_Controller {
                                              ->setCellValue('AC'.$i, $data->precio_unitario_actual)
                                              ->setCellValue('AD'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
                                              ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
-                                             ->setCellValue('AF'.$i, $data->precio_unitario_actual_promedio)
+                                             ->setCellValue('AF'.$i, $precio_unitario_saldo_final)
                                              ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
-                                             ->setCellValue('AH'.$i, $data->stock_actual)
-                                             ->setCellValue('AI'.$i, $data->precio_unitario_actual_promedio)
-                                             ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                             ->setCellValue('AH'.$i, $stock_saldo_final)
+                                             ->setCellValue('AI'.$i, $precio_unitario_saldo_final)
+                                             ->setCellValue('AJ'.$i, $stock_saldo_final*$precio_unitario_saldo_final)
                                              ->setCellValue('AK'.$i, "1")
                                              ->setCellValue('AL'.$i, "0")
                                              ->setCellValue('AM'.$i, "0")
@@ -11351,47 +11796,68 @@ class Comercial extends CI_Controller {
                                 $i++;
                             }
                         }else if($data->descripcion == "SALIDA"){
+                            if($contador_kardex == 0){
+                                $stock_saldo_final = $stock_inicial_kardex - $data->cantidad_salida;
+                                $precio_unitario_saldo_final = $precio_unitario_inicial_kardex;
+                                $contador_kardex++;
+                            }else{
+                                $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+                                $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                            }
                             $objWorkSheet->setCellValue('A'.$i, $fecha_formateada_2)
                                          ->setCellValue('B'.$i, "OS")
                                          ->setCellValue('C'.$i, "NIG")
                                          ->setCellValueExplicit('D'.$i, str_pad($data->id_kardex_producto, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValueExplicit('E'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValueExplicit('F'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValueExplicit('G'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('E'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_NUMERIC)
+                                         ->setCellValueExplicit('F'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_NUMERIC)
+                                         ->setCellValueExplicit('G'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_NUMERIC)
                                          ->setCellValue('H'.$i, $data->cantidad_salida)
-                                         ->setCellValue('I'.$i, $data->precio_unitario_anterior)
-                                         ->setCellValue('J'.$i, $data->cantidad_salida*$data->precio_unitario_anterior)
-                                         ->setCellValue('K'.$i, $data->stock_actual)
-                                         ->setCellValue('L'.$i, $data->precio_unitario_actual)
-                                         ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual)
+                                         ->setCellValue('I'.$i, $precio_unitario_saldo_final)
+                                         ->setCellValue('J'.$i, $data->cantidad_salida*$precio_unitario_saldo_final)
+                                         ->setCellValue('K'.$i, $stock_saldo_final)
+                                         ->setCellValue('L'.$i, $precio_unitario_saldo_final)
+                                         ->setCellValue('M'.$i, $stock_saldo_final*$precio_unitario_saldo_final)
                                          ->setCellValue('O'.$i, $kperiodo_movimiento)
                                          ->setCellValue('P'.$i, "2")
                                          ->setCellValue('Q'.$i, "9")
-                                         ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_NUMERIC)
+                                         ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_NUMERIC)
                                          ->setCellValue('T'.$i, $fecha_formateada_2)
                                          ->setCellValueExplicit('U'.$i, "00",PHPExcel_Cell_DataType::TYPE_STRING)
                                          ->setCellValue('V'.$i, "NIG")
-                                         ->setCellValueExplicit('W'.$i, str_pad($data->id_kardex_producto, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValueExplicit('X'.$i, "10",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('W'.$i, str_pad($data->id_kardex_producto, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_NUMERIC)
+                                         ->setCellValueExplicit('X'.$i, "10",PHPExcel_Cell_DataType::TYPE_NUMERIC)
                                          ->setCellValue('Y'.$i, $nombre_producto)
                                          ->setCellValue('Z'.$i, $kunimed)
                                          ->setCellValue('AA'.$i, "1")
-                                         ->setCellValueExplicit('AB'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValueExplicit('AC'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValueExplicit('AD'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+                                         ->setCellValueExplicit('AB'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_NUMERIC)
+                                         ->setCellValueExplicit('AC'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_NUMERIC)
+                                         ->setCellValueExplicit('AD'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_NUMERIC)
                                          ->setCellValue('AE'.$i, $data->cantidad_salida)
-                                         ->setCellValue('AF'.$i, $data->precio_unitario_anterior)
-                                         ->setCellValue('AG'.$i, $data->cantidad_salida*$data->precio_unitario_anterior)
-                                         ->setCellValue('AH'.$i, $data->stock_actual)
-                                         ->setCellValue('AI'.$i, $data->precio_unitario_actual)
-                                         ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual)
+                                         ->setCellValue('AF'.$i, $precio_unitario_saldo_final)
+                                         ->setCellValue('AG'.$i, $data->cantidad_salida*$precio_unitario_saldo_final)
+                                         ->setCellValue('AH'.$i, $stock_saldo_final)
+                                         ->setCellValue('AI'.$i, $precio_unitario_saldo_final)
+                                         ->setCellValue('AJ'.$i, $stock_saldo_final*$precio_unitario_saldo_final)
                                          ->setCellValue('AK'.$i, "1")
                                          ->setCellValue('AL'.$i, "0")
                                          ->setCellValue('AM'.$i, "0")
                                          ->setCellValue('AN'.$i, "0");
                             $i++;
                         }else if($data->descripcion == "ORDEN INGRESO"){
+                            if($contador_kardex == 0){
+                                $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                                $val = $data->cantidad_ingreso + $stock_inicial_kardex;
+                                if($val == 0){
+                                    echo 'id_detalle_producto'.$id_detalle_producto;
+                                }else{
+                                    $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                                }
+                                $contador_kardex++;
+                            }else{
+                                $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                            }
                             $objWorkSheet->setCellValue('A'.$i, $fecha_formateada_2)
                                          ->setCellValue('B'.$i, "OI")
                                          ->setCellValueExplicit('C'.$i, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
@@ -11400,11 +11866,11 @@ class Comercial extends CI_Controller {
                                          ->setCellValue('F'.$i, $data->precio_unitario_actual)
                                          ->setCellValue('G'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
                                          ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValue('I'.$i, $data->precio_unitario_actual)
+                                         ->setCellValue('I'.$i, $precio_unitario_saldo_final)
                                          ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValue('K'.$i, $data->stock_actual)
-                                         ->setCellValue('L'.$i, $data->precio_unitario_actual_promedio)
-                                         ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                         ->setCellValue('K'.$i, $stock_saldo_final)
+                                         ->setCellValue('L'.$i, $precio_unitario_saldo_final)
+                                         ->setCellValue('M'.$i, $stock_saldo_final*$precio_unitario_saldo_final)
                                          ->setCellValue('O'.$i, $kperiodo_movimiento)
                                          ->setCellValue('P'.$i, "2")
                                          ->setCellValue('Q'.$i, "9")
@@ -11422,11 +11888,11 @@ class Comercial extends CI_Controller {
                                          ->setCellValue('AC'.$i, $data->precio_unitario_actual)
                                          ->setCellValue('AD'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
                                          ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValue('AF'.$i, $data->precio_unitario_actual)
+                                         ->setCellValue('AF'.$i, $precio_unitario_saldo_final)
                                          ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
-                                         ->setCellValue('AH'.$i, $data->stock_actual)
-                                         ->setCellValue('AI'.$i, $data->precio_unitario_actual_promedio)
-                                         ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+                                         ->setCellValue('AH'.$i, $stock_saldo_final)
+                                         ->setCellValue('AI'.$i, $precio_unitario_saldo_final)
+                                         ->setCellValue('AJ'.$i, $stock_saldo_final*$precio_unitario_saldo_final)
                                          ->setCellValue('AK'.$i, "1")
                                          ->setCellValue('AL'.$i, "0")
                                          ->setCellValue('AM'.$i, "0")

@@ -50,44 +50,38 @@
 	<script type="text/javascript">
 		$(function(){
 
-			$(".cambiarcontrasena").click(function() { //activacion de ventana modal
-				$("#mdlUpPass" ).dialog({  //declaracion de ventana modal
-					modal: true,resizable: false,show: "blind",position: 'center',width: 370,height: 323,draggable: false,closeOnEscape: false, //Aumenta el marco general
+			$(".cambiarcontrasena").click(function() {
+				$("#mdlUpPass" ).dialog({
+					modal: true,resizable: false,show: "blind",position: 'center',width: 370,height: 343,draggable: false,closeOnEscape: false, //Aumenta el marco general
 			        buttons: {
-			        Actualizar: function() {
-			            $(".ui-dialog-buttonpane button:contains('Registrar')").button("disable");
-			            $(".ui-dialog-buttonpane button:contains('Registrar')").attr("disabled", true).addClass("ui-state-disabled");
-			            //CONTROLO LAS VARIABLES
-			            var user = $('#user').val(); password = $('#password').val(); datacontrasena_actualizar = $('#datacontrasena_actualizar').val();
-			            
-			                //REGISTRO
-			                var dataString = 'user='+user+'&password='+password+'&datacontrasena_actualizar='+datacontrasena_actualizar+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
-		                    $.ajax({
-		                      type: "POST",
-		                      url: "<?php echo base_url(); ?>administrador/UpdatePassword/",
-		                      data: dataString,
-		                      success: function(msg){
-		                        if(msg == 1){
-		                          $("#finregistro").html('!La Contraseña ha sido regristado con éxito!.').dialog({
-		                            modal: true,position: 'center',width: 330,height: 125,resizable: false, title: 'Fin de Registro',
-		                            buttons: { Ok: function(){
-		                              window.location.href="<?php echo base_url();?>administrador/gestionusuarios_admin";
-		                            }}
-		                          });
-		                        }else{
-		                          $("#modalerror").empty().append(msg).dialog({
-		                            modal: true,position: 'center',width: 500,height: 140,resizable: false,
-		                            buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-		                          });
-		                          $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-		                        }
-		                      }
-		                    });
-			            
-			        },
-			        Cancelar: function(){
-			             $("#mdlUpPass").dialog("close");
-			        }
+				        Actualizar: function() {
+				            var user = $('#user').val(); password = $('#password').val(); datacontrasena_actualizar = $('#datacontrasena_actualizar').val();
+				            if (user == "" || password == "" || datacontrasena_actualizar == ""){
+				            	sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
+				            }else{
+				                var dataString = 'user='+user+'&password='+password+'&datacontrasena_actualizar='+datacontrasena_actualizar+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+			                    $.ajax({
+			                      	type: "POST",
+			                      	url: "<?php echo base_url(); ?>administrador/UpdatePassword/",
+			                      	data: dataString,
+			                      	success: function(msg){
+			                        if(msg == 1){
+			                          	swal({ title: "!La Contraseña ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+			                          	$('#password').val("");
+			                          	$('#datacontrasena_actualizar').val("");
+			                          	$("#mdlUpPass").dialog("close");
+			                        }else{
+			                          	sweetAlert("Su Contraseña Actual no Coincide. Verificar!", "", "error");
+			                        }
+			                      	}
+			                    });
+				            }
+				        },
+				        Cancelar: function(){
+				        	$('#password').val("");
+			                $('#datacontrasena_actualizar').val("");
+				            $("#mdlUpPass").dialog("close");
+				        }
 			        }
 				});
 			});
@@ -95,6 +89,7 @@
 			$("#optionsuser").click(function(){
 				$('nav').fadeToggle("fast");
 			});
+
 		});
 
 		function seguridad(clave,formulario){
@@ -166,7 +161,7 @@
 	</header>
 <!--<footer><div><h2 align="center">Sistema de Almacén - Repuestos y Suministros</h2></div></footer>-->
 <div id="mdlUpPass" style="display:none">
-        <div id="contenedor" style="width:320px; height:200px;"> <!--Aumenta el marco interior-->
+        <div id="contenedor" style="width:320px; height:220px;"> <!--Aumenta el marco interior-->
         <div id="tituloCont">Actualizar Contraseña</div>
 	        <div id="formFiltro" style="width:500px;">
 	        <?php
