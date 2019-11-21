@@ -6244,7 +6244,6 @@ class Model_comercial extends CI_Model {
         $stock_interno = $this->security->xss_clean($this->input->post('edit_stock_interna'));
         $precio_unitario = $this->security->xss_clean($this->input->post('edit_precio_unitario'));
         $stock_minimo = $this->security->xss_clean($this->input->post('edit_stock_minimo'));
-
         if ($precio_unitario == 'undefined') {
             $precio_unitario = 0;
         }

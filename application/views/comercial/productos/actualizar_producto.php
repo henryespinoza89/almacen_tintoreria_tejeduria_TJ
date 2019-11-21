@@ -38,6 +38,7 @@
 				$edit_stock_minimo = array('name'=>'edit_stock_minimo','id'=>'edit_stock_minimo','maxlength'=>'100', 'value'=>$prod->stock_minimo, 'style'=>'width:150px');
 			?>
 				<script type="text/javascript">
+					$("#edit_precio_unitario").prop('disabled', true);
              		$("#editcat option[value='<?php echo $prod->id_categoria;?>']").attr("selected",true);
              		$("#editprocedencia option[value='<?php echo $prod->id_procedencia;?>']").attr("selected",true);
              		$("#edittipoprod option[value='<?php echo $prod->id_tipo_producto;?>']").attr("selected",true);
@@ -81,12 +82,12 @@
 					<td width="127">Stock interno:</td>
 					<td width="245"><?php echo form_input($edit_stock_interna); ?></td>
 				</tr>
-				<?php if($prod->precio_unitario == 0){ ?>
+				<!-- <?php // if($prod->precio_unitario == 0){ ?> -->
 					<tr>
 						<td width="127">Precio Unitario:</td>
 						<td width="245"><?php echo form_input($edit_precio_unitario); ?></td>
 					</tr>
-				<?php } ?>
+				<!-- <?php // } ?> -->
 			<?php }?>
 	    	</table>
 	 	</form>
