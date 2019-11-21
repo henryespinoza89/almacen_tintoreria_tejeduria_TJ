@@ -6229,6 +6229,56 @@ class Model_comercial extends CI_Model {
         return true; 
     }
 
+    public function actualizaPrecioUnitarioProductoScript(){
+        $cero = 0;
+        $count = 0;
+        $count2 = 0;
+        // encontrar los productos afectados
+        $this->db->select('id_detalle_producto, no_producto, stock, precio_unitario');
+        $this->db->where('precio_unitario =',$cero);
+        $this->db->where('stock >',$cero);
+        $query = $this->db->get('detalle_producto');
+        if(count($query->result()) > 0){
+            foreach($query->result() as $row){
+                // encontrar la ultima factura de ese producto
+                var_dump($row->id_detalle_producto.'<br>');
+                // $prueba = 807;
+                $filtro = "";
+                $filtro .= " AND detalle_ingreso_producto.id_detalle_producto =".(int)$row->id_detalle_producto;
+                $filtro .= " ORDER BY ingreso_producto.fecha ASC";
+                $sql = "SELECT ingreso_producto.id_ingreso_producto,ingreso_producto.fecha,ingreso_producto.total,
+                ingreso_producto.serie_comprobante,ingreso_producto.nro_comprobante,detalle_ingreso_producto.unidades,
+                detalle_ingreso_producto.precio,detalle_ingreso_producto.id_detalle_producto
+                FROM detalle_ingreso_producto
+                INNER JOIN ingreso_producto ON detalle_ingreso_producto.id_ingreso_producto = ingreso_producto.id_ingreso_producto
+                WHERE ingreso_producto.id_ingreso_producto IS NOT NULL".$filtro;
+                $query = $this->db->query($sql);
+                if($query->num_rows()>0)
+                {
+                    $count2++;
+                    foreach($query->result() as $row){
+                        $auxiliar = $row->precio;
+                    }
+                    // actualizar el precio unitario de cada producto
+                    $actualizar = array(
+                        'precio_unitario' => $auxiliar
+                    );
+                    $this->db->where('id_detalle_producto',$row->id_detalle_producto);
+                    $this->db->update('detalle_producto', $actualizar);
+                    var_dump($auxiliar);
+                }else{
+                    var_dump($row->no_producto);
+                }
+                $count++;
+            }
+        }
+        $response = new stdClass();
+        $response->message = 'successfull';
+        $response->count = $count;
+        $response->count2 = $count2;
+        return $response;
+    }
+
     public function actualizaProducto(){
         $id_ubicacion = 0;
         $id_dp_act = null;

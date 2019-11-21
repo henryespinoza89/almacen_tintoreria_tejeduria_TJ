@@ -3049,6 +3049,17 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function actualizarPrecioUnitarioProducto(){
+        $send_user = new stdClass();
+        $result = $this->model_comercial->actualizaPrecioUnitarioProductoScript();
+        if($result->message == 'successfull'){
+            $send_user->message = '1';
+            $send_user->count = $result->count;
+            $send_user->count2 = $result->count2;
+			echo json_encode($send_user);
+        }
+    }
+
     public function actualizarproducto(){
         $this->form_validation->set_rules('editnombreprod', 'Descripción', 'trim|required|min_length[1]|max_length[50]|xss_clean');
         $this->form_validation->set_rules('editobser', 'Observación', 'trim|max_length[50]|xss_clean');

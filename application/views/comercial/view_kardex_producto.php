@@ -87,6 +87,22 @@
 			}
     	});
 
+		$("#script_precio_unitario").click(function(){
+			$.ajax({
+              type: "POST",
+              url: "<?php echo base_url(); ?>comercial/actualizarPrecioUnitarioProducto/",
+              success: function(msg){
+				msg = JSON.parse(msg);
+                if(msg.message == '1'){
+                  swal({ title: `El Precio unitario Producto de ${msg.count} productos ha sido Actualizado con éxito!`,text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                  $("#mdlEditarProducto").dialog("close");
+                }else{
+                  sweetAlert(msg, "", "error");
+                }
+              }
+            });
+		});
+
 		$("#report_kardex_excel_v2").click(function(){
     		var fechainicial = $("#fechainicial").val();
     		var fechafinal = $("#fechafinal").val();
@@ -172,6 +188,8 @@
 		                <td width="168" height="30"><?php echo form_input($fechafinal);?></td>
 	                    <!--<td width="195"><input name="submit" type="submit" id="report_kardex_excel" class="report_kardex_excel" value="Generar Kardex del Producto" style="background-color: #4B8A08;width: 170px;margin-bottom: 6px;" /></td>-->
 	                    <td width="195"><input name="submit" type="submit" id="report_kardex_excel_v2" class="report_kardex_excel_v2" value="KARDEX DE PRODUCTO" style="background-color: #4B8A08;width: 170px;margin-bottom: 6px;" /></td>
+						<!-- El siguiente boton y su funcionalidad permitio regularizar productos que tenian stock pero no precio -->
+						<!-- <td width="195"><input name="submit" type="submit" id="script_precio_unitario" class="script_precio_unitario" value="CORRER SCRIPT - PRECIO UNITARIO" /></td> -->
 		            </tr>
 				</table>
 			
