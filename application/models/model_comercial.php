@@ -4612,6 +4612,23 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    function get_productos_stock_minimo(){
+        $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+        $filtro = "";
+        $filtro .= " AND detalle_producto.stock_minimo >= detalle_producto.stock";
+        $filtro .= " AND detalle_producto.stock_minimo <>".(int)0;
+        $filtro .= " ORDER BY detalle_producto.no_producto ASC";
+        $sql = "SELECT detalle_producto.id_detalle_producto,detalle_producto.no_producto,detalle_producto.stock,
+                detalle_producto.precio_unitario,detalle_producto.stock_referencial_sta_anita,
+                detalle_producto.precio_unitario_referencial,detalle_producto.stock_interno,detalle_producto.stock_minimo
+                FROM detalle_producto
+                WHERE detalle_producto.id_detalle_producto IS NOT NULL".$filtro;
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
 
     function get_datos_factura_importada(){
         $almacen = $this->security->xss_clean($this->session->userdata('almacen'));

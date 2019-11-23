@@ -7,7 +7,7 @@
 
 			$.ajax({
 	        	type: 'POST',
-	        	url: "<?php echo base_url(); ?>comercial/traerFacturasImportadas/",
+	        	url: "<?php echo base_url(); ?>comercial/traerProductosStockMinimo/",
 	        	success: function(response){
 	              	// Actions
 	              	if(response == 0){
@@ -20,7 +20,7 @@
 	        	}
 	      	});
 
-	      	$("#icon_notification").on('click',function(){
+	      	$("#icon_notification").mouseover(function(){
 	      		if(auxiliar == 0){
 	      			$("#view_invoice").show();
 	      			auxiliar = 1;
@@ -83,6 +83,10 @@
 				$('nav').fadeToggle("fast");
 			});
 
+			$("#notification").click(function(){
+				window.location.href="<?php echo base_url();?>comercial/gestionproductostockminimo";
+			});
+
 			
 			
 		});
@@ -96,6 +100,11 @@
 		function gestionar_factura_importada(e, id_row){
 		    e.preventDefault();
 		    window.location.href="<?php echo base_url();?>comercial/gestionfacturasmasivas";
+		}
+
+		function get_list_producto_minimo_view(e){
+			e.preventDefault();
+			window.location.href="<?php echo base_url();?>comercial/gestionproductostockminimo";
 		}
 		
 	</script>
@@ -135,6 +144,10 @@
 		<i><span class="fa fa-bell" id="icon_notification"></span></i>
 	</div>
 	<div class="view_invoice" id="view_invoice"></div>-->
+	<div class="notification" id="notification" style="float: left;margin-top: 38px;margin-left: 620px;">
+		<i><span class="fa fa-bell" id="icon_notification"></span></i>
+	</div>
+	<div class="view_invoice" id="view_invoice"></div>
 	<div id="userlogin">
 		<img src="<?php echo base_url();?>assets/img/user.png" width="50px" height="50px" title="Usuario" class="image" style="border-radius: 50%;margin-left: 10px;margin-top: 5px;margin-right: 15px;">
 		<div class="username" style="padding-top: 5px;position: absolute;margin-left: 75px;">

@@ -676,6 +676,19 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function gestionproductostockminimo(){
+        $nombre = $this->security->xss_clean($this->session->userdata('nombre'));
+        $apellido = $this->security->xss_clean($this->session->userdata('apaterno'));
+        if($nombre == "" AND $apellido == ""){
+            $this->load->view('login');
+        }else{
+            $data['pro_stock_minimo']= $this->model_comercial->get_productos_stock_minimo();
+            $this->load->view('comercial/menu_script');
+            $this->load->view('comercial/menu_cabecera');
+            $this->load->view('comercial/productos/producto_stock_minimo', $data);
+        }
+    }
+
     public function gestionfacturasmasivas(){
         $nombre = $this->security->xss_clean($this->session->userdata('nombre'));
         $apellido = $this->security->xss_clean($this->session->userdata('apaterno'));
@@ -3300,6 +3313,19 @@ class Comercial extends CI_Controller {
         echo json_encode($array, JSON_NUMERIC_CHECK);
     }
 
+    public function traerProductosStockMinimo(){
+        $resultado = $this->model_comercial->get_productos_stock_minimo();
+        if (count($resultado) == 0) {
+            echo '0';
+        }else{
+            $count = 0;        
+            foreach($resultado as $key => $row){
+                $count++; 
+            }
+            echo '<div style="text-align: center;padding-top: 6px;font-weight: bold;cursor:pointer;" onClick="get_list_producto_minimo_view(event)">';echo $count;'</div>';
+        }       
+    }
+    // <td> <a href="#" onClick="gestionar_factura_importada(event, \''.$row->id_ingreso_producto.'\')" ><i class="fa fa-pencil-square-o" title="Actualizar"></i></a></td>
     public function traerFacturasImportadas(){
         $resultado = $this->model_comercial->get_datos_factura_importada();
         if (count($resultado) == 0) {
@@ -8611,6 +8637,128 @@ class Comercial extends CI_Controller {
         /* datos de la salida del excel */
         header("Content-type: application/vnd.ms-excel");
         header("Content-Disposition: attachment; filename=$variable.xls");
+        header("Cache-Control: max-age=0");
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter->save('php://output');
+        exit;
+    }
+
+    public function al_exportar_alertas_producto(){
+        $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+        $this->load->library('pHPExcel');
+        /* variables de PHPExcel */
+        $objPHPExcel = new PHPExcel();
+        $nombre_archivo = "phpExcel";
+
+        /* propiedades de la celda */
+        $objPHPExcel->getDefaultStyle()->getFont()->setName('Arial Narrow');
+        $objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
+        $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(40);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
+
+        /* Here your first sheet */
+        $sheet = $objPHPExcel->getActiveSheet();
+
+         /* Style - Bordes */
+        $borders = array(
+            'borders' => array(
+                'allborders' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                    'color' => array('argb' => 'FF000000'),
+                )
+            ),
+        );
+
+        $style = array(
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            )
+        );
+
+        $style_2 = array(
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+            )
+        );
+
+        $styleArray = array(
+            'font' => array(
+                'bold' => true
+            )
+        );
+
+        // Add new sheet
+        $objWorkSheet = $objPHPExcel->createSheet(0); //Setting index when creating
+        $objPHPExcel->setActiveSheetIndex(0); // Esta línea y en esta posición hace que los formatos vayan a la primera hoja
+        $objPHPExcel->getDefaultStyle()->getFont()->setSize(13);
+        $objPHPExcel->setActiveSheetIndex(0)->mergeCells('A1:D1');
+        $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($styleArray);
+        //$objPHPExcel->getActiveSheet()->getRowDimension('A')->setRowHeight(40);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+        $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(30);
+
+        $objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
+        $objPHPExcel->getActiveSheet()->getStyle('A2:D2')->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('A2:D2')->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('A2:D2')->applyFromArray($styleArray);
+
+        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(65);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
+        //Write cells
+        if($almacen == 1){
+            $objWorkSheet->setCellValue('A1', 'REPORTE DE ALERTA DE STOCK MÍNIMO - STA. CLARA                     FECHA: '.date('d-m-y'));
+        }else if($almacen == 2){
+            $objWorkSheet->setCellValue('A1', 'REPORTE DE ALERTA DE STOCK MÍNIMO - REPUESTOS                     FECHA: '.date('d-m-y'));
+        }
+        $objWorkSheet->setCellValue('A2', 'NOMBRE O DESCRIPCION')
+                     ->setCellValue('B2', 'STOCK KARDEX')
+                     ->setCellValue('C2', 'STOCK INTERNO')
+                     ->setCellValue('D2', 'STOCK MÍNIMO');
+        /* Traer informacion de la BD */
+        $result = $this->model_comercial->get_productos_stock_minimo();
+        /* Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex */
+        $i = 0;
+        $sumatoria_parciales = 0;
+        $p = 3;
+        foreach ($result as $reg) {
+            $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            /* Centrar contenido */
+            $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+            /* border */
+            $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+            if($almacen == 1){
+                $objWorkSheet->setCellValue('A'.$p, $reg->no_producto)
+                             ->setCellValue('B'.$p, $reg->stock)
+                             ->setCellValue('C'.$p, $reg->stock_interno)
+                             ->setCellValue('D'.$p, $reg->stock_minimo);
+            }else if($almacen == 2){
+                $objWorkSheet->setCellValue('A'.$p, $reg->no_producto)
+                             ->setCellValue('B'.$p, $reg->stock)
+                             ->setCellValue('C'.$p, $reg->stock_interno)
+                             ->setCellValue('D'.$p, $reg->stock_minimo);
+            }
+            /* Rename sheet */
+            $objWorkSheet->setTitle("Reporter_alerta_stock");
+            $p++;
+        }
+
+        $objPHPExcel->setActiveSheetIndex(0);
+        /* datos de la salida del excel */
+        header("Content-type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=reporter_alerta_stock.xls");
         header("Cache-Control: max-age=0");
         $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
         $objWriter->save('php://output');
